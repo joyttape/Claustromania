@@ -204,3 +204,8 @@
 
 .input-group [data-toggle="datetimepicker"] {
   cursor: pointer; }
+
+  .logo{
+    width: 50;
+    height: 20;
+}
