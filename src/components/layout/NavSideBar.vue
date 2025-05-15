@@ -18,21 +18,13 @@
                 <div class="navbar-nav w-100">
                     <a href="index.html" class="nav-item nav-link"><i class="fa fa-tachometer-alt me-2"></i>Relatórios</a>
                     <div>
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Jogos</a>
+                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Reservas</a>
                     </div>
+                    <router-link to="/clientes" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Jogadores</router-link>
+                    <a href="form.html" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Caixa</a>
                     <router-link to="/salas" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Salas</router-link>
-                    <a href="form.html" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Forms</a>
-                    <a href="table.html" class="nav-item nav-link"><i class="fa fa-table me-2"></i>Tables</a>
-                    <a href="chart.html" class="nav-item nav-link"><i class="fa fa-chart-bar me-2"></i>Charts</a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown"><i class="far fa-file-alt me-2"></i>Pages</a>
-                        <div class="dropdown-menu bg-transparent border-0">
-                            <router-link to="/login" class="dropdown-item">Log In </router-link>
-                            <router-link to="/" class="dropdown-item">Sign Up </router-link>
-                            <a href="404.html" class="dropdown-item">404 Error</a>
-                            <router-link to="/blank" class="dropdown-item">Blank Page</router-link>
-                        </div>
-                    </div>
+                    <router-link to="/funcionarios" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Funcionários</router-link>
+                    <router-link to="/unidades" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Unidades</router-link>
                 </div>
             </nav>
         </div>
