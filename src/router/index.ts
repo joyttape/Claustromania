@@ -7,6 +7,7 @@ import CadSala from '@/components/layout/CadSala.vue'
 import Unidades from '@/components/layout/unidades/Unidades.vue'
 import Funcionarios from '@/components/layout/Funcionairos/Funcionarios.vue'
 import Clientes from '@/components/layout/Clientes/Clientes.vue'
+import FormFuncionarios from '@/components/layout/Funcionairos/FormFuncionarios.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,14 +43,19 @@ const router = createRouter({
       component: Unidades
     },
     {
-      path: "/funcionarios",
-      name: "Funcionários",
+      path: '/funcionarios',
+      name: 'Funcionários',
       component: Funcionarios
     },
     {
       path: '/clientes',
       name: "Clientes",
       component: Clientes
+    },
+    {
+      path: '/funcionarios/form',
+      name: 'CadastroFuncionario',
+      component: FormFuncionarios
     }
 
   ]

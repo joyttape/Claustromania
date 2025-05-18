@@ -16,7 +16,9 @@
                     </div>
                 </div>
                 <div class="navbar-nav w-100">
-                    <a href="index.html" class="nav-item nav-link"><i class="fa fa-tachometer-alt me-2"></i>Relatórios</a>
+
+                    <router-link to="/blank" class="nav-item nav-link"><i class="fa fa-tachometer-alt me-2"></i>Relatórios</router-link>
+                    
                     <div>
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Reservas</a>
                     </div>
