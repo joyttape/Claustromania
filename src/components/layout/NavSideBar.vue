@@ -18,10 +18,7 @@
                 <div class="navbar-nav w-100">
 
                     <router-link to="/blank" class="nav-item nav-link"><i class="fa fa-tachometer-alt me-2"></i>Relatórios</router-link>
-                    
-                    <div>
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Reservas</a>
-                    </div>
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Reservas</a>
                     <router-link to="/clientes" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Jogadores</router-link>
                     <a href="form.html" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Caixa</a>
                     <router-link to="/salas" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Salas</router-link>

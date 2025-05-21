@@ -1,45 +1,57 @@
 <template>
   <div>
     <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
+
     <NavHeaderBarVue />
+
     <div class="d-flex">
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <div class="row vh-100 bg-secondary rounded align-items-center justify-content-center mx-0">
-              <div>
-                 <div class="bg-secondary rounded h-100 p-4">
-                            <h2 class="mb-4">Unidades Cadastradas</h2>
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">iD</th>
-                                        <th scope="col">Nome</th>
-                                        <th scope="col">Capacidade</th>
-                                        <th scope="col">Horário_func</th>
-                                        <th scope="col">Telefone</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Botão</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(unidades, index) in listaunidades" :key="index">
-                                        <th scope="row">{{ unidades.id }}</th>
-                                        <td>{{ unidades.NomeUnidade }}</td>
-                                        <td>{{ unidades.Capacidade }}</td>
-                                        <td>{{ unidades.Horario_Func}}</td>
-                                        <td>{{ unidades.Telefone}}</td>
-                                        <td>{{ unidades.Status ? 'Ativo' : 'Inativo'}}</td>
-                                        <td><button>Editar</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                  </div>
-              </div>
+          <div class="row bg-secondary rounded mx-0 p-4">
+            <h2 class="mb-4">Unidades Cadastradas</h2>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <input
+                type="text"
+                class="form-control w-50"
+                placeholder="Pesquisar unidade..."
+              />
+              <router-link to="/unidades/form" class="btn btn-primary ms-3">
+                <i class="fa fa-plus me-2"></i>Cadastrar
+              </router-link>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover text-white">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Capacidade</th>
+                    <th scope="col">Horário Funcionamento</th>
+                    <th scope="col">Telefone</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Botão</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(unidades, index) in listaunidades" :key="index">
+                    <th scope="row">{{ unidades.id }}</th>
+                    <td>{{ unidades.NomeUnidade }}</td>
+                    <td>{{ unidades.Capacidade }}</td>
+                    <td>{{ unidades.Horario_Func }}</td>
+                    <td>{{ unidades.Telefone }}</td>
+                    <td>{{ unidades.Status ? 'Ativo' : 'Inativo' }}</td>
+                    <td><button class="btn btn-sm btn-outline-light">Editar</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
         <FooterBarVue />
@@ -47,6 +59,7 @@
     </div>
   </div>
 </template>
+
 
 <script lang="ts">
 import { defineComponent } from 'vue'

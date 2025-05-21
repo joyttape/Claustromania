@@ -8,6 +8,8 @@ import Unidades from '@/components/layout/unidades/Unidades.vue'
 import Funcionarios from '@/components/layout/Funcionairos/Funcionarios.vue'
 import Clientes from '@/components/layout/Clientes/Clientes.vue'
 import FormFuncionarios from '@/components/layout/Funcionairos/FormFuncionarios.vue'
+import FormClientes from '@/components/layout/Clientes/FormClientes.vue'
+import FormUnidades from '@/components/layout/unidades/FormUnidades.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -56,7 +58,18 @@ const router = createRouter({
       path: '/funcionarios/form',
       name: 'CadastroFuncionario',
       component: FormFuncionarios
+    },
+    {
+      path: '/clientes/formclientes',
+      name: 'CadastroCliente',
+      component: FormClientes
+    },
+    {
+      path: '/unidades/form',
+      name: "CadastroUnidade",
+      component: FormUnidades
     }
+    
 
   ]
 })

@@ -1,52 +1,66 @@
 <template>
-    <div>
+  <div>
     <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
+
     <NavHeaderBarVue />
+
     <div class="d-flex">
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <div class="row vh-100 bg-secondary rounded align-items-center justify-content-center mx-0">
-              <div>
-                 <div class="bg-secondary rounded h-100 p-4">
-                            <h2 class="mb-4">Jogadores</h2>
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">iD</th>
-                                        <th scope="col">Nome</th>
-                                        <th scope="col">CPF</th>
-                                        <th scope="col">Sexo</th>
-                                        <th scope="col">Data Nascimento</th>
-                                        <th scope="col">E-mail</th>
-                                        <th scope="col">Botão</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(Jogadores, index) in listaclientes" :key="index">
-                                        <th scope="row">{{ Jogadores.id }}</th>
-                                        <td>{{ Jogadores.Nome }}</td>
-                                        <td>{{ Jogadores.CPF }}</td>
-                                        <td>{{ Jogadores.Sexo}}</td>
-                                        <td>{{ Jogadores.Data }}</td>
-                                        <td>{{ Jogadores.Email}}</td>
-                                        <td><button>Editar</button></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                  </div>
-              </div>
+          <div class="row bg-secondary rounded mx-0 p-4">
+            <h2 class="mb-4">Jogadores</h2>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <input
+                type="text"
+                class="form-control w-50"
+                placeholder="Pesquisar jogador..."
+              />
+              <router-link to="/clientes/formclientes" class="btn btn-primary ms-3">
+                <i class="fa fa-plus me-2"></i>Cadastrar
+              </router-link>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-hover text-white">
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
+                    <th scope="col">CPF</th>
+                    <th scope="col">Sexo</th>
+                    <th scope="col">Data Nascimento</th>
+                    <th scope="col">E-mail</th>
+                    <th scope="col">Botão</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(jogador, index) in listaclientes" :key="index">
+                    <th scope="row">{{ jogador.id }}</th>
+                    <td>{{ jogador.Nome }}</td>
+                    <td>{{ jogador.CPF }}</td>
+                    <td>{{ jogador.Sexo }}</td>
+                    <td>{{ jogador.Data }}</td>
+                    <td>{{ jogador.Email }}</td>
+                    <td><button class="btn btn-sm btn-primary">Editar</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
         <FooterBarVue />
       </div>
     </div>
-</div>
+  </div>
 </template>
+
 
 <script lang="ts">
 import { defineComponent } from 'vue'

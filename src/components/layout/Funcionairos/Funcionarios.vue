@@ -13,10 +13,8 @@
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
           <div class="row bg-secondary rounded mx-0 p-4">
-            <!-- Título -->
             <h2 class="mb-4">Funcionários</h2>
-
-            <!-- Barra de pesquisa e botão de cadastro -->
+ 
             <div class="d-flex justify-content-between align-items-center mb-4">
               <input
                 type="text"
@@ -28,7 +26,7 @@
               </router-link>
             </div>
 
-            <!-- Tabela -->
+           
             <div class="table-responsive">
               <table class="table table-hover text-white">
                 <thead>
@@ -59,7 +57,6 @@
             </div>
           </div>
         </div>
-
         <FooterBarVue />
       </div>
     </div>
