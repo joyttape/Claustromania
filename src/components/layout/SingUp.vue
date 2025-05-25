@@ -39,9 +39,8 @@
               </div>
               <a href="">Esqueci minha senha</a>
             </div>
-            <router-link to="/login" class="btn btn-primary py-3 w-100 mb-4">Sign Up</router-link>
-            <p class="text-center mb-0">Já possui uma conta?Faça login<router-link to="/login"> aqui</router-link>
-            </p>
+            <router-link to="/" class="btn btn-primary py-3 w-100 mb-4">Sign Up</router-link>
+            <p class="text-center mb-0">Já possui uma conta?Faça login<router-link to="/"> aqui</router-link></p>
           </div>
         </div>
       </div>

@@ -13,35 +13,36 @@
 
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
+                <router-link to="/clientes" class="btn btn-outline-light mb-3">
+                                    ← Voltar
+                </router-link>
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-
-                <h6 class="mb-4">Cadastro de Funcionário</h6>
                 
                 <div class="d-flex align-items-start gap-4">
                     
-                  <form @submit.prevent="cadastrarFuncionario" class="flex-grow-1">
+                  <form @submit.prevent="cadastrarCliente" class="flex-grow-1">
                     <h6 class="mb-3">Dados Pessoais</h6>
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="nome" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="nome" v-model="funcionario.nome" required />
+                        <input type="text" class="form-control" id="nome" v-model="cliente.nome" required />
                       </div>
                       <div class="col-md-4">
                         <label for="cpf" class="form-label">CPF</label>
-                        <input type="text" class="form-control" id="cpf" v-model="funcionario.cpf" />
+                        <input type="text" class="form-control" id="cpf" v-model="cliente.cpf" />
                       </div>
                       <div class="col-md-4">
                         <label for="dataNascimento" class="form-label">Data de Nascimento</label>
-                        <input type="date" class="form-control" id="dataNascimento" v-model="funcionario.dataNascimento" />
+                        <input type="date" class="form-control" id="dataNascimento" v-model="cliente.dataNascimento" />
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="sexo" class="form-label">Sexo</label>
-                        <select class="form-select" id="sexo" v-model="funcionario.sexo">
+                        <select class="form-select" id="sexo" v-model="cliente.sexo">
                           <option selected disabled value="">Selecione</option>
                           <option value="masculino">Masculino</option>
                           <option value="feminino">Feminino</option>
@@ -50,31 +51,16 @@
                       </div>
                       <div class="col-md-4">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" v-model="funcionario.email" required />
+                        <input type="email" class="form-control" id="email" v-model="cliente.email" required />
                       </div>
                       <div class="col-md-4">
-                        <label for="cargo" class="form-label">Cargo</label>
-                        <input type="text" class="form-control" id="cargo" v-model="funcionario.cargo" required />
-                      </div>
-                    </div>
-
-                    <div class="row mb-3">
-                      <div class="col-md-4">
-                        <label for="salario" class="form-label">Salário</label>
-                        <input type="number" class="form-control" id="salario" step="0.01" v-model="funcionario.salario" />
-                      </div>
-                      <div class="col-md-4">
-                        <label for="dataContratacao" class="form-label">Data da Contratação</label>
-                        <input type="date" class="form-control" id="dataContratacao" v-model="funcionario.dataContratacao" />
-                      </div>
-                      <div class="col-md-4">
-                        <label for="turno" class="form-label">Turno</label>
-                        <select class="form-select" id="turno" v-model="funcionario.turno">
+                        <label for="nivel" class="form-label">Nivel de Experiência</label>
+                        <select class="form-select" id="nivel" v-model="cliente.nivel">
                           <option selected disabled value="">Selecione</option>
-                          <option value="manha">Manhã</option>
-                          <option value="tarde">Tarde</option>
-                          <option value="noite">Noite</option>
-                          <option value="integral">Integral</option>
+                          <option value="Novato">Novato</option>
+                          <option value="Intermediario">Intermediário</option>
+                          <option value="Experiente">Experiente</option>
+                          <option value="Profissional">Profissional</option>
                         </select>
                       </div>
                     </div>
@@ -83,30 +69,30 @@
                     <div class="row mb-3">
                       <div class="col-md-6">
                         <label for="logradouro" class="form-label">Logradouro</label>
-                        <input type="text" class="form-control" id="logradouro" v-model="funcionario.logradouro" />
+                        <input type="text" class="form-control" id="logradouro" v-model="cliente.logradouro" />
                       </div>
                       <div class="col-md-2">
                         <label for="numero" class="form-label">Número</label>
-                        <input type="text" class="form-control" id="numero" v-model="funcionario.numero" />
+                        <input type="text" class="form-control" id="numero" v-model="cliente.numero" />
                       </div>
                       <div class="col-md-4">
                         <label for="complemento" class="form-label">Complemento</label>
-                        <input type="text" class="form-control" id="complemento" v-model="funcionario.complemento" />
+                        <input type="text" class="form-control" id="complemento" v-model="cliente.complemento" />
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-3">
                         <label for="bairro" class="form-label">Bairro</label>
-                        <input type="text" class="form-control" id="bairro" v-model="funcionario.bairro" />
+                        <input type="text" class="form-control" id="bairro" v-model="cliente.bairro" />
                       </div>
                       <div class="col-md-3">
                         <label for="cidade" class="form-label">Cidade</label>
-                        <input type="text" class="form-control" id="cidade" v-model="funcionario.cidade" />
+                        <input type="text" class="form-control" id="cidade" v-model="cliente.cidade" />
                       </div>
                       <div class="col-md-3">
                         <label for="estado" class="form-label">Estado</label>
-                        <select class="form-select" id="estado" v-model="funcionario.estado">
+                        <select class="form-select" id="estado" v-model="cliente.estado">
                           <option selected disabled value="">Selecione</option>
                           <option value="AC">AC</option>
                           <option value="AL">AL</option>
@@ -139,10 +125,15 @@
                       </div>
                       <div class="col-md-3">
                         <label for="cep" class="form-label">CEP</label>
-                        <input type="text" class="form-control" id="cep" v-model="funcionario.cep" />
+                        <input type="text" class="form-control" id="cep" v-model="cliente.cep" />
                       </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                      <div>
+                        <button class="btn btn-success me-2" type="submit" @click="salvarAlteracoes">Salvar</button>
+                        <button class="btn btn-danger" type="button" @click="excluirFuncionario">Excluir</button>
+                      </div>
+                    </div>
                   </form>
 
                   <div
@@ -194,16 +185,13 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
-const funcionario = reactive({
+const cliente = reactive({
   nome: '',
   cpf: '',
   dataNascimento: '',
   sexo: '',
   email: '',
-  cargo: '',
-  salario: 0,
-  dataContratacao: '',
-  turno: '',
+  nivel: '',
   logradouro: '',
   numero: '',
   complemento: '',
@@ -220,22 +208,31 @@ const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
-    funcionario.foto = file
+    cliente.foto = file
     fotoPreview.value = URL.createObjectURL(file)
   }
 }
 
+const salvarAlteracoes = () => {
+  alert("Cliente salvo! (simulação)")
+  console.log("Dados do cliente:", cliente)
+}
+
+const excluirFuncionario = () => {
+  if (confirm("Deseja realmente excluir este funcionário?")) {
+    alert("Cliente excluído! (simulação)")
+    limparFormulario()
+  }
+}
+
 const limparFormulario = () => {
-  Object.assign(funcionario, {
+  Object.assign(cliente, {
     nome: '',
     cpf: '',
     dataNascimento: '',
     sexo: '',
     email: '',
-    cargo: '',
-    salario: 0,
-    dataContratacao: '',
-    turno: '',
+    nivel: '',
     logradouro: '',
     numero: '',
     complemento: '',
@@ -248,9 +245,9 @@ const limparFormulario = () => {
   fotoPreview.value = null
 }
 
-const cadastrarFuncionario = () => {
-  console.log('Funcionário cadastrado:', funcionario)
-  alert(`Funcionário ${funcionario.nome} cadastrado com sucesso!`)
+const cadastrarCliente = () => {
+  console.log('Cliente cadastrado:', cliente)
+  alert(`Cliente ${cliente.nome} cadastrado com sucesso!`)
   limparFormulario()
 }
 

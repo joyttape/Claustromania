@@ -1,8 +1,9 @@
 <template>
   <div>
+    <!-- Spinner -->
     <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-        <span class="sr-only">Loading...</span>
+        <span class="visually-hidden">Loading...</span>
       </div>
     </div>
 
@@ -13,38 +14,34 @@
 
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-                      <router-link to="/clientes" class="btn btn-outline-light mb-3">
+                <router-link to="/funcionarios" class="btn btn-outline-light mb-3">
                                     ← Voltar
-                      </router-link>
+                </router-link>
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-
-                <h6 class="mb-4">Cadastro de Clientes</h6>
-                
                 <div class="d-flex align-items-start gap-4">
-                    
-                  <form @submit.prevent="cadastrarCliente" class="flex-grow-1">
+                  <form @submit.prevent="salvarAlteracoes" class="flex-grow-1">
                     <h6 class="mb-3">Dados Pessoais</h6>
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="nome" class="form-label">Nome</label>
-                        <input type="text" class="form-control" id="nome" v-model="cliente.nome" required />
+                        <input type="text" class="form-control" id="nome" v-model="funcionario.nome" required />
                       </div>
                       <div class="col-md-4">
                         <label for="cpf" class="form-label">CPF</label>
-                        <input type="text" class="form-control" id="cpf" v-model="cliente.cpf" />
+                        <input type="text" class="form-control" id="cpf" v-model="funcionario.cpf" />
                       </div>
                       <div class="col-md-4">
                         <label for="dataNascimento" class="form-label">Data de Nascimento</label>
-                        <input type="date" class="form-control" id="dataNascimento" v-model="cliente.dataNascimento" />
+                        <input type="date" class="form-control" id="dataNascimento" v-model="funcionario.dataNascimento" />
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="sexo" class="form-label">Sexo</label>
-                        <select class="form-select" id="sexo" v-model="cliente.sexo">
+                        <select class="form-select" id="sexo" v-model="funcionario.sexo">
                           <option selected disabled value="">Selecione</option>
                           <option value="masculino">Masculino</option>
                           <option value="feminino">Feminino</option>
@@ -53,16 +50,31 @@
                       </div>
                       <div class="col-md-4">
                         <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" v-model="cliente.email" required />
+                        <input type="email" class="form-control" id="email" v-model="funcionario.email" required />
                       </div>
                       <div class="col-md-4">
-                        <label for="nivel" class="form-label">Nivel de Experiência</label>
-                        <select class="form-select" id="nivel" v-model="cliente.nivel">
+                        <label for="cargo" class="form-label">Cargo</label>
+                        <input type="text" class="form-control" id="cargo" v-model="funcionario.cargo" required />
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <label for="salario" class="form-label">Salário</label>
+                        <input type="number" class="form-control" id="salario" step="0.01" v-model="funcionario.salario" />
+                      </div>
+                      <div class="col-md-4">
+                        <label for="dataContratacao" class="form-label">Data da Contratação</label>
+                        <input type="date" class="form-control" id="dataContratacao" v-model="funcionario.dataContratacao" />
+                      </div>
+                      <div class="col-md-4">
+                        <label for="turno" class="form-label">Turno</label>
+                        <select class="form-select" id="turno" v-model="funcionario.turno">
                           <option selected disabled value="">Selecione</option>
-                          <option value="Novato">Novato</option>
-                          <option value="Intermediario">Intermediário</option>
-                          <option value="Experiente">Experiente</option>
-                          <option value="Profissional">Profissional</option>
+                          <option value="manha">Manhã</option>
+                          <option value="tarde">Tarde</option>
+                          <option value="noite">Noite</option>
+                          <option value="integral">Integral</option>
                         </select>
                       </div>
                     </div>
@@ -71,30 +83,30 @@
                     <div class="row mb-3">
                       <div class="col-md-6">
                         <label for="logradouro" class="form-label">Logradouro</label>
-                        <input type="text" class="form-control" id="logradouro" v-model="cliente.logradouro" />
+                        <input type="text" class="form-control" id="logradouro" v-model="funcionario.logradouro" />
                       </div>
                       <div class="col-md-2">
                         <label for="numero" class="form-label">Número</label>
-                        <input type="text" class="form-control" id="numero" v-model="cliente.numero" />
+                        <input type="text" class="form-control" id="numero" v-model="funcionario.numero" />
                       </div>
                       <div class="col-md-4">
                         <label for="complemento" class="form-label">Complemento</label>
-                        <input type="text" class="form-control" id="complemento" v-model="cliente.complemento" />
+                        <input type="text" class="form-control" id="complemento" v-model="funcionario.complemento" />
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-3">
                         <label for="bairro" class="form-label">Bairro</label>
-                        <input type="text" class="form-control" id="bairro" v-model="cliente.bairro" />
+                        <input type="text" class="form-control" id="bairro" v-model="funcionario.bairro" />
                       </div>
                       <div class="col-md-3">
                         <label for="cidade" class="form-label">Cidade</label>
-                        <input type="text" class="form-control" id="cidade" v-model="cliente.cidade" />
+                        <input type="text" class="form-control" id="cidade" v-model="funcionario.cidade" />
                       </div>
                       <div class="col-md-3">
                         <label for="estado" class="form-label">Estado</label>
-                        <select class="form-select" id="estado" v-model="cliente.estado">
+                        <select class="form-select" id="estado" v-model="funcionario.estado">
                           <option selected disabled value="">Selecione</option>
                           <option value="AC">AC</option>
                           <option value="AL">AL</option>
@@ -127,54 +139,44 @@
                       </div>
                       <div class="col-md-3">
                         <label for="cep" class="form-label">CEP</label>
-                        <input type="text" class="form-control" id="cep" v-model="cliente.cep" />
+                        <input type="text" class="form-control" id="cep" v-model="funcionario.cep" />
                       </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                      <div>
+                        <button class="btn btn-success me-2" type="submit" @click="salvarAlteracoes">Salvar</button>
+                        <button class="btn btn-danger" type="button" @click="excluirFuncionario">Excluir</button>
+                      </div>
+                    </div>
                   </form>
 
-                  <div
-                    class="position-relative"
-                    style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;"
-                  >
+                  
+                  <div class="position-relative" style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;">
                     <label
                       for="foto"
                       class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100"
                       style="cursor: pointer; overflow: hidden; border-radius: 12px;"
                     >
                       <template v-if="fotoPreview">
-                        <img
-                          :src="fotoPreview"
-                          alt="Preview"
-                          class="w-100 h-100"
-                          style="object-fit: cover; border-radius: 12px;"
-                        />
+                        <img :src="fotoPreview" alt="Preview" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" />
                       </template>
                       <template v-else>
                         <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
                       </template>
                     </label>
-                    <input
-                      type="file"
-                      id="foto"
-                      class="d-none"
-                      accept="image/*"
-                      @change="onFileChange"
-                    />
+                    <input type="file" id="foto" class="d-none" accept="image/*" @change="onFileChange" />
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
         </div>
-
         <FooterBarVue />
       </div>
     </div>
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
@@ -182,13 +184,16 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
-const cliente = reactive({
+const funcionario = reactive({
   nome: '',
   cpf: '',
   dataNascimento: '',
   sexo: '',
   email: '',
-  nivel: '',
+  cargo: '',
+  salario: 0,
+  dataContratacao: '',
+  turno: '',
   logradouro: '',
   numero: '',
   complemento: '',
@@ -205,19 +210,22 @@ const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files[0]) {
     const file = target.files[0]
-    cliente.foto = file
+    funcionario.foto = file
     fotoPreview.value = URL.createObjectURL(file)
   }
 }
 
 const limparFormulario = () => {
-  Object.assign(cliente, {
+  Object.assign(funcionario, {
     nome: '',
     cpf: '',
     dataNascimento: '',
     sexo: '',
     email: '',
-    nivel: '',
+    cargo: '',
+    salario: 0,
+    dataContratacao: '',
+    turno: '',
     logradouro: '',
     numero: '',
     complemento: '',
@@ -230,10 +238,16 @@ const limparFormulario = () => {
   fotoPreview.value = null
 }
 
-const cadastrarCliente = () => {
-  console.log('Cliente cadastrado:', cliente)
-  alert(`Cliente ${cliente.nome} cadastrado com sucesso!`)
-  limparFormulario()
+const salvarAlteracoes = () => {
+  alert("Funcionário salvo! (simulação)")
+  console.log("Dados do funcionário:", funcionario)
+}
+
+const excluirFuncionario = () => {
+  if (confirm("Deseja realmente excluir este funcionário?")) {
+    alert("Funcionário excluído! (simulação)")
+    limparFormulario()
+  }
 }
 
 onMounted(() => {

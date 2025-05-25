@@ -36,7 +36,7 @@
                     <th scope="col">Sexo</th>
                     <th scope="col">Data Nascimento</th>
                     <th scope="col">E-mail</th>
-                    <th scope="col">Botão</th>
+                    <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -47,7 +47,11 @@
                     <td>{{ jogador.Sexo }}</td>
                     <td>{{ jogador.Data }}</td>
                     <td>{{ jogador.Email }}</td>
-                    <td><button class="btn btn-sm btn-primary">Editar</button></td>
+                    <td>
+                      <router-link to="/clientes/detalhe" class="btn btn-sm btn-outline-light">
+                        Visualizar
+                      </router-link>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -69,7 +73,7 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
 export default defineComponent({
-  name: 'Unidades',
+  name: 'Clientes',
   data() {
   return {
     listaclientes: [] as Array<{

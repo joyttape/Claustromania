@@ -13,19 +13,17 @@
 
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-                      <router-link to="/unidades" class="btn btn-outline-light mb-3">
+                <router-link to="/unidades" class="btn btn-outline-light mb-3">
                         ← Voltar
-                      </router-link>
+                </router-link>
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
 
-                <h6 class="mb-4">Cadastro de Unidades</h6>
-                
                 <div class="d-flex align-items-start gap-4">
                     
                   <form @submit.prevent="cadastrarUnidade" class="flex-grow-1">
-                        <h6 class="mb-3">Dados Pessoais</h6>
+                        <h6 class="mb-3">Dados</h6>
                         <div class="row mb-3">
                             <div class="col-md-4">
                             <label for="nome" class="form-label">Nome</label>
@@ -116,7 +114,12 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <button class="btn btn-success me-2" type="submit" @click="salvarAlteracoes">Salvar</button>
+                                <button class="btn btn-danger" type="button" @click="excluirFuncionario">Excluir</button>
+                            </div>
+                        </div>
                     </form>
 
 
@@ -196,6 +199,18 @@ const onFileChange = (event: Event) => {
     }
     unidade.foto = file
     fotoPreview.value = URL.createObjectURL(file)
+  }
+}
+
+const salvarAlteracoes = () => {
+  alert("Dados alterados salvo! (simulação)")
+  console.log("Dados da unidade:", unidade)
+}
+
+const excluirFuncionario = () => {
+  if (confirm("Deseja realmente excluir esta unidade?")) {
+    alert("Unidade excluída! (simulação)")
+    limparunidade()
   }
 }
 

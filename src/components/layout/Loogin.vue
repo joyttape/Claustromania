@@ -36,7 +36,7 @@
               <a href="">Esqueci minha senha</a>
             </div>
             <router-link to="/blank" class="btn btn-primary py-3 w-100 mb-4">Log In</router-link>
-            <p class="text-center mb-0">Não possui uma conta?<router-link to="/"> Crie aqui</router-link></p>
+            <p class="text-center mb-0">Não possui uma conta?<router-link to="/singup"> Crie aqui</router-link></p>
           </div>
         </div>
       </div>
@@ -48,7 +48,4 @@
 <script>
 import { defineComponent } from 'vue'
 
-export default defineComponent({
-  name: 'Loogin',
-})
 </script>

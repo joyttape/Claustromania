@@ -5,22 +5,25 @@ import Blank from '@/components/layout/Blank.vue'
 import Salas from '@/components/layout/salas/Salas.vue'
 import CadSala from '@/components/layout/CadSala.vue'
 import Unidades from '@/components/layout/unidades/Unidades.vue'
-import Funcionarios from '@/components/layout/Funcionairos/Funcionarios.vue'
+import Funcionarios from '@/components/layout/Funcionarios/Funcionarios.vue'
 import Clientes from '@/components/layout/Clientes/Clientes.vue'
-import FormFuncionarios from '@/components/layout/Funcionairos/FormFuncionarios.vue'
+import FormFuncionarios from '@/components/layout/Funcionarios/FormFuncionarios.vue'
 import FormClientes from '@/components/layout/Clientes/FormClientes.vue'
 import FormUnidades from '@/components/layout/unidades/FormUnidades.vue'
+import FuncionariosDetail from '@/components/layout/Funcionarios/FuncionariosDetail.vue'
+import ClientesDetail from '@/components/layout/Clientes/ClientesDetail.vue'
+import UnidadesDetail from '@/components/layout/unidades/UnidadesDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'SingUp',
+      path: '/singup',
+      name: 'Singup',
       component: SingUp,
     },
     {
-    path: '/login',
+    path: '/',
     name: 'Login',
     component: Loogin,
     },
@@ -68,7 +71,22 @@ const router = createRouter({
       path: '/unidades/form',
       name: "CadastroUnidade",
       component: FormUnidades
-    }
+    },
+    {
+      path: '/funcionarios/detalhe',
+      name: 'DetalhesFunc',
+      component: FuncionariosDetail
+    },
+    {
+      path: '/clientes/detalhe',
+      name: "DetalhesCli",
+      component: ClientesDetail
+    },
+    {
+      path: '/unidades/detalhe',
+      name: "DetalhesUni",
+      component: UnidadesDetail
+    },
     
 
   ]

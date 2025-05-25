@@ -36,7 +36,7 @@
                     <th scope="col">Horário Funcionamento</th>
                     <th scope="col">Telefone</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Botão</th>
+                    <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -47,7 +47,11 @@
                     <td>{{ unidades.Horario_Func }}</td>
                     <td>{{ unidades.Telefone }}</td>
                     <td>{{ unidades.Status ? 'Ativo' : 'Inativo' }}</td>
-                    <td><button class="btn btn-sm btn-outline-light">Editar</button></td>
+                    <td>
+                      <router-link to="/unidades/detalhe" class="btn btn-sm btn-outline-light">
+                        Visualizar
+                      </router-link>
+                    </td>
                   </tr>
                 </tbody>
               </table>

@@ -38,7 +38,7 @@
                     <th scope="col">Data Contratação</th>
                     <th scope="col">Turno</th>
                     <th scope="col">Status</th>
-                    <th scope="col">Botão</th>
+                    <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -50,7 +50,12 @@
                     <td>{{ funcionarios.Data }}</td>
                     <td>{{ funcionarios.Turno }}</td>
                     <td>{{ funcionarios.Status ? 'Contratado' : 'Demitido' }}</td>
-                    <td><button class="btn btn-sm btn-outline-light">Editar</button></td>
+                    <td>
+                      <router-link to="/funcionarios/detalhe" class="btn btn-sm btn-outline-light">
+                        Visualizar
+                      </router-link>
+                    </td>
+
                   </tr>
                 </tbody>
               </table>
@@ -71,7 +76,7 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
 export default defineComponent({
-  name: 'Unidades',
+  name: 'Funcionarios',
   data() {
   return {
     listafuncionarios: [] as Array<{

@@ -1,31 +1,41 @@
 <template>
   <div>
     <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
-            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
     </div>
+
     <NavHeaderBarVue />
+
     <div class="d-flex">
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <div class="row vh-100 bg-secondary rounded align-items-center justify-content-center mx-0">
-            <div class= "">
-                <div>
-                  <h3>Salas Cadastradas</h3>
-                <button> <router-link to="/salas/cadastrosala" class="botao">Cadastar</router-link></button>
-                </div>
-                  <div class="bg-secondary rounded h-100 p-4">
-                            <h6 class="mb-4">Hoverable Table</h6>
-                            <table class="table table-hover">
+          <div class="row bg-secondary rounded mx-0 p-4">
+            <h2 class="mb-4">Salas</h2>
+ 
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <input
+                type="text"
+                class="form-control w-50"
+                placeholder="Pesquisar salas..."
+              />
+              <router-link to="/salas/form" class="btn btn-primary ms-3">
+                <i class="fa fa-plus me-2"></i>Cadastrar
+              </router-link>
+            </div>
+
+           
+            <div class="table-responsive">
+              <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th scope="col">iD</th>
                                         <th scope="col">Número</th>
                                         <th scope="col">Capacidade Jogadores</th>
                                         <th scope="col">Status</th>
-                                        <th scope="col">Botão</th>
+                                        <th scope="col"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -34,11 +44,14 @@
                                         <td>{{ salas.Numero }}</td>
                                         <td>{{ salas.Jogadores }}</td>
                                         <td>{{ salas.Status ? 'Ativo' : 'Inativo'}}</td>
-                                        <td><button>Editar</button></td>
+                                        <td>
+                                          <router-link to="/salas/detalhe" class="btn btn-sm btn-outline-light">
+                                            Visualizar
+                                          </router-link>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
-                  </div>
             </div>
           </div>
         </div>
@@ -47,6 +60,8 @@
     </div>
   </div>
 </template>
+
+
 
 <script lang="ts">
 import { defineComponent } from 'vue'
