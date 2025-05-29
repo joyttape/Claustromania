@@ -24,6 +24,7 @@
                     <router-link to="/salas" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Salas</router-link>
                     <router-link to="/funcionarios" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Funcionários</router-link>
                     <router-link to="/unidades" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Unidades</router-link>
+                    <router-link to="/jogos" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Jogos</router-link>
                 </div>
             </nav>
         </div>

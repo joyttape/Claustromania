@@ -13,6 +13,8 @@ import FormUnidades from '@/components/layout/unidades/FormUnidades.vue'
 import FuncionariosDetail from '@/components/layout/Funcionarios/FuncionariosDetail.vue'
 import ClientesDetail from '@/components/layout/Clientes/ClientesDetail.vue'
 import UnidadesDetail from '@/components/layout/unidades/UnidadesDetail.vue'
+import Jogos from '@/components/layout/Jogos/Jogos.vue'
+import JogosForm from '@/components/layout/Jogos/JogosForm.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -87,6 +89,16 @@ const router = createRouter({
       name: "DetalhesUni",
       component: UnidadesDetail
     },
+    {
+      path: '/jogos',
+      name: 'Jogos',
+      component: Jogos
+    },
+    {
+     path: '/jogos/form',
+     name: 'FormJogos',
+     component: JogosForm
+    }
     
 
   ]
