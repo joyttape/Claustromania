@@ -15,6 +15,10 @@ import ClientesDetail from '@/components/layout/Clientes/ClientesDetail.vue'
 import UnidadesDetail from '@/components/layout/unidades/UnidadesDetail.vue'
 import Jogos from '@/components/layout/Jogos/Jogos.vue'
 import JogosForm from '@/components/layout/Jogos/JogosForm.vue'
+import SalasForm from '@/components/layout/salas/SalasForm.vue'
+import Reservas from '@/components/layout/Reservas/Reservas.vue'
+import ReservasForm from '@/components/layout/Reservas/ReservasForm.vue'
+import ReservasDetail from '@/components/layout/Reservas/ReservasDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -98,9 +102,29 @@ const router = createRouter({
      path: '/jogos/form',
      name: 'FormJogos',
      component: JogosForm
-    }
-    
+    },
+    {
+     path: '/salas/form',
+     name: 'FormSalas',
+     component: SalasForm
+    },
+    {
+     path: '/reservas',
+     name: 'Reservas',
+     component: Reservas
+    },
+    {
+     path: '/reservas/form',
+     name: 'FormReservas',
+     component: ReservasForm
+    },
+    {
+      path: '/reservas/detalhe',
+      name: "DetalhesReserva",
+      component: ReservasDetail
+    },
 
+    
   ]
 })
 

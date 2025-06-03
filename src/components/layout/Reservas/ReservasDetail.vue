@@ -26,30 +26,30 @@
                   <div class="row mb-3">
                     <div class="col-md-4">
                       <label class="form-label">ID</label>
-                      <input type="text" class="form-control" v-model="reserva.id" readonly />
+                      <input type="text" class="form-control" v-model="reserva.id"/>
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Cliente</label>
-                      <input type="text" class="form-control" v-model="reserva.cliente" readonly />
+                      <input type="text" class="form-control" v-model="reserva.cliente"/>
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Data</label>
-                      <input type="date" class="form-control" v-model="reserva.data" readonly />
+                      <input type="date" class="form-control" v-model="reserva.data" />
                     </div>
                   </div>
 
                   <div class="row mb-3">
                     <div class="col-md-4">
                       <label class="form-label">Sala</label>
-                      <input type="text" class="form-control" v-model="reserva.sala" readonly />
+                      <input type="text" class="form-control" v-model="reserva.sala" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Jogos</label>
-                      <input type="text" class="form-control" v-model="reserva.jogos" readonly />
+                      <input type="text" class="form-control" v-model="reserva.jogos" />
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Valor</label>
-                      <input type="text" class="form-control" v-model="reserva.valor" readonly />
+                      <input type="text" class="form-control" v-model="reserva.valor" />
                     </div>
                   </div>
 
@@ -98,7 +98,7 @@ const reserva = reactive({
 })
 
 const salvarAlteracoes = () => {
-  alert("Status da reserva atualizado! (simulação)")
+  alert("Reserva atualizada! (simulação)")
   console.log("Reserva atualizada:", reserva)
 }
 

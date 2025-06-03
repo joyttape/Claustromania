@@ -17,14 +17,38 @@
                 </div>
                 <div class="navbar-nav w-100">
 
-                    <router-link to="/blank" class="nav-item nav-link"><i class="fa fa-tachometer-alt me-2"></i>Relatórios</router-link>
-                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Reservas</a>
-                    <router-link to="/clientes" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Jogadores</router-link>
-                    <a href="form.html" class="nav-item nav-link"><i class="fa fa-keyboard me-2"></i>Caixa</a>
-                    <router-link to="/salas" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Salas</router-link>
-                    <router-link to="/funcionarios" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Funcionários</router-link>
-                    <router-link to="/unidades" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Unidades</router-link>
-                    <router-link to="/jogos" class="nav-item nav-link"><i class="fa fa-th me-2"></i>Jogos</router-link>
+                        <router-link to="/blank" class="nav-item nav-link">
+                        <i class="fa fa-chart-line me-2"></i>Relatórios
+                        </router-link>
+
+                        <router-link to="/reservas" class="nav-item nav-link">
+                        <i class="fa fa-calendar-check me-2"></i>Reservas
+                        </router-link>
+
+                        <router-link to="/clientes" class="nav-item nav-link">
+                        <i class="fa fa-users me-2"></i>Jogadores
+                        </router-link>
+
+                        <a href="form.html" class="nav-item nav-link">
+                        <i class="fa fa-cash-register me-2"></i>Caixa
+                        </a>
+
+                        <router-link to="/salas" class="nav-item nav-link">
+                        <i class="fa fa-door-open me-2"></i>Salas
+                        </router-link>
+
+                        <router-link to="/funcionarios" class="nav-item nav-link">
+                        <i class="fa fa-user-tie me-2"></i>Funcionários
+                        </router-link>
+
+                        <router-link to="/unidades" class="nav-item nav-link">
+                        <i class="fa fa-building me-2"></i>Unidades
+                        </router-link>
+
+                        <router-link to="/jogos" class="nav-item nav-link">
+                        <i class="fa fa-puzzle-piece me-2"></i>Jogos
+                        </router-link>
+
                 </div>
             </nav>
         </div>

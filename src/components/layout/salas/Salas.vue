@@ -14,7 +14,7 @@
         <div class="container-fluid pt-4 px-4">
           <div class="row bg-secondary rounded mx-0 p-4">
             <h2 class="mb-4">Salas</h2>
- 
+
             <div class="d-flex justify-content-between align-items-center mb-4">
               <input
                 type="text"
@@ -26,40 +26,49 @@
               </router-link>
             </div>
 
-           
             <div class="table-responsive">
               <table class="table table-hover text-white">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">iD</th>
-                                        <th scope="col">Número</th>
-                                        <th scope="col">Capacidade Jogadores</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(salas, index) in listasalas" :key="index">
-                                        <th scope="row">{{ salas.id }}</th>
-                                        <td>{{ salas.Numero }}</td>
-                                        <td>{{ salas.Jogadores }}</td>
-                                        <td>{{ salas.Status ? 'Ativo' : 'Inativo'}}</td>
-                                        <td>
-                                          <router-link to="/salas/detalhe" class="btn btn-sm btn-outline-light">
-                                            Visualizar
-                                          </router-link>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                <thead>
+                  <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Número</th>
+                    <th scope="col">Capacidade Jogadores</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Jogos</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(sala, index) in listasalas" :key="index">
+                    <th scope="row">{{ sala.id }}</th>
+                    <td>{{ sala.Numero }}</td>
+                    <td>{{ sala.Jogadores }}</td>
+                    <td>{{ sala.Status ? 'Ativo' : 'Inativo' }}</td>
+                    <td>
+                      <ul class="mb-0 ps-3">
+                        <li v-for="jogo in sala.Jogos" :key="jogo.id">
+                          {{ jogo.NomeJogo }}
+                        </li>
+                      </ul>
+                    </td>
+                    <td>
+                      <router-link to="/salas/detalhe" class="btn btn-sm btn-outline-light">
+                        Visualizar
+                      </router-link>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
+
         <FooterBarVue />
       </div>
     </div>
   </div>
 </template>
+
 
 
 
@@ -78,6 +87,7 @@ export default defineComponent({
       Numero: string;
       Jogadores: number;
       Status: boolean;
+       Jogos: Array<{ id: number; NomeJogo: string }>;
     }>
   }
   },
@@ -88,28 +98,44 @@ export default defineComponent({
           id: 1,
           Numero: "0001",
           Jogadores: 10,
-          Status: false
+          Status: false,
+          Jogos: [
+        { id: 1, NomeJogo: 'Mistério no Museu' },
+        { id: 2, NomeJogo: 'O Cofre Secreto' }
+          ]
         });
 
         this.listasalas.push({
           id: 2,
           Numero: "0002",
           Jogadores: 20,
-          Status: true
+          Status: true,
+          Jogos: [
+        { id: 1, NomeJogo: 'Mistério no Museu' },
+        { id: 2, NomeJogo: 'O Cofre Secreto' }
+          ]
         });
 
         this.listasalas.push({
           id: 3,
           Numero: "0003",
           Jogadores: 12,
-          Status: false
+          Status: false,
+          Jogos: [
+        { id: 1, NomeJogo: 'Mistério no Museu' },
+        { id: 2, NomeJogo: 'O Cofre Secreto' }
+          ]
         });
 
         this.listasalas.push({
           id: 4,
           Numero: "0004",
           Jogadores: 6,
-          Status: true
+          Status: true,
+          Jogos: [
+        { id: 1, NomeJogo: 'Mistério no Museu' },
+        { id: 2, NomeJogo: 'O Cofre Secreto' }
+          ]
         });
         
     }
