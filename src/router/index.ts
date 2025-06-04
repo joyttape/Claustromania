@@ -19,6 +19,8 @@ import SalasForm from '@/components/layout/salas/SalasForm.vue'
 import Reservas from '@/components/layout/Reservas/Reservas.vue'
 import ReservasForm from '@/components/layout/Reservas/ReservasForm.vue'
 import ReservasDetail from '@/components/layout/Reservas/ReservasDetail.vue'
+import SalasDetail from '@/components/layout/salas/SalasDetail.vue'
+import JogosDetail from '@/components/layout/Jogos/JogosDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -123,6 +125,17 @@ const router = createRouter({
       name: "DetalhesReserva",
       component: ReservasDetail
     },
+    {
+     path: '/salas/detalhe',
+     name: 'DetalhesSala',
+     component: SalasDetail
+    },
+    {
+     path: '/jogos/detalhe',
+     name: 'DetalhesJogo',
+     component: JogosDetail
+    },
+
 
     
   ]

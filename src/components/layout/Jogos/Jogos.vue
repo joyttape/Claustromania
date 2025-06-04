@@ -48,7 +48,7 @@
                     <td>{{ unidades.Dificuldade }}</td>
                     <td>{{ unidades.Preco }}</td>
                     <td>
-                      <router-link to="/jogos/form" class="btn btn-sm btn-outline-light">
+                      <router-link to="/jogos/detalhe" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>

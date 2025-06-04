@@ -44,7 +44,7 @@
                       <input type="text" class="form-control" v-model="reserva.sala" />
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label">Jogos</label>
+                      <label class="form-label">Jogo</label>
                       <input type="text" class="form-control" v-model="reserva.jogos" />
                     </div>
                     <div class="col-md-4">
@@ -93,7 +93,7 @@ const reserva = reactive({
   data: '2025-06-03',
   status: 'pendente',
   sala: 'Sala 01',
-  jogos: 'Mistério Sombrio, Labirinto Perdido',
+  jogos: 'Mistério Sombrio',
   valor: 'R$ 180,00'
 })
 

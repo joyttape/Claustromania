@@ -86,7 +86,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
-// Simulações de salas e jogos
+
 const salas = ref([
   { id: 1, nome: 'Sala 01' },
   { id: 2, nome: 'Sala 02' },

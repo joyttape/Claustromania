@@ -12,9 +12,9 @@
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-                <h6 class="mb-4">Cadastro de Sala</h6>
+                <h6 class="mb-4">Detalhes Sala</h6>
 
-                <form @submit.prevent="cadastrarSala">
+                <form @submit.prevent="salvarAlteracoes">
                   <div class="row mb-3">
                     <div class="col-md-6">
                       <label for="numero" class="form-label">Número da Sala</label>
@@ -59,7 +59,10 @@
                     <small class="text-light">Use Ctrl (Windows) ou Cmd (Mac) para selecionar vários jogos.</small>
                   </div>
 
-                  <button type="submit" class="btn btn-primary">Salvar</button>
+                  <div class="d-flex justify-content-start">
+                    <button type="submit" class="btn btn-success me-2">Salvar</button>
+                    <button type="button" class="btn btn-danger" @click="cancelarAlteracoes">Cancelar</button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -82,13 +85,13 @@ import FooterBarVue from '@/components/layout/FooterBar.vue'
 const sala = reactive({
   Numero: '',
   Jogadores: '',
-  JogosIds: [] as number[]
+  JogosIds: [] as number[] 
 })
 
 const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
 
 onMounted(() => {
- 
+  
   listaJogos.value = [
     { id: 1, NomeJogo: 'Mistério no Museu' },
     { id: 2, NomeJogo: 'Laboratório do Tempo' },
@@ -96,17 +99,16 @@ onMounted(() => {
   ]
 })
 
-const cadastrarSala = () => {
-  console.log('Sala cadastrada:', sala)
-  alert(`Sala ${sala.Numero} cadastrada com sucesso!`)
-  limparFormulario()
+const salvarAlteracoes = () => {
+  alert("Sala atualizada! (simulação)")
+  console.log("Sala atualizada:", sala)
 }
 
-const limparFormulario = () => {
-  Object.assign(sala, {
-    Numero: '',
-    Jogadores: '',
-    JogosIds: []
-  })
+const cancelarAlteracoes = () => {
+  if (confirm("Tem certeza que deseja cancelar as alterações?")) {
+    alert("Alterações canceladas! (simulação)")
+  }
 }
+
+
 </script>
