@@ -14,7 +14,7 @@
                             <img class="rounded-circle me-lg-2" src="../imgs/adm.jpg" alt="" style="width: 40px; height: 40px;">
                             <span class="d-none d-lg-inline-flex">João Pedro</span>
                         </a>
-                        <div class="dropdown-menu dropdown-menu-end bg-dark border-0 rounded-0 rounded-bottom">
+                        <div class="dropdown-menu dropdown-menu-end border-0 rounded-0 rounded-bottom">
                             <router-link to="/funcionarios/detalhe" class="dropdown-item">
                                 Meu Perfil
                             </router-link>

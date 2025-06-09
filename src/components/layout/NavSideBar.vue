@@ -29,9 +29,9 @@
                         <i class="fa fa-users me-2"></i>Jogadores
                         </router-link>
 
-                        <a href="form.html" class="nav-item nav-link">
+                        <router-link to="/caixa" class="nav-item nav-link">
                         <i class="fa fa-cash-register me-2"></i>Caixa
-                        </a>
+                        </router-link>
 
                         <router-link to="/salas" class="nav-item nav-link">
                         <i class="fa fa-door-open me-2"></i>Salas

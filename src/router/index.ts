@@ -21,6 +21,9 @@ import ReservasForm from '@/components/layout/Reservas/ReservasForm.vue'
 import ReservasDetail from '@/components/layout/Reservas/ReservasDetail.vue'
 import SalasDetail from '@/components/layout/salas/SalasDetail.vue'
 import JogosDetail from '@/components/layout/Jogos/JogosDetail.vue'
+import Caixa from '@/components/layout/Caixa/Caixa.vue'
+import FormCaixa from '@/components/layout/Caixa/FormCaixa.vue'
+import { Form } from 'react-router-dom'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -135,6 +138,16 @@ const router = createRouter({
      name: 'DetalhesJogo',
      component: JogosDetail
     },
+    {
+      path: '/caixa',
+      name: 'Caixa',
+      component: Caixa
+    },
+    {
+      path: '/caixa/form',
+      name: 'FormCaixa',
+      component: FormCaixa
+    }
 
 
     
