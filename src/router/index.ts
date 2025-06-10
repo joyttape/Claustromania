@@ -23,6 +23,9 @@ import SalasDetail from '@/components/layout/salas/SalasDetail.vue'
 import JogosDetail from '@/components/layout/Jogos/JogosDetail.vue'
 import Caixa from '@/components/layout/Caixa/Caixa.vue'
 import FormCaixa from '@/components/layout/Caixa/FormCaixa.vue'
+import CaixaDetail from '@/components/layout/Caixa/CaixaDetail.vue'
+import Relatorios from '@/components/layout/Relatórios/Relatorios.vue'
+
 import { Form } from 'react-router-dom'
 
 const router = createRouter({
@@ -147,6 +150,21 @@ const router = createRouter({
       path: '/caixa/form',
       name: 'FormCaixa',
       component: FormCaixa
+    },
+    {
+      path: '/caixa/form',
+      name: 'FormCaixa',
+      component: FormCaixa
+    },
+    {
+      path: '/caixa/detalhe',
+      name: 'CaixaDetalhe',
+      component: CaixaDetail
+    },
+    {
+      path: '/relatorios',
+      name: 'Relatorios',
+      component: Relatorios
     }
 
 

@@ -17,7 +17,7 @@
                 </div>
                 <div class="navbar-nav w-100">
 
-                        <router-link to="/blank" class="nav-item nav-link">
+                        <router-link to="/relatorios" class="nav-item nav-link">
                         <i class="fa fa-chart-line me-2"></i>Relatórios
                         </router-link>
 

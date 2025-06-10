@@ -96,7 +96,6 @@ const handleLogin = () => {
       senha: senha.value,
       lembrar: lembrar.value,
     })
-    // Exemplo de redirecionamento após login
     router.push('/blank')
   }
 }

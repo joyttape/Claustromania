@@ -52,7 +52,7 @@
                     <td>{{ caixa.Status }}</td>
                     <td>{{ caixa.fk_Funcionario_Id }}</td>
                     <td>
-                      <router-link :to="`/caixas/${caixa.Id}`" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/caixa/detalhe`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
