@@ -42,13 +42,13 @@
                 <tbody>
                   <tr v-for="(jogador, index) in listaclientes" :key="index">
                     <th scope="row">{{ jogador.id }}</th>
-                    <td>{{ jogador.Nome }}</td>
-                    <td>{{ jogador.CPF }}</td>
-                    <td>{{ jogador.Sexo }}</td>
-                    <td>{{ jogador.Data }}</td>
-                    <td>{{ jogador.Email }}</td>
+                    <td>{{ jogador.nome }}</td>
+                    <td>{{ jogador.cpf }}</td>
+                    <td>{{ jogador.sexo }}</td>
+                    <td>{{ formatarData(jogador.dataNascimento) }}</td>
+                    <td>{{ jogador.email }}</td>
                     <td>
-                      <router-link to="/clientes/detalhe" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/clientes/detalhe/${jogador.id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -65,80 +65,73 @@
   </div>
 </template>
 
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Clientes',
   data() {
-  return {
-    listaclientes: [] as Array<{
-      id: number;
-      Nome: string;
-      CPF: string;
-      Sexo: string;
-      Data: string;
-      Email: string;
-    }>
-  }
-  },
-
-  methods:{
-    buscarClientes(){
-        this.listaclientes.push({
-        id: 1,
-        Nome: "Marcos Silva Rocha",
-        CPF: "123.456.789-01",
-        Sexo: "Masculino",
-        Data: "05/08/1995",
-        Email: "marcos.rocha@email.com"
-        });
-
-        this.listaclientes.push({
-        id: 2,
-        Nome: "Ana Carolina Mendes",
-        CPF: "987.654.321-00",
-        Sexo: "Feminino",
-        Data: "22/11/2000",
-        Email: "ana.mendes@email.com"
-        });
-
-        this.listaclientes.push({
-        id: 3,
-        Nome: "Rafael Pereira Costa",
-        CPF: "456.123.789-34",
-        Sexo: "Masculino",
-        Data: "15/03/1998",
-        Email: "rafael.costa@email.com"
-        });
-
-        this.listaclientes.push({
-        id: 4,
-        Nome: "Juliana Santos Oliveira",
-        CPF: "321.654.987-99",
-        Sexo: "Feminino",
-        Data: "30/07/1992",
-        Email: "juliana.oliveira@email.com"
-        });
-        
+    return {
+      listaclientes: [] as Array<{
+        id: string
+        nome: string
+        cpf: string
+        sexo: string
+        dataNascimento: string
+        email: string
+      }>
     }
   },
+
+  methods: {
+    async buscarClientes() {
+      try {
+        const response = await axios.get('http://localhost:3000/clientes', {
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': '69420'
+          }
+        })
+
+        if (response.status === 200) {
+          this.listaclientes = response.data.map((item: any) => ({
+            id: item.id,
+            nome: item.Nome || item.nome || '',
+            cpf: item.CPF || item.cpf || '',
+            sexo: item.Sexo || item.sexo || '',
+            dataNascimento: item.Data || item.dataNascimento || '',
+            email: item.Email || item.email || ''
+          }))
+        }
+      } catch (error) {
+        console.error('Erro ao buscar clientes:', error)
+      }
+    },
+
+    formatarData(dataISO: string): string {
+      if (!dataISO) return ''
+      const [ano, mes, dia] = dataISO.split('-')
+      return `${dia}/${mes}/${ano}`
+    }
+  },
+
   components: {
     NavHeaderBarVue,
     NavSideBarVue,
     FooterBarVue
   },
+
   mounted() {
     const script = document.createElement('script')
     script.src = '/src/components/js/maincode.js'
     script.async = true
     document.body.appendChild(script)
 
-    this.buscarClientes();
+    this.buscarClientes()
   }
 })
 </script>

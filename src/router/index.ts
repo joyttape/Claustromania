@@ -92,7 +92,7 @@ const router = createRouter({
       component: FuncionariosDetail
     },
     {
-      path: '/clientes/detalhe',
+      path: '/clientes/detalhe/:id',
       name: "DetalhesCli",
       component: ClientesDetail
     },
