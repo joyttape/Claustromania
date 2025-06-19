@@ -67,6 +67,11 @@ const router = createRouter({
       component: Funcionarios
     },
     {
+      path: '/funcionarios/detalhe/:id',
+      name: 'DetalhesFunc',
+      component: FuncionariosDetail
+    },
+    {
       path: '/clientes',
       name: "Clientes",
       component: Clientes
@@ -85,11 +90,6 @@ const router = createRouter({
       path: '/unidades/form',
       name: "CadastroUnidade",
       component: FormUnidades
-    },
-    {
-      path: '/funcionarios/detalhe',
-      name: 'DetalhesFunc',
-      component: FuncionariosDetail
     },
     {
       path: '/clientes/detalhe/:id',
@@ -132,7 +132,7 @@ const router = createRouter({
       component: ReservasDetail
     },
     {
-     path: '/salas/detalhe',
+     path: '/salas/detalhe/:id',
      name: 'DetalhesSala',
      component: SalasDetail
     },

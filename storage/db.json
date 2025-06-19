@@ -1,22 +1,6 @@
 {
   "clientes": [
     {
-      "id": "a2d4q5",
-      "Nome": "João Pedro Gundim Guimarães",
-      "CPF": "03550313292",
-      "Data": "2005-03-05",
-      "Sexo": "feminino",
-      "Email": "joaopedrogundimg@gmail.com",
-      "Nivel": "Experiente",
-      "Logradouro": "Afdvdsvd",
-      "Numero": "vdvds",
-      "Complemento": "vsdvds",
-      "Bairro": "vdsvds",
-      "Cidade": "vdvdvd",
-      "Estado": "RO",
-      "CEP": "dsvdvds"
-    },
-    {
       "nome": "vfvfdb",
       "cpf": "621626233262",
       "dataNascimento": "3212-02-05",
@@ -34,23 +18,6 @@
       "id": "cx5jd7"
     },
     {
-      "id": "t35ffv",
-      "nome": "João Pedro Gundim Guimarães",
-      "cpf": "03550313292",
-      "dataNascimento": "2005-03-05",
-      "sexo": "feminino",
-      "email": "joaopedrogundimg@gmail.com",
-      "nivel": "Experiente",
-      "logradouro": "Afdvdsvd",
-      "numero": "vdvds",
-      "complemento": "vsdvds",
-      "bairro": "vdsvds",
-      "cidade": "vdvdvd",
-      "estado": "RO",
-      "cep": "dsvdvds"
-    },
-    {
-      "id": "pas77t",
       "nome": "Camila",
       "cpf": "161262132313151",
       "dataNascimento": "2005-03-05",
@@ -63,7 +30,107 @@
       "bairro": "vdsvds",
       "cidade": "vdvdvd",
       "estado": "RO",
-      "cep": "dsvdvds"
+      "cep": "dsvdvds",
+      "foto": {},
+      "id": "pas77t"
+    }
+  ],
+  "salas": [
+    {
+      "Numero": "0001",
+      "Jogadores": 15,
+      "Status": false,
+      "Jogos": [
+        {
+          "id": 1,
+          "NomeJogo": "Mistério no Museu"
+        },
+        {
+          "id": 2,
+          "NomeJogo": "Laboratório do Tempo"
+        }
+      ],
+      "id": "1"
+    },
+    {
+      "Numero": "0002",
+      "Jogadores": 8,
+      "Status": false,
+      "Jogos": [
+        {
+          "id": 2,
+          "NomeJogo": "Laboratório do Tempo"
+        }
+      ],
+      "id": "2"
+    },
+    {
+      "id": "95076",
+      "Numero": "26215",
+      "Jogadores": 1,
+      "Status": false,
+      "Jogos": [
+        {
+          "id": 3,
+          "NomeJogo": "O Segredo do Cofre"
+        }
+      ]
+    },
+    {
+      "Numero": "123",
+      "Jogadores": 20,
+      "Status": true,
+      "Jogos": [
+        {
+          "id": 3,
+          "NomeJogo": "O Segredo do Cofre"
+        }
+      ],
+      "id": "983"
+    }
+  ],
+  "funcionarios": [
+    {
+      "nome": "João Pedro Gundim Guimarães",
+      "cpf": "03550313292",
+      "dataNascimento": "2602-06-06",
+      "sexo": "masculino",
+      "email": "joaopedrogundimg@gmail.com",
+      "cargo": "sss",
+      "salario": 11222,
+      "dataContratacao": "8162-05-06",
+      "turno": "tarde",
+      "status": false,
+      "logradouro": "Afdvdsvd",
+      "numero": "vdvds",
+      "complemento": "vsdvds",
+      "bairro": "vdsvds",
+      "cidade": "vdvdvd",
+      "estado": "RO",
+      "cep": "dsvdvds",
+      "foto": null,
+      "id": "g18npn"
+    },
+    {
+      "nome": "vfvfdb",
+      "cpf": "03550313292",
+      "dataNascimento": "1262-06-05",
+      "sexo": "masculino",
+      "email": "joaopedrogundimgg@gmail.com",
+      "cargo": "Game Master",
+      "salario": 26220,
+      "dataContratacao": "6565-03-05",
+      "turno": "noite",
+      "status": false,
+      "logradouro": "Afdvdsvd",
+      "numero": "vdvds",
+      "complemento": "vsdvds",
+      "bairro": "vdsvds",
+      "cidade": "vdvdvd",
+      "estado": "PB",
+      "cep": "dsvdvds",
+      "foto": null,
+      "id": "f1zsus"
     }
   ]
 }

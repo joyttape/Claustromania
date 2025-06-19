@@ -17,46 +17,59 @@
                 <form @submit.prevent="cadastrarSala">
                   <div class="row mb-3">
                     <div class="col-md-6">
-                      <label for="numero" class="form-label">Número da Sala</label>
+                      <label class="form-label">Número da Sala</label>
                       <input
                         type="text"
                         class="form-control"
-                        id="numero"
                         v-model="sala.Numero"
-                        required
+                        :class="{ 'is-invalid': v$.Numero.$error }"
                       />
+                      <div class="invalid-feedback" v-if="v$.Numero.$error">
+                        Campo obrigatório.
+                      </div>
                     </div>
 
                     <div class="col-md-6">
-                      <label for="jogadores" class="form-label">Capacidade de Jogadores</label>
+                      <label class="form-label">Capacidade de Jogadores</label>
                       <input
                         type="number"
                         class="form-control"
-                        id="jogadores"
-                        v-model="sala.Jogadores"
-                        required
+                        v-model.number="sala.Jogadores"
+                        :class="{ 'is-invalid': v$.Jogadores.$error }"
                       />
+                      <div class="invalid-feedback" v-if="v$.Jogadores.$error">
+                        Deve ser um número maior que 0.
+                      </div>
                     </div>
                   </div>
 
                   <div class="mb-3">
-                    <label for="jogos" class="form-label">Jogos Associados</label>
+                    <label class="form-label">Status</label>
+                    <select class="form-select" v-model="sala.Status">
+                      <option :value="true">Ativo</option>
+                      <option :value="false">Inativo</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label">Jogos Associados</label>
                     <select
-                      id="jogos"
                       class="form-select"
                       multiple
-                      v-model="sala.JogosIds"
-                      required
+                      v-model="sala.JogosSelecionados"
+                      :class="{ 'is-invalid': v$.JogosSelecionados.$error }"
                     >
                       <option
                         v-for="jogo in listaJogos"
                         :key="jogo.id"
-                        :value="jogo.id"
+                        :value="jogo"
                       >
                         {{ jogo.NomeJogo }}
                       </option>
                     </select>
-                    <small class="text-light">Use Ctrl (Windows) ou Cmd (Mac) para selecionar vários jogos.</small>
+                    <div class="invalid-feedback" v-if="v$.JogosSelecionados.$error">
+                      Selecione ao menos um jogo.
+                    </div>
                   </div>
 
                   <button type="submit" class="btn btn-primary">Salvar</button>
@@ -74,21 +87,40 @@
 
 <script setup lang="ts">
 import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minLength, minValue } from '@vuelidate/validators'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+import { Toast } from '@/components/common/toast'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
+// Estado da sala
 const sala = reactive({
   Numero: '',
-  Jogadores: '',
-  JogosIds: [] as number[]
+  Jogadores: null as number | null,
+  Status: true,
+  JogosSelecionados: [] as Array<{ id: number; NomeJogo: string }>
 })
 
+// Lista de jogos
 const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
 
+// Regras de validação
+const rules = {
+  Numero: { required, minLength: minLength(1) },
+  Jogadores: { required, minValue: minValue(1) },
+  JogosSelecionados: { required }
+}
+
+const v$ = useVuelidate(rules, sala)
+
+const router = useRouter()
+
 onMounted(() => {
- 
   listaJogos.value = [
     { id: 1, NomeJogo: 'Mistério no Museu' },
     { id: 2, NomeJogo: 'Laboratório do Tempo' },
@@ -96,17 +128,50 @@ onMounted(() => {
   ]
 })
 
-const cadastrarSala = () => {
-  console.log('Sala cadastrada:', sala)
-  alert(`Sala ${sala.Numero} cadastrada com sucesso!`)
-  limparFormulario()
+const cadastrarSala = async () => {
+  const valid = await v$.value.$validate()
+
+  if (!valid) {
+  Toast.fire({
+    icon: 'error',
+    title: 'Corrija os erros no formulário antes de enviar.',
+  })
+  return
+}
+
+  const dadosParaSalvar = {
+    id: Math.floor(Math.random() * 100000),
+    Numero: sala.Numero,
+    Jogadores: sala.Jogadores,
+    Status: sala.Status,
+    Jogos: sala.JogosSelecionados
+  }
+
+  try {
+    const response = await axios.post('http://localhost:3000/salas', dadosParaSalvar, {
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    if (response.status === 201) {
+      Toast.fire({
+        icon: 'success',
+        title: `Sala ${sala.Numero} cadastrada com sucesso!`,
+      })
+
+      limparFormulario()
+      router.push('/salas')
+    }
+  } catch (error) {
+    console.error('Erro ao cadastrar sala:', error)
+    Swal.fire('Erro', 'Erro ao cadastrar sala.', 'error')
+  }
 }
 
 const limparFormulario = () => {
-  Object.assign(sala, {
-    Numero: '',
-    Jogadores: '',
-    JogosIds: []
-  })
+  sala.Numero = ''
+  sala.Jogadores = null
+  sala.Status = true
+  sala.JogosSelecionados = []
+  v$.value.$reset()
 }
 </script>

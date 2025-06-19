@@ -52,7 +52,7 @@
                       </ul>
                     </td>
                     <td>
-                      <router-link to="/salas/detalhe" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/salas/detalhe/${sala.id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -69,75 +69,48 @@
   </div>
 </template>
 
-
-
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Salas',
   data() {
-  return {
-    listasalas: [] as Array<{
-      id: number;
-      Numero: string;
-      Jogadores: number;
-      Status: boolean;
-       Jogos: Array<{ id: number; NomeJogo: string }>;
-    }>
-  }
+    return {
+      listasalas: [] as Array<{
+        id: number
+        Numero: string
+        Jogadores: number
+        Status: boolean
+        Jogos: Array<{ id: number; NomeJogo: string }>
+      }>
+    }
   },
+  methods: {
+    async buscarSalas() {
+      try {
+        const response = await axios.get('http://localhost:3000/salas', {
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': '69420'
+          }
+        })
 
-  methods:{
-    buscarSalas(){
-        this.listasalas.push({
-          id: 1,
-          Numero: "0001",
-          Jogadores: 10,
-          Status: false,
-          Jogos: [
-        { id: 1, NomeJogo: 'Mistério no Museu' },
-        { id: 2, NomeJogo: 'O Cofre Secreto' }
-          ]
-        });
-
-        this.listasalas.push({
-          id: 2,
-          Numero: "0002",
-          Jogadores: 20,
-          Status: true,
-          Jogos: [
-        { id: 1, NomeJogo: 'Mistério no Museu' },
-        { id: 2, NomeJogo: 'O Cofre Secreto' }
-          ]
-        });
-
-        this.listasalas.push({
-          id: 3,
-          Numero: "0003",
-          Jogadores: 12,
-          Status: false,
-          Jogos: [
-        { id: 1, NomeJogo: 'Mistério no Museu' },
-        { id: 2, NomeJogo: 'O Cofre Secreto' }
-          ]
-        });
-
-        this.listasalas.push({
-          id: 4,
-          Numero: "0004",
-          Jogadores: 6,
-          Status: true,
-          Jogos: [
-        { id: 1, NomeJogo: 'Mistério no Museu' },
-        { id: 2, NomeJogo: 'O Cofre Secreto' }
-          ]
-        });
-        
+        if (response.status === 200) {
+          this.listasalas = response.data.map((item: any) => ({
+            id: item.id,
+            Numero: item.Numero || '',
+            Jogadores: item.Jogadores || 0,
+            Status: item.Status || false,
+            Jogos: item.Jogos || []
+          }))
+        }
+      } catch (error) {
+        console.error('Erro ao buscar salas:', error)
+      }
     }
   },
   components: {
@@ -151,7 +124,7 @@ export default defineComponent({
     script.async = true
     document.body.appendChild(script)
 
-    this.buscarSalas();
+    this.buscarSalas()
   }
 })
 </script>
