@@ -120,12 +120,24 @@ const v$ = useVuelidate(rules, sala)
 
 const router = useRouter()
 
-onMounted(() => {
-  listaJogos.value = [
-    { id: 1, NomeJogo: 'Mistério no Museu' },
-    { id: 2, NomeJogo: 'Laboratório do Tempo' },
-    { id: 3, NomeJogo: 'O Segredo do Cofre' }
-  ]
+onMounted(async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/jogos', {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (response.status === 200) {
+      listaJogos.value = response.data.map((jogo: any) => ({
+        id: jogo.id,
+        NomeJogo: jogo.NomeJogo
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao buscar jogos:', error)
+    Swal.fire('Erro', 'Não foi possível carregar os jogos.', 'error')
+  }
 })
 
 const cadastrarSala = async () => {

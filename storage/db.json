@@ -42,12 +42,16 @@
       "Status": false,
       "Jogos": [
         {
-          "id": 1,
-          "NomeJogo": "Mistério no Museu"
+          "id": "1",
+          "NomeJogo": "O Mistério da Mansão Abandonada"
         },
         {
-          "id": 2,
-          "NomeJogo": "Laboratório do Tempo"
+          "id": "8862",
+          "NomeJogo": "Hora de aventura"
+        },
+        {
+          "id": "8bdb",
+          "NomeJogo": "Divertidamente"
         }
       ],
       "id": "1"
@@ -87,6 +91,18 @@
         }
       ],
       "id": "983"
+    },
+    {
+      "id": 77039,
+      "Numero": "32343",
+      "Jogadores": 30,
+      "Status": true,
+      "Jogos": [
+        {
+          "id": "8862",
+          "NomeJogo": "Hora de aventura"
+        }
+      ]
     }
   ],
   "funcionarios": [
@@ -100,7 +116,7 @@
       "salario": 11222,
       "dataContratacao": "8162-05-06",
       "turno": "tarde",
-      "status": false,
+      "status": true,
       "logradouro": "Afdvdsvd",
       "numero": "vdvds",
       "complemento": "vsdvds",
@@ -109,6 +125,7 @@
       "estado": "RO",
       "cep": "dsvdvds",
       "foto": null,
+      "senha": "12345",
       "id": "g18npn"
     },
     {
@@ -121,7 +138,7 @@
       "salario": 26220,
       "dataContratacao": "6565-03-05",
       "turno": "noite",
-      "status": false,
+      "status": true,
       "logradouro": "Afdvdsvd",
       "numero": "vdvds",
       "complemento": "vsdvds",
@@ -131,6 +148,77 @@
       "cep": "dsvdvds",
       "foto": null,
       "id": "f1zsus"
+    },
+    {
+      "nome": "Gilberto",
+      "cpf": "03550313292",
+      "dataNascimento": "1262-06-05",
+      "sexo": "masculino",
+      "email": "gilberto@gmail.com",
+      "cargo": "Gerente",
+      "salario": 26220,
+      "dataContratacao": "6565-03-05",
+      "turno": "noite",
+      "status": true,
+      "logradouro": "Afdvdsvd",
+      "numero": "vdvds",
+      "complemento": "vsdvds",
+      "bairro": "vdsvds",
+      "cidade": "vdvdvd",
+      "estado": "PB",
+      "cep": "dsvdvds",
+      "foto": null,
+      "senha": "gil",
+      "id": "f1zsus"
+    },
+    {
+      "nome": "Camila",
+      "cpf": "03550313292",
+      "dataNascimento": "2622-06-03",
+      "sexo": "feminino",
+      "email": "camila@gmail.com",
+      "cargo": "Gerente",
+      "salario": 12000,
+      "dataContratacao": "2025-06-05",
+      "turno": "integral",
+      "status": true,
+      "logradouro": "Afdvdsvd",
+      "numero": "vdvds",
+      "complemento": "vsdvds",
+      "bairro": "vdsvds",
+      "cidade": "vdvdvd",
+      "estado": "PR",
+      "cep": "dsvdvds",
+      "foto": null,
+      "id": "a2lkrw",
+      "senha": "camila"
+    }
+  ],
+  "jogos": [
+    {
+      "id": "1",
+      "NomeJogo": "O Mistério da Mansão Abandonada",
+      "Descricao": "Desvende os segredos de uma mansão mal-assombrada onde ninguém sai o mesmo.",
+      "Duracao": "60 minutos",
+      "Dificuldade": "Média",
+      "Preco": 80.5
+    },
+    {
+      "id": "8862",
+      "NomeJogo": "Hora de aventura",
+      "Descricao": "kjbkjbklnklmlçoml",
+      "Duracao": "60 minutos",
+      "Dificuldade": "Fácil",
+      "Preco": 8.05
+    },
+    {
+      "id": "8bdb",
+      "Id": "8dz9id",
+      "NomeJogo": "Divertidamente",
+      "Descricao": "AK D SKC SL CSL CS",
+      "Duracao": "90 minutos",
+      "Dificuldade": "Fácil",
+      "Preco": 60
     }
   ]
 }

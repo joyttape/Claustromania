@@ -47,11 +47,6 @@
 
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Log In</button>
             </form>
-
-            <p class="text-center mb-0">
-              Não possui uma conta?
-              <router-link to="/singup">Crie aqui</router-link>
-            </p>
           </div>
         </div>
       </div>
@@ -63,6 +58,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const email = ref('')
 const senha = ref('')
@@ -73,7 +70,7 @@ const senhaError = ref('')
 
 const router = useRouter()
 
-const handleLogin = () => {
+const handleLogin = async () => {
   emailError.value = ''
   senhaError.value = ''
 
@@ -90,13 +87,62 @@ const handleLogin = () => {
     valid = false
   }
 
-  if (valid) {
-    console.log('Logando com:', {
-      email: email.value,
-      senha: senha.value,
-      lembrar: lembrar.value,
+  if (!valid) return
+
+  try {
+    const response = await axios.get('http://localhost:3000/funcionarios')
+    const funcionarios = response.data
+
+    const funcionario = funcionarios.find(f => f.email === email.value)
+
+    if (!funcionario) {
+      Swal.fire({
+        icon: 'error',
+        title: 'E-mail não encontrado',
+        text: 'Verifique se digitou corretamente ou cadastre-se.',
+      })
+      return
+    }
+
+    if (!funcionario.senha || funcionario.senha.trim() === '') {
+      Swal.fire({
+        icon: 'info',
+        title: 'Senha não cadastrada',
+        text: 'Vamos redirecionar para que você cadastre sua senha.',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        router.push({ path: '/singup', query: { email: email.value } })
+      })
+      return
+    }
+
+    if (funcionario.senha !== senha.value) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Senha incorreta',
+        text: 'Tente novamente.',
+      })
+      return
+    }
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Login realizado com sucesso!',
+      showConfirmButton: false,
+      timer: 1500,
+    }).then(() => {
+      router.push('/reservas')
+      localStorage.setItem('cargoFuncionario', funcionario.cargo)
+      localStorage.setItem('funcionarioId', funcionario.id)
+      localStorage.setItem('funcionarioNome', funcionario.nome)
     })
-    router.push('/blank')
+  } catch (error) {
+    console.error('Erro ao verificar login:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro no login',
+      text: 'Tente novamente mais tarde.',
+    })
   }
 }
 </script>

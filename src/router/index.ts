@@ -137,7 +137,7 @@ const router = createRouter({
      component: SalasDetail
     },
     {
-     path: '/jogos/detalhe',
+     path: '/jogos/detalhe/:id',
      name: 'DetalhesJogo',
      component: JogosDetail
     },

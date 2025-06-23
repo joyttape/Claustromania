@@ -60,25 +60,74 @@
                     </select>
                   </div>
 
-                  <div class="mb-3">
-                    <label for="jogos" class="form-label">Jogos Associados</label>
-                    <select
-                      id="jogos"
-                      class="form-select"
-                      multiple
-                      v-model="sala.JogosIds"
-                      required
-                    >
-                      <option
-                        v-for="jogo in listaJogos"
-                        :key="jogo.id"
-                        :value="jogo.id"
-                      >
-                        {{ jogo.NomeJogo }}
-                      </option>
-                    </select>
-                    <small class="text-light">Use Ctrl (Windows) ou Cmd (Mac) para selecionar vários jogos.</small>
-                  </div>
+                    <div class="mb-3">
+                      <div class="d-flex align-items-center justify-content-between mb-1">
+                        <label for="jogos" class="form-label mb-0">Jogos Associados</label>
+                        <button
+                          v-if="!modoEdicaoJogos"
+                          type="button"
+                          class="btn btn-outline-light btn-sm"
+                          @click="iniciarEdicaoJogos"
+                        >
+                          <i class="fa fa-edit me-1"></i> Adicionar
+                        </button>
+                      </div>
+
+                      <div v-if="!modoEdicaoJogos" class="bg-dark rounded p-2">
+                        <ul class="mb-0">
+                          <li
+                            v-for="nome in nomesJogosSelecionados"
+                            :key="nome"
+                            class="text-light"
+                          >
+                            {{ nome }}
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div v-else>
+                        <select
+                          id="jogos"
+                          class="form-select"
+                          multiple
+                          v-model="sala.JogosIds"
+                          required
+                          size="8"
+                        >
+                          <option
+                            v-for="jogo in listaJogos"
+                            :key="jogo.id"
+                            :value="jogo.id"
+                          >
+                            {{ jogo.NomeJogo }}
+                          </option>
+                        </select>
+                        <small class="text-light"
+                          >Use Ctrl (Windows) ou Cmd (Mac) para selecionar vários
+                          jogos.</small
+                        >
+
+                        <div class="d-flex gap-2 mt-2">
+                          <button
+                            type="button"
+                            class="btn btn-success"
+                            @click="modoEdicaoJogos = false"
+                          >
+                            Confirmar
+                          </button>
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            @click="cancelarEdicaoJogos"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+
+
 
                   <div class="d-flex justify-content-start mt-3">
                     <button type="submit" class="btn btn-success me-2">Salvar</button>
@@ -97,7 +146,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
@@ -110,7 +159,6 @@ const route = useRoute()
 const router = useRouter()
 const salaId = route.params.id as string
 
-// Estado reativo da sala com Status declarado e Jogadores como number
 const sala = reactive({
   Numero: '',
   Jogadores: 0,
@@ -118,17 +166,46 @@ const sala = reactive({
   JogosIds: [] as number[]
 })
 
-// Lista de jogos para preencher select (pode ser dinâmico, fixo aqui para exemplo)
-const listaJogos = ref<{ id: number; NomeJogo: string }[]>([
-  { id: 1, NomeJogo: 'Mistério no Museu' },
-  { id: 2, NomeJogo: 'Laboratório do Tempo' },
-  { id: 3, NomeJogo: 'O Segredo do Cofre' }
-])
+const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
 
-// Carregar sala por ID
+const modoEdicaoJogos = ref(false)
+const jogosSelecionadosAntes = ref<number[]>([])
+
+const iniciarEdicaoJogos = () => {
+  jogosSelecionadosAntes.value = [...sala.JogosIds]
+  modoEdicaoJogos.value = true
+}
+
+const cancelarEdicaoJogos = () => {
+  sala.JogosIds = [...jogosSelecionadosAntes.value]
+  modoEdicaoJogos.value = false
+}
+
+const nomesJogosSelecionados = computed(() => {
+  return listaJogos.value
+    .filter(jogo => sala.JogosIds.includes(jogo.id))
+    .map(jogo => jogo.NomeJogo)
+})
+
+const buscarJogos = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/jogos', {
+      headers: { 'Content-Type': 'application/json' }
+    })
+    if (response.status === 200) {
+      listaJogos.value = response.data.map((jogo: any) => ({
+        id: jogo.id,
+        NomeJogo: jogo.NomeJogo
+      }))
+    }
+  } catch (error) {
+    console.error('Erro ao buscar jogos:', error)
+    Swal.fire('Erro', 'Não foi possível carregar os jogos.', 'error')
+  }
+}
+
 const carregarSala = async () => {
   try {
-    console.log('Carregando sala com ID:', salaId)
     const response = await axios.get(`http://localhost:3000/salas/${salaId}`)
     const data = response.data
 
@@ -146,11 +223,11 @@ const carregarSala = async () => {
   }
 }
 
-// Salvar alterações da sala
 const salvarAlteracoes = async () => {
   try {
-    // Filtrar os objetos de jogos selecionados pelo id
-    const jogosSelecionados = listaJogos.value.filter(jogo => sala.JogosIds.includes(jogo.id))
+    const jogosSelecionados = listaJogos.value.filter(j =>
+      sala.JogosIds.includes(j.id)
+    )
 
     const dadosParaSalvar = {
       Numero: sala.Numero,
@@ -177,7 +254,6 @@ const salvarAlteracoes = async () => {
   }
 }
 
-// Excluir sala
 const excluirSala = async () => {
   const resultado = await Swal.fire({
     title: 'Tem certeza?',
@@ -210,9 +286,10 @@ const excluirSala = async () => {
   }
 }
 
-onMounted(() => {
-  carregarSala()
-  // Se você realmente precisa carregar esse script, mantenha; se não, pode remover.
+onMounted(async () => {
+  await buscarJogos()
+  await carregarSala()
+
   const script = document.createElement('script')
   script.src = '/src/components/js/maincode.js'
   script.async = true

@@ -80,7 +80,7 @@
                 </form>
 
                 <div class="d-flex justify-content-start">
-                    <button type="submit" class="btn btn-success me-2">Salvar</button>
+                    <button type="submit" class="btn btn-success me-2" @click="salvarAlteracoes">Salvar</button>
                     <button type="button" class="btn btn-danger" @click="cancelarAlteracoes">Excluir</button>
                 </div>
 
@@ -96,10 +96,18 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import Swal from 'sweetalert2'
+
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+
+const route = useRoute()
+const router = useRouter()
+const jogoId = route.params.id as string
 
 const jogo = reactive({
   id: 0,
@@ -110,14 +118,9 @@ const jogo = reactive({
   Preco: ''
 })
 
-const bloquearLetras = (event: KeyboardEvent) => {
-  const tecla = event.key
-  
-  if (!/[\d.,]/.test(tecla)) {
-    event.preventDefault()
-  }
-}
+const loading = ref(true)
 
+// Formatação de preço (opcionalmente adaptável com máscara visual)
 const formatarPreco = (event: Event) => {
   const target = event.target as HTMLInputElement
   let valor = target.value.replace(/\D/g, '')
@@ -127,18 +130,99 @@ const formatarPreco = (event: Event) => {
   jogo.Preco = `R$ ${valor}`
 }
 
-const salvarAlteracoes = () => {
-  alert("Jogo atualizado! (simulação)")
-  console.log("Jogo atualizado:", jogo)
-}
-
-const cancelarAlteracoes = () => {
-  if (confirm("Deseja realmente remover este jogo?")) {
-    alert("Jogo deletado! (simulação)")
+const bloquearLetras = (event: KeyboardEvent) => {
+  const tecla = event.key
+  if (!/[\d.,]/.test(tecla)) {
+    event.preventDefault()
   }
 }
 
+const carregarJogo = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get(`http://localhost:3000/jogos/${jogoId}`)
+    const dados = response.data
+
+    jogo.id = dados.id
+    jogo.NomeJogo = dados.NomeJogo || ''
+    jogo.Descricao = dados.Descricao || ''
+    jogo.Duracao = dados.Duracao || ''
+    jogo.Dificuldade = dados.Dificuldade || ''
+    jogo.Preco = dados.Preco || ''
+  } catch (error) {
+    console.error('Erro ao carregar jogo:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao carregar jogo',
+      text: 'Tente novamente mais tarde.',
+    })
+  } finally {
+    loading.value = false
+  }
+}
+
+const salvarAlteracoes = async () => {
+  try {
+    await axios.put(`http://localhost:3000/jogos/${jogoId}`, jogo)
+    await Swal.fire({
+      icon: 'success',
+      title: 'Jogo salvo com sucesso!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'OK',
+    })
+    router.push('/jogos')
+  } catch (error) {
+    console.error('Erro ao salvar jogo:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao salvar!',
+      text: 'Tente novamente mais tarde.',
+    })
+  }
+}
+
+const cancelarAlteracoes = async () => {
+  const resultado = await Swal.fire({
+    title: 'Tem certeza?',
+    text: 'Esta ação não pode ser desfeita.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#aaa',
+    confirmButtonText: 'Sim, excluir',
+    cancelButtonText: 'Cancelar',
+  })
+
+  if (resultado.isConfirmed) {
+    try {
+      await axios.delete(`http://localhost:3000/jogos/${jogoId}`)
+      await Swal.fire({
+        icon: 'success',
+        title: 'Jogo excluído com sucesso!',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'OK',
+      })
+      router.push('/jogos')
+    } catch (error) {
+      console.error('Erro ao excluir jogo:', error)
+      Swal.fire({
+        icon: 'error',
+        title: 'Erro ao excluir!',
+        text: 'Tente novamente mais tarde.',
+      })
+    }
+  }
+}
+
+onMounted(() => {
+  carregarJogo()
+  const script = document.createElement('script')
+  script.src = '/src/components/js/maincode.js'
+  script.async = true
+  document.body.appendChild(script)
+})
 </script>
+
 
 <style scoped>
 textarea {

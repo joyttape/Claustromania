@@ -14,67 +14,86 @@
               <div class="bg-secondary rounded h-100 p-4 text-light">
                 <h6 class="mb-4">Cadastro de Jogo</h6>
 
-                <form @submit.prevent="cadastrarJogo">
+                <form @submit.prevent="cadastrarJogo" novalidate>
                   <div class="row mb-3">
                     <div class="col-md-6">
                       <label for="nomeJogo" class="form-label">Nome do Jogo</label>
                       <input
                         type="text"
-                        class="form-control"
                         id="nomeJogo"
-                        v-model="jogo.NomeJogo"
+                        class="form-control"
+                        v-model="jogo.nome"
+                        :class="{ 'is-invalid': v$.nome.$error }"
                         required
                       />
+                      <div class="invalid-feedback" v-if="v$.nome.$error">
+                        <div v-if="!v$.nome.required">Nome é obrigatório.</div>
+                        <div v-if="!v$.nome.minLength">Mínimo de 3 caracteres.</div>
+                      </div>
                     </div>
 
                     <div class="col-md-6">
                       <label for="duracao" class="form-label">Duração</label>
                       <input
                         type="text"
-                        class="form-control"
                         id="duracao"
+                        class="form-control"
+                        v-model="jogo.duracao"
+                        :class="{ 'is-invalid': v$.duracao.$error }"
                         placeholder="Ex: 60 minutos"
-                        v-model="jogo.Duracao"
                         required
                       />
+                      <div class="invalid-feedback" v-if="v$.duracao.$error">Duração é obrigatória.</div>
                     </div>
                   </div>
 
                   <div class="row mb-3">
                     <div class="col-md-6">
                       <label for="dificuldade" class="form-label">Dificuldade</label>
-                      <select class="form-select" id="dificuldade" v-model="jogo.Dificuldade" required>
-                        <option selected disabled value="">Selecione</option>
+                      <select
+                        id="dificuldade"
+                        class="form-select"
+                        v-model="jogo.dificuldade"
+                        :class="{ 'is-invalid': v$.dificuldade.$error }"
+                        required
+                      >
+                        <option disabled value="">Selecione</option>
                         <option value="Fácil">Fácil</option>
                         <option value="Médio">Médio</option>
                         <option value="Difícil">Difícil</option>
                       </select>
+                      <div class="invalid-feedback" v-if="v$.dificuldade.$error">Dificuldade é obrigatória.</div>
                     </div>
 
                     <div class="col-md-6">
                       <label for="preco" class="form-label">Preço</label>
                       <input
-                        type="text"
-                        class="form-control"
                         id="preco"
-                        v-model="jogo.Preco"
-                        @input="formatarPreco"
-                        @keypress="bloquearLetras"
-                        placeholder="R$ 0,00"
+                        type="text"
+                        inputmode="numeric"
+                        class="form-control"
+                        v-model="precoFormatado"
+                        :class="{ 'is-invalid': v$.preco.$error }"
                         required
                       />
-                    </div>
+                      <div class="invalid-feedback" v-if="v$.preco.$error">
+                        Preço é obrigatório e deve ser um número.
+                      </div>
+                  </div>
+
                   </div>
 
                   <div class="mb-3">
                     <label for="descricao" class="form-label">Descrição</label>
                     <textarea
-                      class="form-control"
                       id="descricao"
+                      class="form-control"
                       rows="4"
-                      v-model="jogo.Descricao"
+                      v-model="jogo.descricao"
+                      :class="{ 'is-invalid': v$.descricao.$error }"
                       required
                     ></textarea>
+                    <div class="invalid-feedback" v-if="v$.descricao.$error">Descrição é obrigatória.</div>
                   </div>
 
                   <button type="submit" class="btn btn-primary">Salvar</button>
@@ -90,55 +109,104 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { reactive } from 'vue'
+<script lang="ts" setup>
+import { reactive, ref, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minLength } from '@vuelidate/validators'
+import axios from 'axios'
+
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { Toast } from '@/components/common/toast'
+
+const router = useRouter()
 
 const jogo = reactive({
-  id: 0,
-  NomeJogo: '',
-  Descricao: '',
-  Duracao: '',
-  Dificuldade: '',
-  Preco: ''
+  nome: '',
+  descricao: '',
+  duracao: '',
+  dificuldade: '',
+  preco: null as number | null,
 })
 
+const precoFormatado = ref('')
 
-const bloquearLetras = (event: KeyboardEvent) => {
-  const tecla = event.key
-  
-  if (!/[\d.,]/.test(tecla)) {
-    event.preventDefault()
+const rules = {
+  nome: { required, minLength: minLength(3) },
+  descricao: { required },
+  duracao: { required },
+  dificuldade: { required },
+  preco: { required },
+}
+
+const v$ = useVuelidate(rules, jogo)
+
+watch(precoFormatado, (valor) => {
+  const apenasNumeros = valor.replace(/\D/g, '')
+  const convertido = parseFloat((parseInt(apenasNumeros || '0') / 100).toFixed(2))
+  jogo.preco = convertido
+})
+
+watch(() => jogo.preco, (valor) => {
+  if (valor !== null) {
+    precoFormatado.value = valor.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+  } else {
+    precoFormatado.value = ''
+  }
+})
+
+async function cadastrarJogo() {
+  const isValid = await v$.value.$validate()
+  if (!isValid) {
+    Toast.fire({ icon: 'error', title: 'Corrija os erros antes de enviar.' })
+    return
+  }
+
+  const dadosEnvio = {
+    Id: Math.random().toString(36).substring(2, 8),
+    NomeJogo: jogo.nome,
+    Descricao: jogo.descricao,
+    Duracao: jogo.duracao,
+    Dificuldade: jogo.dificuldade,
+    Preco: jogo.preco
+  }
+
+  try {
+    const response = await axios.post('http://localhost:3000/jogos', dadosEnvio)
+    if (response.status === 201) {
+      Toast.fire({ icon: 'success', title: `Jogo "${jogo.nome}" cadastrado!` })
+      limparFormulario()
+      router.push('/jogos')
+    }
+  } catch (error) {
+    console.error(error)
+    Toast.fire({ icon: 'error', title: 'Erro ao cadastrar jogo.' })
   }
 }
 
-const formatarPreco = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  let valor = target.value.replace(/\D/g, '')
-
-  valor = (parseInt(valor, 10) / 100).toFixed(2) 
-  valor = valor.replace('.', ',') 
-  jogo.Preco = `R$ ${valor}`
-}
-
-const cadastrarJogo = () => {
-  console.log('Jogo cadastrado:', jogo)
-  alert(`Jogo "${jogo.NomeJogo}" cadastrado com sucesso!`)
-  limparFormulario()
-}
-
-const limparFormulario = () => {
+function limparFormulario() {
   Object.assign(jogo, {
-    id: 0,
-    NomeJogo: '',
-    Descricao: '',
-    Duracao: '',
-    Dificuldade: '',
-    Preco: ''
+    nome: '',
+    descricao: '',
+    duracao: '',
+    dificuldade: '',
+    preco: null
   })
+  precoFormatado.value = ''
+  v$.value.$reset()
 }
+
+onMounted(() => {
+  const script = document.createElement('script')
+  script.src = '/src/components/js/maincode.js'
+  script.async = true
+  document.body.appendChild(script)
+})
 </script>
 
 <style scoped>

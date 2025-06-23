@@ -544,7 +544,6 @@ onMounted(() => {
 </script>
 
 <style>
-/* Use o Bootstrap para o visual, mas este estilo ajuda a mostrar os erros */
 .is-invalid {
   border-color: #dc3545;
 }

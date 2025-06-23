@@ -40,15 +40,15 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(unidades, index) in listajogos" :key="index">
-                    <th scope="row">{{ unidades.id }}</th>
-                    <td>{{ unidades.NomeJogo }}</td>
-                    <td>{{ unidades.Descricao }}</td>
-                    <td>{{ unidades.Duracao }}</td>
-                    <td>{{ unidades.Dificuldade }}</td>
-                    <td>{{ unidades.Preco }}</td>
+                  <tr v-for="(jogo, index) in listajogos" :key="index">
+                    <th scope="row">{{ jogo.id }}</th>
+                    <td>{{ jogo.NomeJogo }}</td>
+                    <td>{{ jogo.Descricao }}</td>
+                    <td>{{ jogo.Duracao }}</td>
+                    <td>{{ jogo.Dificuldade }}</td>
+                    <td>{{ jogo.Preco }}</td>
                     <td>
-                      <router-link to="/jogos/detalhe" class="btn btn-sm btn-outline-light">
+                       <router-link :to="`/jogos/detalhe/${jogo.id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -70,6 +70,7 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Jogos',
@@ -81,49 +82,35 @@ export default defineComponent({
       Descricao: string;
       Duracao: string;
       Dificuldade: string;
-      Preco: string;
+      Preco: number;
     }>
   }
   },
 
   methods:{
-    buscarjogos(){
-        this.listajogos.push(
-  {
-    id: 1,
-    NomeJogo: "O Mistério da Mansão Abandonada",
-    Descricao: "Desvende os segredos de uma mansão mal-assombrada onde ninguém sai o mesmo.",
-    Duracao: "60 minutos",
-    Dificuldade: "Média",
-    Preco: "R$ 80,00"
-  },
-  {
-    id: 2,
-    NomeJogo: "Fuga do Laboratório Secreto",
-    Descricao: "Vocês acordam em um laboratório e precisam escapar antes que o tempo acabe.",
-    Duracao: "75 minutos",
-    Dificuldade: "Alta",
-    Preco: "R$ 95,00"
-  },
-  {
-    id: 3,
-    NomeJogo: "Roubo no Museu",
-    Descricao: "Recupere uma relíquia valiosa antes que os verdadeiros ladrões fujam.",
-    Duracao: "60 minutos",
-    Dificuldade: "Fácil",
-    Preco: "R$ 70,00"
-  },
-  {
-    id: 4,
-    NomeJogo: "Código Nuclear",
-    Descricao: "Evite uma catástrofe mundial ao descobrir o código de desativação de mísseis.",
-    Duracao: "90 minutos",
-    Dificuldade: "Difícil",
-    Preco: "R$ 100,00"
-  }
-);
+    async buscarjogos(){
+      
+      try{
+        const response = await axios.get('http://localhost:3000/jogos',{
+          headers:{
+            'Content-Type': 'application/json',
+            'ngrok-ship-browser-warning': '69420'
+          }
+        })
 
-        
+        if(response.status === 200){
+          this.listajogos = response.data.map((item:any) => ({
+            id: item.id,
+            NomeJogo: item.NomeJogo,
+            Descricao: item.Descricao,
+            Duracao: item.Duracao,
+            Dificuldade: item.Dificuldade,
+            Preco: item.Preco
+          }))
+        }
+      }catch(error){
+        console.error('Eror ao buscar jogos: ', error)
+      }
     }
   },
   components: {

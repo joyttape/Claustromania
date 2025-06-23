@@ -1,35 +1,39 @@
 <template>
 <nav class="navbar navbar-expand bg-secondary navbar-dark sticky-top px-4 py-0">
-                <a href="index.html" class="navbar-brand d-flex d-lg-none me-4">
-                    <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
-                </a>
-                <a href="#" class="sidebar-toggler flex-shrink-0">
-                    <i class="fa fa-bars"></i>
-                </a>
-                
-                <div class="navbar-nav align-items-center ms-auto">
-                    
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
-                            <img class="rounded-circle me-lg-2" src="../imgs/adm.jpg" alt="" style="width: 40px; height: 40px;">
-                            <span class="d-none d-lg-inline-flex">João Pedro</span>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-end border-0 rounded-0 rounded-bottom">
-                            <router-link to="/funcionarios/detalhe" class="dropdown-item">
-                                Meu Perfil
-                            </router-link>
-                            
-                             <router-link to="/" class="dropdown-item">Sair</router-link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+  <a href="index.html" class="navbar-brand d-flex d-lg-none me-4">
+    <h2 class="text-primary mb-0"><i class="fa fa-user-edit"></i></h2>
+  </a>
+  <a href="#" class="sidebar-toggler flex-shrink-0">
+    <i class="fa fa-bars"></i>
+  </a>
+
+  <div class="navbar-nav align-items-center ms-auto">
+
+    <div class="nav-item dropdown">
+      <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+        <img class="rounded-circle me-lg-2" src="../imgs/adm.jpg" alt="" style="width: 40px; height: 40px;">
+        <span class="d-none d-lg-inline-flex">{{ funcionarioNome }}</span>
+      </a>
+      <div class="dropdown-menu dropdown-menu-end border-0 rounded-0 rounded-bottom">
+        <router-link :to="`/funcionarios/detalhe/${funcionarioId}`" class="dropdown-item">
+          Meu Perfil
+        </router-link>
+
+        <router-link to="/" class="dropdown-item">Sair</router-link>
+      </div>
+    </div>
+  </div>
+</nav>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script lang="ts" setup>
+import { ref, onMounted } from 'vue'
 
-export default defineComponent({
-    name: "NavHeaderBar"
-});
+const funcionarioId = ref('')
+const funcionarioNome = ref('')
+
+onMounted(() => {
+  funcionarioId.value = localStorage.getItem('funcionarioId') || ''
+  funcionarioNome.value = localStorage.getItem('funcionarioNome') || 'Usuário'
+})
 </script>

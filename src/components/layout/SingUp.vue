@@ -16,14 +16,12 @@
                   type="text"
                   class="form-control"
                   id="floatingText"
-                  placeholder="jhondoe"
+                  placeholder="Nome"
                   v-model="username"
-                  :class="{ 'is-invalid': usernameError }"
+                  disabled
                 />
-                <label for="floatingText">Username</label>
-                <div class="invalid-feedback">{{ usernameError }}</div>
+                <label for="floatingText">Nome</label>
               </div>
-
               <div class="form-floating mb-3">
                 <input
                   type="email"
@@ -31,10 +29,9 @@
                   id="floatingInput"
                   placeholder="name@example.com"
                   v-model="email"
-                  :class="{ 'is-invalid': emailError }"
+                  disabled
                 />
                 <label for="floatingInput">E-mail</label>
-                <div class="invalid-feedback">{{ emailError }}</div>
               </div>
 
               <div class="form-floating mb-4">
@@ -42,7 +39,7 @@
                   type="password"
                   class="form-control"
                   id="floatingPassword"
-                  placeholder="Password"
+                  placeholder="Senha"
                   v-model="senha"
                   :class="{ 'is-invalid': senhaError }"
                 />
@@ -62,8 +59,8 @@
             </form>
 
             <p class="text-center mb-0">
-              Já possui uma conta? Faça login
-              <router-link to="/">aqui</router-link>
+              Já possui uma conta?
+              <router-link to="/">Faça login aqui</router-link>
             </p>
           </div>
         </div>
@@ -73,52 +70,95 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
 const router = useRouter()
+const route = useRoute()
 
 const username = ref('')
 const email = ref('')
 const senha = ref('')
 const lembrar = ref(false)
 
-const usernameError = ref('')
-const emailError = ref('')
 const senhaError = ref('')
 
-const handleSignUp = () => {
-  usernameError.value = ''
-  emailError.value = ''
+onMounted(() => {
+  const emailFromQuery = route.query.email as string
+  if (emailFromQuery) {
+    email.value = emailFromQuery
+    buscarFuncionario(emailFromQuery)
+  }
+})
+
+const buscarFuncionario = async (emailProcurado: string) => {
+  try {
+    const response = await axios.get('http://localhost:3000/funcionarios')
+    const funcionarios = response.data
+    const funcionario = funcionarios.find((f: any) => f.email === emailProcurado)
+
+    if (funcionario) {
+      username.value = funcionario.nome || ''
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Funcionário não encontrado',
+        text: 'Verifique o link ou entre em contato com o administrador.',
+      })
+      router.push('/')
+    }
+  } catch (error) {
+    console.error('Erro ao buscar funcionário:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao buscar dados',
+      text: 'Tente novamente mais tarde.',
+    })
+  }
+}
+
+const handleSignUp = async () => {
   senhaError.value = ''
-
-  let valid = true
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-  if (!username.value.trim()) {
-    usernameError.value = 'Informe o nome de usuário.'
-    valid = false
-  }
-
-  if (!email.value || !emailRegex.test(email.value)) {
-    emailError.value = 'Informe um e-mail válido.'
-    valid = false
-  }
 
   if (!senha.value) {
     senhaError.value = 'Informe uma senha.'
-    valid = false
+    return
   }
 
-  if (valid) {
-    console.log('Cadastro enviado:', {
-      username: username.value,
-      email: email.value,
+  try {
+    const response = await axios.get('http://localhost:3000/funcionarios')
+    const funcionario = response.data.find((f: any) => f.email === email.value)
+
+    if (!funcionario) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Funcionário não encontrado',
+        text: 'Não foi possível cadastrar a senha.',
+      })
+      return
+    }
+
+    await axios.patch(`http://localhost:3000/funcionarios/${funcionario.id}`, {
       senha: senha.value,
-      lembrar: lembrar.value,
     })
 
-    router.push('/')
+    Swal.fire({
+      icon: 'success',
+      title: 'Senha cadastrada com sucesso!',
+      showConfirmButton: false,
+      timer: 1500,
+    }).then(() => {
+      router.push('/')
+    })
+  } catch (error) {
+    console.error('Erro ao salvar senha:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao salvar',
+      text: 'Tente novamente mais tarde.',
+    })
   }
 }
 </script>
