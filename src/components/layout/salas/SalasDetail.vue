@@ -25,8 +25,7 @@
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-                <h6 class="mb-4">Detalhes da Sala</h6>
-
+                    <h6 class="mb-3">Dados da sala</h6>
                 <form @submit.prevent="salvarAlteracoes">
                   <div class="row mb-3">
                     <div class="col-md-6">

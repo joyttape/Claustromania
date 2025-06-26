@@ -120,7 +120,6 @@ const jogo = reactive({
 
 const loading = ref(true)
 
-// Formatação de preço (opcionalmente adaptável com máscara visual)
 const formatarPreco = (event: Event) => {
   const target = event.target as HTMLInputElement
   let valor = target.value.replace(/\D/g, '')

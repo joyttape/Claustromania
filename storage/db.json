@@ -1,23 +1,6 @@
 {
   "clientes": [
     {
-      "nome": "vfvfdb",
-      "cpf": "621626233262",
-      "dataNascimento": "3212-02-05",
-      "sexo": "feminino",
-      "email": "joaopedrogundimgg@gmail.com",
-      "nivel": "",
-      "logradouro": "Afdvdsvd",
-      "numero": "vdvds",
-      "complemento": "vsdvds",
-      "bairro": "vdsvds",
-      "cidade": "vdvdvd",
-      "estado": "RJ",
-      "cep": "dsvdvds",
-      "foto": null,
-      "id": "cx5jd7"
-    },
-    {
       "nome": "Camila",
       "cpf": "161262132313151",
       "dataNascimento": "2005-03-05",
@@ -93,7 +76,7 @@
       "id": "983"
     },
     {
-      "id": 77039,
+      "id": "77039",
       "Numero": "32343",
       "Jogadores": 30,
       "Status": true,
@@ -125,7 +108,7 @@
       "estado": "RO",
       "cep": "dsvdvds",
       "foto": null,
-      "senha": "12345",
+      "senha": "jope@00503",
       "id": "g18npn"
     },
     {
@@ -192,6 +175,27 @@
       "foto": null,
       "id": "a2lkrw",
       "senha": "camila"
+    },
+    {
+      "id": "lk6m7q",
+      "nome": "Victor Daniel",
+      "cpf": "0062623623626",
+      "dataNascimento": "2992-06-05",
+      "sexo": "masculino",
+      "email": "vitor@gmail.com",
+      "cargo": "Caixa",
+      "salario": 3234343,
+      "dataContratacao": "2023-06-05",
+      "turno": "integral",
+      "status": true,
+      "logradouro": "Afdvdsvd",
+      "numero": "vdvds",
+      "complemento": "vsdvds",
+      "bairro": "vdsvds",
+      "cidade": "vdvdvd",
+      "estado": "PR",
+      "cep": "dsvdvds",
+      "senha": "12356"
     }
   ],
   "jogos": [
@@ -219,6 +223,105 @@
       "Duracao": "90 minutos",
       "Dificuldade": "Fácil",
       "Preco": 60
+    }
+  ],
+  "unidades": [
+    {
+      "nome": "Claustromania Ji-Paraná",
+      "cnpj": "06262630303651",
+      "telefone": "69992087903",
+      "status": true,
+      "capacidade": "500",
+      "diasFuncionamento": "Terça à Domingo",
+      "horarioAbertura": "15:00",
+      "horarioFechamento": "22:00",
+      "endereco": {
+        "logradouro": "Av. Brasil",
+        "numero": "456",
+        "complemento": "vsdvds",
+        "bairro": "Jardim América",
+        "cidade": "Rio de Janeiro",
+        "estado": "RJ",
+        "cep": "22041001"
+      },
+      "foto": null,
+      "id": "eufbqe"
+    },
+    {
+      "nome": "Claustromania Jaru",
+      "cnpj": "06262630303651",
+      "telefone": "69992087903",
+      "status": false,
+      "capacidade": "500",
+      "diasFuncionamento": "Terça à Domingo",
+      "horarioAbertura": "15:00",
+      "horarioFechamento": "22:00",
+      "endereco": {
+        "logradouro": "Av. Brasil",
+        "numero": "456",
+        "complemento": "vsdvds",
+        "bairro": "Jardim América",
+        "cidade": "Jaru",
+        "estado": "RO",
+        "cep": "76890000"
+      },
+      "foto": null,
+      "id": "sg4rb5"
+    },
+    {
+      "id": "5s0r4d",
+      "nome": "Claustromania Ji-Paraná",
+      "cnpj": "06262630303651",
+      "telefone": "69992087903",
+      "status": true,
+      "capacidade": "500",
+      "diasFuncionamento": "Terça à Domingo",
+      "horarioFuncionamento": {
+        "abertura": "05:00",
+        "fechamento": "17:00"
+      },
+      "endereco": {
+        "logradouro": "Av. Brasil",
+        "numero": "456",
+        "complemento": "vsdvds",
+        "bairro": "Jardim América",
+        "cidade": "Rio de Janeiro",
+        "estado": "RJ",
+        "cep": "22041001"
+      },
+      "foto": null
+    }
+  ],
+  "caixas": [
+    {
+      "id": "88e3",
+      "data_abertura": "2025-06-05T20:00",
+      "valor_abertura": 1300,
+      "data_fechamento": null,
+      "valor_fechamento": null,
+      "status": "aberto",
+      "observacao": "csdvdsvdsdfcds",
+      "funcionario_id": "a2lkrw"
+    },
+    {
+      "id": "e33c",
+      "data_abertura": "5525-02-12T15:59",
+      "valor_abertura": 1300,
+      "data_fechamento": "",
+      "valor_fechamento": null,
+      "status": "fechado",
+      "observacao": "",
+      "funcionario_id": "a2lkrw"
+    },
+    {
+      "data_abertura": "4544-03-12T20:00",
+      "valor_abertura": 1300,
+      "data_fechamento": "4544-03-12T22:00",
+      "valor_fechamento": 5000,
+      "status": "aberto",
+      "observacao": "jbjbjkmn km km ",
+      "funcionario_id": "g18npn",
+      "id": "e1cc"
     }
   ]
 }

@@ -97,7 +97,7 @@ const router = createRouter({
       component: ClientesDetail
     },
     {
-      path: '/unidades/detalhe',
+      path: '/unidades/detalhe/:id',
       name: "DetalhesUni",
       component: UnidadesDetail
     },
@@ -157,7 +157,7 @@ const router = createRouter({
       component: FormCaixa
     },
     {
-      path: '/caixa/detalhe',
+      path: '/caixa/detalhe/:id',
       name: 'CaixaDetalhe',
       component: CaixaDetail
     },

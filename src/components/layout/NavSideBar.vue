@@ -3,7 +3,7 @@
   <nav class="navbar bg-secondary navbar-dark">
 
     <div class="navbar-nav w-100">
-      <router-link v-if="cargo === 'Admin' || cargo === 'Gerente'" to="/relatorios" class="nav-item nav-link">
+      <router-link v-if="cargo === 'Estagiário' || cargo === 'Gerente'" to="/relatorios" class="nav-item nav-link">
         <i class="fa fa-chart-line me-2"></i>Relatórios
       </router-link>
 

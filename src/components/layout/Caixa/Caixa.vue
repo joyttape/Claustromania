@@ -44,15 +44,15 @@
                 <tbody>
                   <tr v-for="(caixa, index) in listaCaixas" :key="index">
                     <td>{{ caixa.Id }}</td>
-                    <td>{{ caixa.DataHoraAbertura }}</td>
-                    <td>{{ caixa.DataHoraFechamento || '-' }}</td>
+                    <td>{{ formatDateTime(caixa.DataHoraAbertura) }}</td>
+                    <td>{{ caixa.DataHoraFechamento ? formatDateTime(caixa.DataHoraFechamento) : '-' }}</td>
                     <td>R$ {{ caixa.ValorInicial.toFixed(2) }}</td>
                     <td>R$ {{ caixa.ValorFinal.toFixed(2) }}</td>
                     <td>R$ {{ caixa.TotalTransacoes.toFixed(2) }}</td>
                     <td>{{ caixa.Status }}</td>
-                    <td>{{ caixa.fk_Funcionario_Id }}</td>
+                    <td>{{ getFuncionarioNome(caixa.funcionario_id) }}</td>
                     <td>
-                      <router-link :to="`/caixa/detalhe`" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/caixa/detalhe/${caixa.Id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -74,6 +74,7 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Caixas',
@@ -88,37 +89,55 @@ export default defineComponent({
         TotalTransacoes: number;
         Status: string;
         Observacoes: string;
-        fk_Funcionario_Id: number;
+        funcionario_id: string;
+      }>,
+      listaFuncionarios: [] as Array<{
+        id: string;
+        nome: string;
       }>
     }
   },
   methods: {
-    buscarCaixas() {
-      // Exemplo com dados mockados
-      this.listaCaixas = [
-        {
-          Id: 1,
-          DataHoraAbertura: '2025-06-01 08:00:00',
-          DataHoraFechamento: '2025-06-01 18:00:00',
-          ValorInicial: 100.0,
-          ValorFinal: 850.0,
-          TotalTransacoes: 750.0,
-          Status: 'Fechado',
-          Observacoes: '',
-          fk_Funcionario_Id: 101
-        },
-        {
-          Id: 2,
-          DataHoraAbertura: '2025-06-02 08:00:00',
-          DataHoraFechamento: null,
-          ValorInicial: 150.0,
-          ValorFinal: 0.0,
-          TotalTransacoes: 0.0,
-          Status: 'Aberto',
-          Observacoes: '',
-          fk_Funcionario_Id: 102
+    async buscarCaixas() {
+      try {
+        const [caixasResponse, funcionariosResponse] = await Promise.all([
+          axios.get('http://localhost:3000/caixas'),
+          axios.get('http://localhost:3000/funcionarios')
+        ]);
+
+        if(caixasResponse.status === 200){
+          this.listaCaixas = caixasResponse.data.map((item: any) => ({
+            Id: item.id,
+            DataHoraAbertura: item.data_abertura,
+            DataHoraFechamento: item.data_fechamento,
+            ValorInicial: item.valor_abertura || 0,
+            ValorFinal: item.valor_fechamento || 0,
+            TotalTransacoes: item.total_transacoes || 0,
+            Status: item.status,
+            Observacoes: item.observacao,
+            funcionario_id: item.funcionario_id // Mantido igual ao retorno da API
+          }));
+          
+          console.log('Dados dos caixas:', this.listaCaixas); // Para debug
         }
-      ];
+
+        if (funcionariosResponse.status === 200) {
+          this.listaFuncionarios = funcionariosResponse.data;
+          console.log('Dados dos funcionários:', this.listaFuncionarios); // Para debug
+        }
+
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    },
+    getFuncionarioNome(funcionarioId: string): string {
+        const funcionario = this.listaFuncionarios.find(f => f.id === funcionarioId);
+        return funcionario ? funcionario.nome : 'Desconhecido';
+    },
+    formatDateTime(dateTimeString: string): string {
+      if (!dateTimeString) return '-';
+      const date = new Date(dateTimeString);
+      return date.toLocaleString();
     }
   },
   components: {
@@ -131,7 +150,6 @@ export default defineComponent({
     script.src = '/src/components/js/maincode.js'
     script.async = true
     document.body.appendChild(script)
-
     this.buscarCaixas();
   }
 })

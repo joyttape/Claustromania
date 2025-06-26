@@ -28,8 +28,7 @@
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-                <h6 class="mb-4">Detalhes Funcionário</h6>
-
+                
                 <div class="d-flex align-items-start gap-4">
                   <form @submit.prevent="salvarAlteracoes" class="flex-grow-1" novalidate>
                     <h6 class="mb-3">Dados Pessoais</h6>

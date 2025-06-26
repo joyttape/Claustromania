@@ -33,22 +33,24 @@
                     <th scope="col">ID</th>
                     <th scope="col">Nome</th>
                     <th scope="col">Capacidade</th>
-                    <th scope="col">Horário Funcionamento</th>
+                    <th scope="col">Horário Abertura</th>
+                    <th scope="col">Horário Fechamento</th>
                     <th scope="col">Telefone</th>
                     <th scope="col">Status</th>
                     <th scope="col"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(unidades, index) in listaunidades" :key="index">
-                    <th scope="row">{{ unidades.id }}</th>
-                    <td>{{ unidades.NomeUnidade }}</td>
-                    <td>{{ unidades.Capacidade }}</td>
-                    <td>{{ unidades.Horario_Func }}</td>
-                    <td>{{ unidades.Telefone }}</td>
-                    <td>{{ unidades.Status ? 'Ativo' : 'Inativo' }}</td>
+                  <tr v-for="(unidade, index) in listaunidades" :key="index">
+                    <th scope="row">{{ unidade.id }}</th>
+                    <td>{{ unidade.NomeUnidade }}</td>
+                    <td>{{ unidade.Capacidade }}</td>
+                    <td>{{ unidade.Horario_Abert }}</td>
+                    <td>{{ unidade.Horario_Fecha }}</td>
+                    <td>{{ unidade.Telefone }}</td>
+                    <td>{{ unidade.Status ? 'Ativo' : 'Inativo' }}</td>
                     <td>
-                      <router-link to="/unidades/detalhe" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/unidades/detalhe/${unidade.id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -58,86 +60,77 @@
             </div>
           </div>
         </div>
+
         <FooterBarVue />
       </div>
     </div>
   </div>
 </template>
 
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Unidades',
   data() {
-  return {
-    listaunidades: [] as Array<{
-      id: number;
-      NomeUnidade: string;
-      Capacidade: number;
-      Horario_Func: string;
-      Telefone: string;
-      Status: boolean;
-    }>
-  }
-  },
-
-  methods:{
-    buscarUnidades(){
-        this.listaunidades.push({
-          id: 1,
-          NomeUnidade: "Claustromania - Porto Velho",
-          Capacidade: 50,
-          Horario_Func: "10:00 - 22:00 (Ter-Dom)",
-          Telefone: "(69) 3521-5678",
-          Status: true
-        });
-
-        this.listaunidades.push({
-          id: 2,
-          NomeUnidade: "Claustromania - Ji-Paraná",
-          Capacidade: 40,
-          Horario_Func: "10:00 - 22:00 (Ter-Dom)",
-          Telefone: "(69) 3521-0982",
-          Status: false
-        });
-
-        this.listaunidades.push({
-          id: 3,
-          NomeUnidade: "Claustromania - Ouro Preto do Oeste",
-          Capacidade: 60,
-          Horario_Func: "10:00 - 22:00 (Ter-Dom)",
-          Telefone: "(69) 3521-2345",
-          Status: true
-        });
-
-        this.listaunidades.push({
-          id: 4,
-          NomeUnidade: "Claustromania - Jaru",
-          Capacidade: 30,
-          Horario_Func: "10:00 - 22:00 (Ter-Dom)",
-          Telefone: "(69) 3521 - 9856",
-          Status: false
-        });
-        
+    return {
+      listaunidades: [] as Array<{
+        id: number
+        NomeUnidade: string
+        Capacidade: number
+        Horario_Abert: string
+        Horario_Fecha: string,
+        Telefone: string
+        Status: boolean
+      }>
     }
   },
+
+  methods: {
+  async buscarUnidades() {
+    try {
+      const response = await axios.get('http://localhost:3000/unidades', {
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': '69420'
+        }
+      });
+
+      if (response.status === 200) {
+        this.listaunidades = response.data.map((item: any) => ({
+          id: item.id,
+          NomeUnidade: item.nome || 'Não informado',
+          Capacidade: item.capacidade || 0,
+          Horario_Abert: item.horarioAbertura || '',
+          Horario_Fecha: item.horarioFechamento || '',
+          Telefone: item.telefone || '',
+          Status: item.status // Note que na API está "status" (minúsculo)
+        }));
+        console.log('Unidades carregadas:', this.listaunidades); // Para debug
+      }
+    } catch (error) {
+      console.error('Erro ao buscar unidades:', error);
+    }
+  }
+},
+
   components: {
     NavHeaderBarVue,
     NavSideBarVue,
     FooterBarVue
   },
+
   mounted() {
     const script = document.createElement('script')
     script.src = '/src/components/js/maincode.js'
     script.async = true
     document.body.appendChild(script)
 
-    this.buscarUnidades();
+    this.buscarUnidades()
   }
 })
 </script>
