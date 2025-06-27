@@ -393,17 +393,15 @@ const funcionario = reactive({
 const fotoPreview = ref<string | null>(null)
 const loading = ref(true)
 
-// CPF simples: só números e tamanho 11
 const cpfValido = helpers.withMessage(
   'CPF inválido',
   (value: string) => {
-    if (!value) return true // opcional
+    if (!value) return true 
     const cpfLimpo = value.replace(/\D/g, '')
     return cpfLimpo.length === 11
   }
 )
 
-// Validação das regras
 const rules = {
   funcionario: {
     nome: { required, minLength: minLength(3) },
@@ -431,10 +429,9 @@ const onFileChange = (event: Event) => {
 const carregarFuncionario = async () => {
   loading.value = true
   try {
-    const response = await axios.get(`http://localhost:3000/funcionarios/${funcionarioId}`)
+    const response = await axios.get(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`)
     const dados = response.data
 
-    // Preenchendo campo a campo
     funcionario.nome = dados.nome || ''
     funcionario.cpf = dados.cpf || ''
     funcionario.dataNascimento = dados.dataNascimento || ''
@@ -481,8 +478,7 @@ const salvarAlteracoes = async () => {
   }
 
   try {
-    // Se precisar enviar foto como multipart/form-data, adapte aqui
-    await axios.put(`http://localhost:3000/funcionarios/${funcionarioId}`, funcionario)
+    await axios.put(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`, funcionario)
     await Swal.fire({
       icon: 'success',
       title: 'Salvo com sucesso!',
@@ -514,7 +510,7 @@ const cancelarAlteracoes = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/funcionarios/${funcionarioId}`)
+      await axios.delete(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Excluído com sucesso!',

@@ -96,7 +96,7 @@ export default defineComponent({
   methods: {
     async buscarFuncionarios() {
       try {
-        const response = await axios.get('http://localhost:3000/funcionarios', {
+        const response = await axios.get('http://10.210.8.51:3000/funcionarios', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'

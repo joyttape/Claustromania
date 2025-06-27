@@ -250,7 +250,7 @@ const pesquisarFuncionario = async () => {
         func.nome.toLowerCase().includes(funcionarioPesquisa.value.toLowerCase())
       )
     } else {
-      const response = await axios.get(`http://localhost:3000/funcionarios?nome=${funcionarioPesquisa.value}`)
+      const response = await axios.get(`http://10.210.8.51:3000/funcionarios?nome=${funcionarioPesquisa.value}`)
       funcionariosFiltrados.value = response.data
     }
   } catch (error) {
@@ -291,7 +291,7 @@ const cadastrarCaixa = async () => {
       funcionario_id: caixa.funcionario_id
     }
 
-    const response = await axios.post('http://localhost:3000/caixas', dados)
+    const response = await axios.post('http://10.210.8.51:3000/caixas', dados)
 
     if (response.status === 201) {
       await Swal.fire({
@@ -338,7 +338,7 @@ const limparFormulario = () => {
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
     listaFuncionarios.value = response.data
   } catch (error) {
     console.error('Erro ao carregar funcionários:', error)

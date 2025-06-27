@@ -461,7 +461,6 @@ async function cadastrarUnidade() {
     return;
   }
 
-  // Remove máscaras antes de enviar
   const cnpjLimpo = unidade.cnpj.replace(/\D/g, '');
   const telefoneLimpo = unidade.telefone.replace(/\D/g, '');
   const cepLimpo = unidade.cep.replace(/\D/g, '');
@@ -491,7 +490,7 @@ async function cadastrarUnidade() {
   };
 
   try {
-    const response = await axios.post('http://localhost:3000/unidades', dadosEnvio, {
+    const response = await axios.post('http://10.210.8.51:3000/unidades', dadosEnvio, {
       headers: { 'Content-Type': 'application/json' },
     });
 

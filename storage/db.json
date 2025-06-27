@@ -22,7 +22,7 @@
     {
       "Numero": "0001",
       "Jogadores": 15,
-      "Status": false,
+      "Status": true,
       "Jogos": [
         {
           "id": "1",
@@ -130,29 +130,8 @@
       "estado": "PB",
       "cep": "dsvdvds",
       "foto": null,
-      "id": "f1zsus"
-    },
-    {
-      "nome": "Gilberto",
-      "cpf": "03550313292",
-      "dataNascimento": "1262-06-05",
-      "sexo": "masculino",
-      "email": "gilberto@gmail.com",
-      "cargo": "Gerente",
-      "salario": 26220,
-      "dataContratacao": "6565-03-05",
-      "turno": "noite",
-      "status": true,
-      "logradouro": "Afdvdsvd",
-      "numero": "vdvds",
-      "complemento": "vsdvds",
-      "bairro": "vdsvds",
-      "cidade": "vdvdvd",
-      "estado": "PB",
-      "cep": "dsvdvds",
-      "foto": null,
-      "senha": "gil",
-      "id": "f1zsus"
+      "id": "f1zsus",
+      "senha": "gil"
     },
     {
       "nome": "Camila",
@@ -196,6 +175,47 @@
       "estado": "PR",
       "cep": "dsvdvds",
       "senha": "12356"
+    },
+    {
+      "id": "r3c2jd",
+      "nome": "Joel",
+      "cpf": "03550313292",
+      "dataNascimento": "2005-03-05",
+      "sexo": "masculino",
+      "email": "joel@gmail.com",
+      "cargo": "Game Master",
+      "salario": 15000,
+      "dataContratacao": "2055-06-05",
+      "turno": "tarde",
+      "status": true,
+      "logradouro": "Av. Brasil",
+      "numero": "456",
+      "complemento": "vsdvds",
+      "bairro": "Jardim América",
+      "cidade": "Jaru",
+      "estado": "RO",
+      "cep": "76890-000"
+    },
+    {
+      "id": "paw2mv",
+      "nome": "Gilberto",
+      "cpf": "03550313292",
+      "dataNascimento": "2025-06-27",
+      "sexo": "masculino",
+      "email": "gilberto@gmail.com",
+      "cargo": "Gerente",
+      "salario": 5000,
+      "dataContratacao": "2006-02-05",
+      "turno": "noite",
+      "status": true,
+      "logradouro": "Av. Brasil",
+      "numero": "456",
+      "complemento": "vsdvds",
+      "bairro": "Jardim América",
+      "cidade": "Jaru",
+      "estado": "RO",
+      "cep": "76890-000",
+      "senha": "123"
     }
   ],
   "jogos": [
@@ -322,6 +342,20 @@
       "observacao": "jbjbjkmn km km ",
       "funcionario_id": "g18npn",
       "id": "e1cc"
+    }
+  ],
+  "reservas": [
+    {
+      "data_reserva": "2025-06-28",
+      "hora_reserva": "20:00",
+      "numero_jogadores": 5,
+      "valor_total": 40.25,
+      "status": "cancelado",
+      "jogo_id": "8862",
+      "sala_id": "77039",
+      "cliente_id": "pas77t",
+      "observacoes": "",
+      "id": "7bbf"
     }
   ]
 }

@@ -492,7 +492,7 @@ const salvarAlteracoes = async () => {
   }
 
   try {
-    await axios.put(`http://localhost:3000/unidades/${unidadeId}`, dadosEnvio)
+    await axios.put(`http://10.210.8.51:3000/unidades/${unidadeId}`, dadosEnvio)
     await Swal.fire({
       icon: 'success',
       title: 'Salvo com sucesso!',

@@ -1,6 +1,5 @@
 <template>
   <div class="container-fluid position-relative d-flex p-0">
-    <!-- Sign Up Start -->
     <div class="container-fluid">
       <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
@@ -95,7 +94,7 @@ onMounted(() => {
 
 const buscarFuncionario = async (emailProcurado: string) => {
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
     const funcionarios = response.data
     const funcionario = funcionarios.find((f: any) => f.email === emailProcurado)
 
@@ -128,7 +127,7 @@ const handleSignUp = async () => {
   }
 
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
     const funcionario = response.data.find((f: any) => f.email === email.value)
 
     if (!funcionario) {
@@ -140,7 +139,7 @@ const handleSignUp = async () => {
       return
     }
 
-    await axios.patch(`http://localhost:3000/funcionarios/${funcionario.id}`, {
+    await axios.patch(`http://10.210.8.51:3000/funcionarios/${funcionario.id}`, {
       senha: senha.value,
     })
 

@@ -42,11 +42,11 @@
                   <tr v-for="(reserva, index) in listareservas" :key="index">
                     <th scope="row">{{ reserva.id }}</th>
                     <td>{{ reserva.cliente }}</td>
-                    <td>{{ reserva.dataHora }}</td>
+                    <td>{{ formatDateTime(reserva.dataHora) }}</td>
                     <td>{{ reserva.status }}</td>
-                    <td>{{ reserva.sala.Numero }}</td>
+                    <td>{{ reserva.sala?.Numero || '-' }}</td>
                     <td>
-                      <router-link to="/reservas/detalhe" class="btn btn-sm btn-outline-light">
+                      <router-link :to="`/reservas/detalhe/${reserva.id}`" class="btn btn-sm btn-outline-light">
                         Visualizar
                       </router-link>
                     </td>
@@ -69,6 +69,7 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import axios from 'axios'
 
 export default defineComponent({
   name: 'Reservas',
@@ -82,44 +83,49 @@ export default defineComponent({
         sala: {
           id: number;
           Numero: string;
-        };
-      }>
+        } | null;
+      }>,
+      clientes: [] as Array<{ id: number; nome: string }>,
+      salas: [] as Array<{ id: number; Numero: string }>
     }
   },
   methods: {
-    buscarReservas() {
-      this.listareservas.push({
-        id: 101,
-        cliente: "João da Silva",
-        dataHora: "2025-06-03 18:00",
-        status: "Confirmada",
-        sala: {
-          id: 2,
-          Numero: "0002"
-        }
-      });
+    async buscarReservas() {
+      try {
+        const [resReservas, resClientes, resSalas] = await Promise.all([
+          axios.get('http://10.210.8.51:3000/reservas'),
+          axios.get('http://10.210.8.51:3000/clientes'),
+          axios.get('http://10.210.8.51:3000/salas')
+        ]);
 
-      this.listareservas.push({
-        id: 102,
-        cliente: "Maria Oliveira",
-        dataHora: "2025-06-04 15:00",
-        status: "Pendente",
-        sala: {
-          id: 1,
-          Numero: "0001"
-        }
-      });
+        this.clientes = resClientes.data
+        this.salas = resSalas.data
 
-      this.listareservas.push({
-        id: 103,
-        cliente: "Carlos Santos",
-        dataHora: "2025-06-05 20:00",
-        status: "Cancelada",
-        sala: {
-          id: 3,
-          Numero: "0003"
+        if (resReservas.status === 200) {
+          this.listareservas = resReservas.data.map((item: any) => {
+            const clienteObj = this.clientes.find(c => c.id === item.cliente_id)
+            const salaObj = this.salas.find(s => s.id === item.sala_id)
+
+            return {
+              id: item.id,
+              cliente: clienteObj ? clienteObj.nome : 'Desconhecido',
+              dataHora: item.data_reserva && item.hora_reserva ? 
+                new Date(`${item.data_reserva}T${item.hora_reserva}`).toISOString() :
+                '',
+              status: item.status,
+              sala: salaObj ? { id: salaObj.id, Numero: salaObj.Numero } : null
+            }
+          });
+          console.log('Reservas carregadas:', this.listareservas);
         }
-      });
+      } catch (error) {
+        console.error('Erro ao buscar reservas:', error);
+      }
+    },
+    formatDateTime(dateTimeString: string): string {
+      if (!dateTimeString) return '-';
+      const date = new Date(dateTimeString);
+      return date.toLocaleString();
     }
   },
   mounted() {
@@ -127,7 +133,6 @@ export default defineComponent({
     script.src = '/src/components/js/maincode.js'
     script.async = true
     document.body.appendChild(script)
-
     this.buscarReservas();
   },
   components: {
@@ -137,3 +142,4 @@ export default defineComponent({
   }
 })
 </script>
+

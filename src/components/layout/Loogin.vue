@@ -51,7 +51,6 @@
         </div>
       </div>
     </div>
-    <!-- Sign In End -->
   </div>
 </template>
 
@@ -90,7 +89,7 @@ const handleLogin = async () => {
   if (!valid) return
 
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
     const funcionarios = response.data
 
     const funcionario = funcionarios.find(f => f.email === email.value)

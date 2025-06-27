@@ -160,7 +160,7 @@ const cadastrarSala = async () => {
   }
 
   try {
-    const response = await axios.post('http://localhost:3000/salas', dadosParaSalvar, {
+    const response = await axios.post('http://10.210.8.51:3000/salas', dadosParaSalvar, {
       headers: { 'Content-Type': 'application/json' }
     })
 

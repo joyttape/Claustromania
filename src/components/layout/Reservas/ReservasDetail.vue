@@ -1,80 +1,237 @@
 <template>
   <div>
-    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+    <div
+      id="spinner"
+      class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+    >
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="sr-only">Loading...</span>
       </div>
     </div>
 
     <NavHeaderBarVue />
-
     <div class="d-flex">
       <NavSideBarVue />
-
-      <div class="content">
+      <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <router-link to="/reservas" class="btn btn-outline-light mb-3">
-            ← Voltar
-          </router-link>
-
+          <router-link to="/reservas" class="btn btn-outline-light mb-3">← Voltar</router-link>
           <div class="row g-4">
             <div class="col-12">
               <div class="bg-secondary rounded h-100 p-4 text-light">
-                <form @submit.prevent="salvarAlteracoes">
-                  <h6 class="mb-4">Detalhes da Reserva</h6>
+                <h6 class="mb-4">Detalhes da Reserva</h6>
 
+                <form @submit.prevent="salvarAlteracoes" novalidate>
+                  <!-- Data, Hora e Jogadores -->
                   <div class="row mb-3">
                     <div class="col-md-4">
-                      <label class="form-label">ID</label>
-                      <input type="text" class="form-control" v-model="reserva.id"/>
+                      <label for="data_reserva" class="form-label">Data da Reserva</label>
+                      <input
+                        type="date"
+                        class="form-control"
+                        id="data_reserva"
+                        v-model="reserva.data_reserva"
+                        :class="{ 'is-invalid': v$.data_reserva.$error }"
+                        required
+                      />
+                      <div class="invalid-feedback" v-if="v$.data_reserva.$error">Data da reserva é obrigatória.</div>
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label">Cliente</label>
-                      <input type="text" class="form-control" v-model="reserva.cliente"/>
+                      <label for="hora_reserva" class="form-label">Hora da Reserva</label>
+                      <input
+                        type="time"
+                        class="form-control"
+                        id="hora_reserva"
+                        v-model="reserva.hora_reserva"
+                        :class="{ 'is-invalid': v$.hora_reserva.$error }"
+                        required
+                      />
+                      <div class="invalid-feedback" v-if="v$.hora_reserva.$error">Hora da reserva é obrigatória.</div>
                     </div>
                     <div class="col-md-4">
-                      <label class="form-label">Data</label>
-                      <input type="date" class="form-control" v-model="reserva.data" />
+                      <label for="numero_jogadores" class="form-label">Número de Jogadores</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="numero_jogadores"
+                        v-model.number="reserva.numero_jogadores"
+                        @change="calcularValorTotal"
+                        :class="{ 'is-invalid': v$.numero_jogadores.$error }"
+                        min="1"
+                        :max="capacidadeSalaSelecionada"
+                        required
+                      />
+                      <div class="invalid-feedback" v-if="v$.numero_jogadores.$error">
+                        <span v-if="v$.numero_jogadores.minValue">Número mínimo: 1.</span>
+                        <span v-if="v$.numero_jogadores.maxValue">Excede capacidade da sala ({{ capacidadeSalaSelecionada }}).</span>
+                      </div>
                     </div>
                   </div>
 
+                  <!-- Valor Total e Status -->
                   <div class="row mb-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Sala</label>
-                      <input type="text" class="form-control" v-model="reserva.sala" />
+                    <div class="col-md-6">
+                      <label for="valor_total" class="form-label">Valor Total (R$)</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="valor_total"
+                        v-model="reserva.valor_total"
+                        readonly
+                        :class="{ 'is-invalid': v$.valor_total.$error }"
+                        required
+                      />
+                      <small class="text-light" v-if="jogoSelecionado">Valor unitário: R$ {{ formatarMoeda(jogoSelecionado.Preco) }}</small>
+                      <div class="invalid-feedback" v-if="v$.valor_total.$error">Valor inválido.</div>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Jogo</label>
-                      <input type="text" class="form-control" v-model="reserva.jogos" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Valor</label>
-                      <input type="text" class="form-control" v-model="reserva.valor" />
-                    </div>
-                  </div>
-
-                  <div class="row mb-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Status</label>
-                      <select class="form-select" v-model="reserva.status">
-                        <option value="pendente">Pendente</option>
-                        <option value="confirmada">Confirmada</option>
-                        <option value="cancelada">Cancelada</option>
-                        <option value="concluída">Concluída</option>
+                    <div class="col-md-6">
+                      <label for="status" class="form-label">Status</label>
+                      <select
+                        class="form-select"
+                        id="status"
+                        v-model="reserva.status"
+                        :class="{ 'is-invalid': v$.status.$error }"
+                        required
+                      >
+                        <option disabled value="">Selecione</option>
+                        <option value="reservado">Reservado</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="cancelado">Cancelado</option>
+                        <option value="concluido">Concluído</option>
                       </select>
+                      <div class="invalid-feedback" v-if="v$.status.$error">Status obrigatório.</div>
                     </div>
                   </div>
 
-                  <div class="d-flex justify-content-start">
-                    <button type="submit" class="btn btn-success me-2">Salvar</button>
-                    <button type="button" class="btn btn-danger" @click="cancelarReserva">Cancelar Reserva</button>
+                  <!-- Jogo -->
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label for="jogo" class="form-label">Jogo</label>
+                      <div class="position-relative">
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="jogo"
+                          v-model="jogoPesquisa"
+                          @input="pesquisarJogo"
+                          @focus="mostrarSugestoesJogo = true"
+                          placeholder="Pesquisar jogo..."
+                          :class="{ 'is-invalid': v$.jogo_id.$error }"
+                          autocomplete="off"
+                          required
+                        />
+                        <div
+                          v-if="mostrarSugestoesJogo && jogosFiltrados.length > 0"
+                          class="list-group position-absolute w-100 z-3 mt-1"
+                          style="max-height: 200px; overflow-y: auto;"
+                        >
+                          <button
+                            type="button"
+                            class="list-group-item list-group-item-action"
+                            v-for="jogo in jogosFiltrados"
+                            :key="jogo.id"
+                            @click="selecionarJogo(jogo)"
+                          >
+                            {{ jogo.NomeJogo }}
+                          </button>
+                        </div>
+                      </div>
+                      <small class="text-light" v-if="reserva.jogo_nome">Selecionado: <strong>{{ reserva.jogo_nome }}</strong></small>
+                    </div>
+
+                    <!-- Sala -->
+                    <div class="col-md-6">
+                      <label for="sala" class="form-label">Sala</label>
+                      <select
+                        class="form-select"
+                        id="sala"
+                        v-model="reserva.sala_id"
+                        :class="{ 'is-invalid': v$.sala_id.$error }"
+                        :disabled="!reserva.jogo_id"
+                        required
+                      >
+                        <option disabled value="">Selecione uma sala</option>
+                        <option
+                          v-for="sala in salasDisponiveis"
+                          :key="sala.id"
+                          :value="sala.id"
+                          :disabled="reserva.numero_jogadores > sala.Jogadores"
+                        >
+                          Sala {{ sala.Numero }} (Capacidade: {{ sala.Jogadores }})
+                        </option>
+                      </select>
+                      <div class="invalid-feedback" v-if="v$.sala_id.$error">Sala obrigatória.</div>
+                      <div class="text-warning mt-1" v-if="reserva.sala_id && reserva.numero_jogadores > capacidadeSalaSelecionada">
+                        Atenção: Número de jogadores excede a capacidade da sala!
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Cliente -->
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="cliente" class="form-label">Cliente</label>
+                      <div class="position-relative">
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cliente"
+                          v-model="clientePesquisa"
+                          @input="pesquisarCliente"
+                          @focus="mostrarSugestoesCliente = true"
+                          placeholder="Pesquisar cliente..."
+                          :class="{ 'is-invalid': v$.cliente_id.$error }"
+                          autocomplete="off"
+                          required
+                        />
+                        <div
+                          v-if="mostrarSugestoesCliente && clientesFiltrados.length > 0"
+                          class="list-group position-absolute w-100 z-3 mt-1"
+                          style="max-height: 200px; overflow-y: auto;"
+                        >
+                          <button
+                            type="button"
+                            class="list-group-item list-group-item-action"
+                            v-for="cliente in clientesFiltrados"
+                            :key="cliente.id"
+                            @click="selecionarCliente(cliente)"
+                          >
+                            {{ cliente.nome }}
+                          </button>
+                        </div>
+                      </div>
+                      <small class="text-light" v-if="reserva.cliente_nome">Selecionado: <strong>{{ reserva.cliente_nome }}</strong></small>
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <label for="observacoes" class="form-label">Observações</label>
+                      <textarea
+                        class="form-control"
+                        id="observacoes"
+                        rows="2"
+                        v-model="reserva.observacoes"
+                        placeholder="Observações sobre a reserva"
+                        :class="{ 'is-invalid': v$.observacoes.$error }"
+                      ></textarea>
+                      <div class="invalid-feedback" v-if="v$.observacoes.$error">Máximo 500 caracteres.</div>
+                    </div>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <div>
+                      <button class="btn btn-success me-2" type="submit">
+                        <span v-if="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        {{ loading ? 'Salvando...' : 'Salvar' }}
+                      </button>
+                      <button class="btn btn-danger" type="button" @click="excluirReserva">Excluir</button>
+                    </div>
                   </div>
                 </form>
               </div>
             </div>
           </div>
         </div>
-
         <FooterBarVue />
       </div>
     </div>
@@ -82,38 +239,302 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, onMounted } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minValue, maxLength, helpers } from '@vuelidate/validators'
+import axios from 'axios'
+import Swal from 'sweetalert2'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
-const reserva = reactive({
-  id: 'RESV-001',
-  cliente: 'João da Silva',
-  data: '2025-06-03',
-  status: 'pendente',
-  sala: 'Sala 01',
-  jogos: 'Mistério Sombrio',
-  valor: 'R$ 180,00'
-})
+const route = useRoute()
+const router = useRouter()
+const id = route.params.id as string
 
-const salvarAlteracoes = () => {
-  alert("Reserva atualizada! (simulação)")
-  console.log("Reserva atualizada:", reserva)
+interface Jogo {
+  id: string | number
+  NomeJogo: string
+  Preco: number
 }
 
-const cancelarReserva = () => {
-  if (confirm("Tem certeza que deseja cancelar esta reserva?")) {
-    reserva.status = 'cancelada'
-    alert("Reserva cancelada! (simulação)")
+interface Sala {
+  id: string | number
+  Numero: string
+  Jogadores: number
+  Status: boolean
+  Jogos: { id: string | number; NomeJogo: string }[]
+}
+
+interface Cliente {
+  id: number
+  nome: string
+}
+
+const reserva = reactive({
+  data_reserva: '',
+  hora_reserva: '',
+  numero_jogadores: 1,
+  valor_total: '0,00',
+  status: '',
+  jogo_id: null as string | number | null,
+  jogo_nome: '',
+  sala_id: null as string | number | null,
+  cliente_id: null as number | null,
+  cliente_nome: '',
+  observacoes: ''
+})
+
+const loading = ref(false)
+const jogoPesquisa = ref('')
+const jogosFiltrados = ref<Jogo[]>([])
+const listaJogos = ref<Jogo[]>([])
+const jogoSelecionado = ref<Jogo | null>(null)
+
+const clientePesquisa = ref('')
+const clientesFiltrados = ref<Cliente[]>([])
+const listaClientes = ref<Cliente[]>([])
+
+const salasDisponiveis = ref<Sala[]>([])
+const listaSalas = ref<Sala[]>([])
+
+const mostrarSugestoesJogo = ref(false)
+const mostrarSugestoesCliente = ref(false)
+
+const formatarMoeda = (valor: number) =>
+  valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const capacidadeSalaSelecionada = computed(() => {
+  if (!reserva.sala_id) return Infinity
+  const sala = salasDisponiveis.value.find(s => String(s.id) === String(reserva.sala_id))
+  return sala?.Jogadores || Infinity
+})
+
+const calcularValorTotal = () => {
+  if (!jogoSelecionado.value) {
+    reserva.valor_total = '0,00'
+    return
+  }
+  const total = reserva.numero_jogadores * jogoSelecionado.value.Preco
+  reserva.valor_total = formatarMoeda(total)
+}
+
+const pesquisarJogo = () => {
+  if (jogoPesquisa.value.length < 2) {
+    jogosFiltrados.value = []
+    return
+  }
+  jogosFiltrados.value = listaJogos.value.filter(j => {
+    if (!j) return false
+    if (!j.NomeJogo) return false
+    return j.NomeJogo.toLowerCase().includes(jogoPesquisa.value.toLowerCase())
+  })
+}
+
+const selecionarJogo = (jogo: Jogo) => {
+  reserva.jogo_id = jogo.id
+  reserva.jogo_nome = jogo.NomeJogo
+  jogoPesquisa.value = jogo.NomeJogo
+  jogoSelecionado.value = jogo
+  mostrarSugestoesJogo.value = false
+
+  salasDisponiveis.value = listaSalas.value.filter(sala =>
+    sala.Jogos?.some(j => String(j.id) === String(jogo.id))
+  )
+
+  reserva.sala_id = null
+
+  calcularValorTotal()
+}
+
+const pesquisarCliente = async () => {
+  if (clientePesquisa.value.length < 2) {
+    clientesFiltrados.value = []
+    return
+  }
+
+  if (listaClientes.value.length > 0) {
+    clientesFiltrados.value = listaClientes.value.filter(c =>
+      c.nome.toLowerCase().includes(clientePesquisa.value.toLowerCase())
+    )
+  } else {
+    try {
+      const res = await axios.get(`http://10.210.8.51:3000/clientes?nome=${clientePesquisa.value}`)
+      clientesFiltrados.value = res.data
+    } catch {
+      clientesFiltrados.value = []
+    }
   }
 }
 
-onMounted(() => {
-  const script = document.createElement('script')
-  script.src = '/src/components/js/maincode.js'
-  script.async = true
-  document.body.appendChild(script)
+const selecionarCliente = (cliente: Cliente) => {
+  reserva.cliente_id = cliente.id
+  reserva.cliente_nome = cliente.nome
+  clientePesquisa.value = cliente.nome
+  mostrarSugestoesCliente.value = false
+}
+
+const carregarSalas = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/salas')
+    listaSalas.value = res.data
+  } catch {
+    listaSalas.value = []
+  }
+}
+
+const carregarJogos = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/jogos')
+    listaJogos.value = res.data
+  } catch {
+    listaJogos.value = []
+  }
+}
+
+const carregarClientes = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/clientes')
+    listaClientes.value = res.data
+  } catch {
+    listaClientes.value = []
+  }
+}
+
+const carregarReserva = async () => {
+  try {
+    const res = await axios.get(`http://localhost:3000/reservas/${id}`)
+    if (res.status === 200) {
+      const d = res.data
+
+      reserva.data_reserva = d.data_reserva || ''
+      reserva.hora_reserva = d.hora_reserva || ''
+      reserva.numero_jogadores = d.numero_jogadores || 1
+      reserva.valor_total = d.valor_total ? d.valor_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '0,00'
+      reserva.status = d.status || ''
+      reserva.jogo_id = d.jogo_id || null
+      reserva.jogo_nome = ''
+      reserva.sala_id = d.sala_id || null
+      reserva.cliente_id = d.cliente_id || null
+      reserva.cliente_nome = ''
+      reserva.observacoes = d.observacoes || ''
+
+      // Preencher nome do jogo e cliente para mostrar no input
+      if (reserva.jogo_id) {
+        const jogo = listaJogos.value.find(j => String(j.id) === String(reserva.jogo_id))
+        if (jogo) {
+          jogoSelecionado.value = jogo
+          reserva.jogo_nome = jogo.NomeJogo
+          jogoPesquisa.value = jogo.NomeJogo
+          salasDisponiveis.value = listaSalas.value.filter(sala =>
+            sala.Jogos?.some(j => String(j.id) === String(jogo.id))
+          )
+        }
+      }
+      if (reserva.cliente_id) {
+        const cliente = listaClientes.value.find(c => c.id === reserva.cliente_id)
+        if (cliente) {
+          reserva.cliente_nome = cliente.nome
+          clientePesquisa.value = cliente.nome
+        }
+      }
+    }
+  } catch (err) {
+    Swal.fire('Erro', 'Reserva não encontrada ou erro ao carregar.', 'error')
+    router.push('/reservas')
+  } finally {
+    document.getElementById('spinner')?.classList.remove('show')
+  }
+}
+
+const rules = {
+  data_reserva: { required },
+  hora_reserva: { required },
+  numero_jogadores: {
+    required,
+    minValue: minValue(1),
+    maxValue: helpers.withMessage(
+      () => `Excede capacidade da sala (${capacidadeSalaSelecionada.value})`,
+      (val: number) => val <= capacidadeSalaSelecionada.value
+    )
+  },
+  valor_total: {
+    required,
+    valorValido: helpers.withMessage('Valor deve ser maior que zero', (value: string) => {
+      const valor = parseFloat(value.replace('.', '').replace(',', '.')) || 0
+      return valor > 0
+    })
+  },
+  status: { required },
+  jogo_id: { required },
+  sala_id: { required },
+  cliente_id: { required },
+  observacoes: { maxLength: maxLength(500) }
+}
+
+const v$ = useVuelidate(rules, reserva)
+
+const salvarAlteracoes = async () => {
+  const isValid = await v$.value.$validate()
+  if (!isValid) {
+    Swal.fire({ icon: 'error', title: 'Erro', text: 'Preencha todos os campos obrigatórios corretamente.' })
+    return
+  }
+
+  if (reserva.numero_jogadores > capacidadeSalaSelecionada.value) {
+    Swal.fire({ icon: 'error', title: 'Capacidade excedida', text: 'Número de jogadores maior que a capacidade da sala selecionada.' })
+    return
+  }
+
+  loading.value = true
+  try {
+    const payload = {
+      data_reserva: reserva.data_reserva,
+      hora_reserva: reserva.hora_reserva,
+      numero_jogadores: reserva.numero_jogadores,
+      valor_total: parseFloat(reserva.valor_total.replace('.', '').replace(',', '.')),
+      status: reserva.status,
+      jogo_id: reserva.jogo_id,
+      sala_id: reserva.sala_id,
+      cliente_id: reserva.cliente_id,
+      observacoes: reserva.observacoes
+    }
+    await axios.put(`http://localhost:3000/reservas/${id}`, payload)
+    await Swal.fire({ icon: 'success', title: 'Reserva atualizada!', timer: 2000, showConfirmButton: false })
+    router.push('/reservas')
+  } catch (e) {
+    Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha ao salvar reserva.' })
+  } finally {
+    loading.value = false
+  }
+}
+
+const excluirReserva = async () => {
+  const confirm = await Swal.fire({
+    title: 'Tem certeza?',
+    text: 'Esta ação é irreversível!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sim, excluir',
+    cancelButtonText: 'Cancelar'
+  })
+
+  if (confirm.isConfirmed) {
+    try {
+      await axios.delete(`http://localhost:3000/reservas/${id}`)
+      await Swal.fire('Excluído!', 'A reserva foi removida.', 'success')
+      router.push('/reservas')
+    } catch (error) {
+      Swal.fire('Erro', 'Erro ao excluir a reserva.', 'error')
+    }
+  }
+}
+
+onMounted(async () => {
+  loading.value = true
+  await Promise.all([carregarJogos(), carregarClientes(), carregarSalas()])
+  await carregarReserva()
+  loading.value = false
 })
 </script>
-

@@ -355,7 +355,6 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { Toast } from '@/components/common/toast'
 
-// Estado reativo dos dados do funcionário
 const funcionario = reactive({
   nome: '',
   cpf: '',
@@ -379,10 +378,8 @@ const funcionario = reactive({
   foto: null as File | null,
 })
 
-// Preview da foto
 const fotoPreview = ref<string | null>(null)
 
-// Regras de validação
 const rules = {
   nome: { required, minLength: minLength(3) },
   cpf: { required, numeric, minLength: minLength(11) },
@@ -467,7 +464,7 @@ async function cadastrarFuncionario() {
   }
 
   try {
-    const response = await axios.post('http://localhost:3000/funcionarios', dadosEnvio, {
+    const response = await axios.post('http://10.210.8.51:3000/funcionarios', dadosEnvio, {
       headers: { 'Content-Type': 'application/json' },
     })
 

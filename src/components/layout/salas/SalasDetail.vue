@@ -188,7 +188,7 @@ const nomesJogosSelecionados = computed(() => {
 
 const buscarJogos = async () => {
   try {
-    const response = await axios.get('http://localhost:3000/jogos', {
+    const response = await axios.get('http://10.210.8.51:3000/jogos', {
       headers: { 'Content-Type': 'application/json' }
     })
     if (response.status === 200) {

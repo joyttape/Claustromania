@@ -90,7 +90,7 @@ export default defineComponent({
   methods: {
     async buscarClientes() {
       try {
-        const response = await axios.get('http://localhost:3000/clientes', {
+        const response = await axios.get('http://10.210.8.51:3000/clientes', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'

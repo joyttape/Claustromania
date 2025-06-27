@@ -93,7 +93,6 @@
                           <option selected disabled value="">Selecione</option>
                           <option value="SP">SP</option>
                           <option value="RJ">RJ</option>
-                          <!-- ... outros estados ... -->
                         </select>
                       </div>
                       <div class="col-md-3">
@@ -110,7 +109,6 @@
                     </div>
                   </form>
 
-                  <!-- Foto -->
                   <div class="position-relative" style="width: 100px; height: 100px; margin-left: 20px;">
                     <label for="foto" class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100" style="cursor: pointer; border-radius: 12px;">
                       <template v-if="fotoPreview">
@@ -178,7 +176,7 @@ const onFileChange = (event: Event) => {
 
 const carregarCliente = async () => {
   try {
-    const response = await axios.get(`http://localhost:3000/clientes/${clienteId}`)
+    const response = await axios.get(`http://10.210.8.51:3000/clientes/${clienteId}`)
     const dados = response.data
 
     Object.assign(cliente, {
@@ -203,7 +201,7 @@ const carregarCliente = async () => {
 
 const salvarAlteracoes = async () => {
   try {
-    await axios.put(`http://localhost:3000/clientes/${clienteId}`, cliente)
+    await axios.put(`http://10.210.8.51:3000/clientes/${clienteId}`, cliente)
     await Swal.fire({
       icon: 'success',
       title: 'Salvo com sucesso!',
@@ -235,7 +233,7 @@ const excluirCliente = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/clientes/${clienteId}`)
+      await axios.delete(`http://10.210.8.51:3000/clientes/${clienteId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Excluído com sucesso!',

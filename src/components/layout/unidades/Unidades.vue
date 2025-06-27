@@ -93,7 +93,7 @@ export default defineComponent({
   methods: {
   async buscarUnidades() {
     try {
-      const response = await axios.get('http://localhost:3000/unidades', {
+      const response = await axios.get('http://10.210.8.51:3000/unidades', {
         headers: {
           'Content-Type': 'application/json',
           'ngrok-skip-browser-warning': '69420'

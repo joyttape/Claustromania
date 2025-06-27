@@ -162,7 +162,7 @@ const carregarJogo = async () => {
 
 const salvarAlteracoes = async () => {
   try {
-    await axios.put(`http://localhost:3000/jogos/${jogoId}`, jogo)
+    await axios.put(`http://10.210.8.51:3000/jogos/${jogoId}`, jogo)
     await Swal.fire({
       icon: 'success',
       title: 'Jogo salvo com sucesso!',
@@ -194,7 +194,7 @@ const cancelarAlteracoes = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/jogos/${jogoId}`)
+      await axios.delete(`http://10.210.8.51:3000/jogos/${jogoId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Jogo excluído com sucesso!',

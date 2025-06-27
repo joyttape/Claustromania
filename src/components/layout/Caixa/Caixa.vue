@@ -101,8 +101,8 @@ export default defineComponent({
     async buscarCaixas() {
       try {
         const [caixasResponse, funcionariosResponse] = await Promise.all([
-          axios.get('http://localhost:3000/caixas'),
-          axios.get('http://localhost:3000/funcionarios')
+          axios.get('http://10.210.8.51:3000/caixas'),
+          axios.get('http://10.210.8.51:3000/funcionarios')
         ]);
 
         if(caixasResponse.status === 200){
@@ -115,15 +115,15 @@ export default defineComponent({
             TotalTransacoes: item.total_transacoes || 0,
             Status: item.status,
             Observacoes: item.observacao,
-            funcionario_id: item.funcionario_id // Mantido igual ao retorno da API
+            funcionario_id: item.funcionario_id
           }));
           
-          console.log('Dados dos caixas:', this.listaCaixas); // Para debug
+          console.log('Dados dos caixas:', this.listaCaixas);
         }
 
         if (funcionariosResponse.status === 200) {
           this.listaFuncionarios = funcionariosResponse.data;
-          console.log('Dados dos funcionários:', this.listaFuncionarios); // Para debug
+          console.log('Dados dos funcionários:', this.listaFuncionarios); 
         }
 
       } catch (error) {

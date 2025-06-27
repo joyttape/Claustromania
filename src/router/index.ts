@@ -3,7 +3,6 @@ import Loogin from '../components/layout/Loogin.vue'
 import SingUp from '../components/layout/SingUp.vue'
 import Blank from '@/components/layout/Blank.vue'
 import Salas from '@/components/layout/salas/Salas.vue'
-import CadSala from '@/components/layout/CadSala.vue'
 import Unidades from '@/components/layout/unidades/Unidades.vue'
 import Funcionarios from '@/components/layout/Funcionarios/Funcionarios.vue'
 import Clientes from '@/components/layout/Clientes/Clientes.vue'
@@ -50,11 +49,6 @@ const router = createRouter({
       path: '/salas',
       name: 'Salas',
       component: Salas,
-    },
-    {
-      path: '/salas/cadastrosala',
-      name: 'Cadastro Salas',
-      component: CadSala,
     },
     {
       path: '/unidades',
@@ -127,7 +121,7 @@ const router = createRouter({
      component: ReservasForm
     },
     {
-      path: '/reservas/detalhe',
+      path: '/reservas/detalhe/:id',
       name: "DetalhesReserva",
       component: ReservasDetail
     },
