@@ -147,7 +147,7 @@ const mostrarSugestoes = ref(false)
 
 const buscarCaixa = async () => {
   try {
-    const res = await axios.get(`http://10.210.8.51:3000/caixas/${id}`)
+    const res = await axios.get(`http://localhost:3000/caixas/${id}`)
     const dados = res.data
     Object.assign(caixa, {
       data_abertura: dados.data_abertura,
@@ -174,7 +174,7 @@ const buscarCaixa = async () => {
 
 const carregarFuncionarios = async () => {
   try {
-    const res = await axios.get('http://10.210.8.51:3000/funcionarios')
+    const res = await axios.get('http://localhost:3000/funcionarios')
     listaFuncionarios.value = res.data
   } catch (error) {
     console.error('Erro ao carregar funcionários:', error)
@@ -213,7 +213,7 @@ const salvarAlteracoes = async () => {
       funcionario_id: caixa.funcionario_id
     }
 
-    await axios.put(`http://10.210.8.51:3000/caixas/${id}`, dados)
+    await axios.put(`http://localhost:3000/caixas/${id}`, dados)
 
     Swal.fire('Sucesso', 'Caixa atualizado com sucesso!', 'success')
     router.push('/caixa')
@@ -235,7 +235,7 @@ const excluirCaixa = async () => {
 
   if (confirm.isConfirmed) {
     try {
-      await axios.delete(`http://10.210.8.51:3000/caixas/${id}`)
+      await axios.delete(`http://localhost:3000/caixas/${id}`)
       Swal.fire('Excluído!', 'O caixa foi removido.', 'success')
       router.push('/caixa')
     } catch (error) {

@@ -1,13 +1,13 @@
 <template>
   <div class="container-fluid position-relative d-flex p-0">
-    <!-- Sign In Start -->
     <div class="container-fluid">
       <div class="row h-100 align-items-center justify-content-center" style="min-height: 100vh">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5 col-xl-4">
           <div class="bg-secondary rounded p-4 p-sm-5 my-4 mx-3 text-light">
+
             <div class="d-flex align-items-center justify-content-between mb-3">
               <img class="logo" src="../imgs/logo1.png" alt="Logo" />
-              <h3>Log In</h3>
+              <h3 class="mb-0">Log In</h3>
             </div>
 
             <form @submit.prevent="handleLogin">
@@ -42,11 +42,11 @@
                   <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="lembrar" />
                   <label class="form-check-label" for="exampleCheck1">Lembre de mim</label>
                 </div>
-                <a href="#">Esqueci minha senha</a>
               </div>
 
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Log In</button>
             </form>
+
           </div>
         </div>
       </div>
@@ -54,7 +54,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
@@ -66,6 +66,7 @@ const lembrar = ref(false)
 
 const emailError = ref('')
 const senhaError = ref('')
+
 
 const router = useRouter()
 
@@ -89,59 +90,75 @@ const handleLogin = async () => {
   if (!valid) return
 
   try {
-    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
+    const response = await axios.get('http://localhost:3000/funcionarios')
     const funcionarios = response.data
 
-    const funcionario = funcionarios.find(f => f.email === email.value)
+    const funcionario = funcionarios.find((f: any) => f.email === email.value)
 
     if (!funcionario) {
-      Swal.fire({
+      await Swal.fire({
         icon: 'error',
         title: 'E-mail não encontrado',
-        text: 'Verifique se digitou corretamente ou cadastre-se.',
+        text: 'Verifique se digitou corretamente ou cadastre-se.'
+      })
+      return
+    }
+
+    if (!funcionario.status) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Acesso Negado',
+        text: 'Funcionário inativo não pode acessar o sistema.'
       })
       return
     }
 
     if (!funcionario.senha || funcionario.senha.trim() === '') {
-      Swal.fire({
+      await Swal.fire({
         icon: 'info',
         title: 'Senha não cadastrada',
         text: 'Vamos redirecionar para que você cadastre sua senha.',
-        confirmButtonText: 'OK',
-      }).then(() => {
-        router.push({ path: '/singup', query: { email: email.value } })
+        confirmButtonText: 'OK'
       })
+      router.push({ path: '/singup', query: { email: email.value } })
       return
     }
 
     if (funcionario.senha !== senha.value) {
-      Swal.fire({
+      await Swal.fire({
         icon: 'error',
         title: 'Senha incorreta',
-        text: 'Tente novamente.',
+        text: 'Tente novamente.'
       })
       return
     }
 
-    Swal.fire({
+    await Swal.fire({
       icon: 'success',
       title: 'Login realizado com sucesso!',
       showConfirmButton: false,
       timer: 1500,
-    }).then(() => {
-      router.push('/reservas')
-      localStorage.setItem('cargoFuncionario', funcionario.cargo)
-      localStorage.setItem('funcionarioId', funcionario.id)
-      localStorage.setItem('funcionarioNome', funcionario.nome)
+      timerProgressBar: true,
     })
+    router.push('/reservas')
+
+    localStorage.setItem('cargoFuncionario', funcionario.cargo)
+    localStorage.setItem('funcionarioId', funcionario.id)
+    localStorage.setItem('funcionarioNome', funcionario.nome)
+
   } catch (error) {
     console.error('Erro ao verificar login:', error)
     Swal.fire({
       icon: 'error',
       title: 'Erro no login',
-      text: 'Tente novamente mais tarde.',
+      text: 'Tente novamente mais tarde.'
     })
   }
 }
 </script>
+
+<style scoped>
+.logo {
+  height: auto;
+}
+</style>

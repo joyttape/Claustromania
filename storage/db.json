@@ -1,21 +1,52 @@
 {
   "clientes": [
     {
-      "nome": "Camila",
-      "cpf": "161262132313151",
+      "nome": "Joao Pedro Gundim",
+      "cpf": "03550313292",
+      "dataNascimento": "2005-03-05",
+      "sexo": "masculino",
+      "email": "joaopedrogundimg@gmail.com",
+      "nivel": "Intermediario",
+      "logradouro": "Avenida Rio Branco",
+      "numero": "1434",
+      "complemento": "Jp Assessoria",
+      "bairro": "Setor 2",
+      "cidade": "Jaru",
+      "estado": "RO",
+      "cep": "76890-00",
+      "id": "75dfjo"
+    },
+    {
+      "nome": "Ana Lúcia Santos",
+      "cpf": "00950313292",
       "dataNascimento": "2005-03-05",
       "sexo": "feminino",
-      "email": "jeiososasj@gmail.com",
-      "nivel": "Experiente",
-      "logradouro": "Afdvdsvd",
-      "numero": "vdvds",
-      "complemento": "vsdvds",
-      "bairro": "vdsvds",
-      "cidade": "vdvdvd",
-      "estado": "RO",
-      "cep": "dsvdvds",
-      "foto": {},
-      "id": "pas77t"
+      "email": "ana.santos@example.com",
+      "nivel": "Intermediario",
+      "logradouro": "Av. Brasil",
+      "numero": "456",
+      "complemento": "Jp Assessoria",
+      "bairro": "Jardim América",
+      "cidade": "Rio de Janeiro",
+      "estado": "RJ",
+      "cep": "22041-001",
+      "id": "pdkxgx"
+    },
+    {
+      "id": "ukl1h1",
+      "nome": "Carlos Almeida",
+      "cpf": "621626233262",
+      "dataNascimento": "1999-08-06",
+      "sexo": "masculino",
+      "email": "carlos.almeida@example.com",
+      "nivel": "Intermediario",
+      "logradouro": "Rua das Flores",
+      "numero": "123",
+      "complemento": "Apto 101",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "cep": "01001-000"
     }
   ],
   "salas": [
@@ -25,10 +56,6 @@
       "Status": true,
       "Jogos": [
         {
-          "id": "1",
-          "NomeJogo": "O Mistério da Mansão Abandonada"
-        },
-        {
           "id": "8862",
           "NomeJogo": "Hora de aventura"
         },
@@ -37,19 +64,8 @@
           "NomeJogo": "Divertidamente"
         }
       ],
+      "unidade_id": "sg4rb5",
       "id": "1"
-    },
-    {
-      "Numero": "0002",
-      "Jogadores": 8,
-      "Status": false,
-      "Jogos": [
-        {
-          "id": 2,
-          "NomeJogo": "Laboratório do Tempo"
-        }
-      ],
-      "id": "2"
     },
     {
       "id": "95076",
@@ -69,10 +85,11 @@
       "Status": true,
       "Jogos": [
         {
-          "id": 3,
-          "NomeJogo": "O Segredo do Cofre"
+          "id": "1",
+          "NomeJogo": "O Mistério da Mansão Abandonada"
         }
       ],
+      "unidade_id": "eufbqe",
       "id": "983"
     },
     {
@@ -86,6 +103,19 @@
           "NomeJogo": "Hora de aventura"
         }
       ]
+    },
+    {
+      "id": "81417",
+      "Numero": "61513",
+      "Jogadores": 20,
+      "Status": true,
+      "Jogos": [
+        {
+          "id": "8bdb",
+          "NomeJogo": "Divertidamente"
+        }
+      ],
+      "unidade_id": "eufbqe"
     }
   ],
   "funcionarios": [
@@ -99,7 +129,7 @@
       "salario": 11222,
       "dataContratacao": "8162-05-06",
       "turno": "tarde",
-      "status": true,
+      "status": false,
       "logradouro": "Afdvdsvd",
       "numero": "vdvds",
       "complemento": "vsdvds",
@@ -107,8 +137,6 @@
       "cidade": "vdvdvd",
       "estado": "RO",
       "cep": "dsvdvds",
-      "foto": null,
-      "senha": "jope@00503",
       "id": "g18npn"
     },
     {
@@ -121,7 +149,7 @@
       "salario": 26220,
       "dataContratacao": "6565-03-05",
       "turno": "noite",
-      "status": true,
+      "status": false,
       "logradouro": "Afdvdsvd",
       "numero": "vdvds",
       "complemento": "vsdvds",
@@ -129,9 +157,7 @@
       "cidade": "vdvdvd",
       "estado": "PB",
       "cep": "dsvdvds",
-      "foto": null,
-      "id": "f1zsus",
-      "senha": "gil"
+      "id": "f1zsus"
     },
     {
       "nome": "Camila",
@@ -216,6 +242,26 @@
       "estado": "RO",
       "cep": "76890-000",
       "senha": "123"
+    },
+    {
+      "id": "jaa365",
+      "nome": "Carlos Almeida",
+      "cpf": "12345678901",
+      "dataNascimento": "1995-02-07",
+      "sexo": "masculino",
+      "email": "carlos.almeida@example.com",
+      "cargo": "Caixa",
+      "salario": 1900,
+      "dataContratacao": "2015-03-06",
+      "turno": "manha",
+      "status": false,
+      "logradouro": "Rua das Flores",
+      "numero": "123",
+      "complemento": "Apto 101",
+      "bairro": "Centro",
+      "cidade": "São Paulo",
+      "estado": "SP",
+      "cep": "01001-000"
     }
   ],
   "jogos": [
@@ -264,6 +310,7 @@
         "estado": "RJ",
         "cep": "22041001"
       },
+      "gerente_id": "paw2mv",
       "foto": null,
       "id": "eufbqe"
     },
@@ -289,17 +336,14 @@
       "id": "sg4rb5"
     },
     {
-      "id": "5s0r4d",
-      "nome": "Claustromania Ji-Paraná",
+      "nome": "Claustromania Ouro Preto",
       "cnpj": "06262630303651",
       "telefone": "69992087903",
       "status": true,
       "capacidade": "500",
       "diasFuncionamento": "Terça à Domingo",
-      "horarioFuncionamento": {
-        "abertura": "05:00",
-        "fechamento": "17:00"
-      },
+      "horarioAbertura": "08:00",
+      "horarioFechamento": "20:00",
       "endereco": {
         "logradouro": "Av. Brasil",
         "numero": "456",
@@ -309,7 +353,8 @@
         "estado": "RJ",
         "cep": "22041001"
       },
-      "foto": null
+      "foto": null,
+      "id": "5s0r4d"
     }
   ],
   "caixas": [
@@ -342,20 +387,132 @@
       "observacao": "jbjbjkmn km km ",
       "funcionario_id": "g18npn",
       "id": "e1cc"
+    },
+    {
+      "id": "0286",
+      "data_abertura": "2025-07-07T12:00",
+      "valor_abertura": 1300,
+      "data_fechamento": null,
+      "valor_fechamento": null,
+      "status": "aberto",
+      "observacao": "Abrindo caixa",
+      "funcionario_id": "r3c2jd"
     }
   ],
   "reservas": [
     {
-      "data_reserva": "2025-06-28",
-      "hora_reserva": "20:00",
-      "numero_jogadores": 5,
-      "valor_total": 40.25,
-      "status": "cancelado",
+      "data_reserva": "2025-07-06",
+      "hora_reserva": "00:00",
+      "numero_jogadores": 2,
+      "valor_total": 16.1,
+      "status": "confirmado",
       "jogo_id": "8862",
-      "sala_id": "77039",
-      "cliente_id": "pas77t",
+      "sala_id": "1",
+      "cliente_id": "75dfjo",
+      "observacoes": "KSNK SKCSK DSA",
+      "unidade_id": "sg4rb5",
+      "forma_pagamento": "pix",
+      "id": "ecbc"
+    },
+    {
+      "id": "42d6",
+      "data_reserva": "2025-07-07",
+      "hora_reserva": "12:03",
+      "numero_jogadores": 1,
+      "valor_total": 8.05,
+      "status": "confirmado",
+      "jogo_id": "8862",
+      "jogo_nome": "Hora de aventura",
+      "sala_id": "1",
+      "cliente_id": "pdkxgx",
+      "cliente_nome": "Ana Lúcia Santos",
       "observacoes": "",
-      "id": "7bbf"
+      "forma_pagamento": "pix",
+      "unidade_id": "sg4rb5"
+    }
+  ],
+  "transacoes": [
+    {
+      "id": "8c3b",
+      "reserva_id": "ecbc",
+      "cliente_nome": "Joao Pedro Gundim",
+      "forma_pagamento": "pix",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "dvfsv",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-03T14:58:25.494Z"
+    },
+    {
+      "id": "f5e0",
+      "reserva_id": "ecbc",
+      "cliente_nome": "Joao Pedro Gundim",
+      "forma_pagamento": "pix",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "Joao",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-03T14:58:48.111Z"
+    },
+    {
+      "id": "fe00",
+      "reserva_id": "ecbc",
+      "cliente_nome": "Joao Pedro Gundim",
+      "forma_pagamento": "pix",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "Joao",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-03T15:00:27.881Z"
+    },
+    {
+      "id": "ac64",
+      "reserva_id": "ecbc",
+      "cliente_nome": "Joao Pedro Gundim",
+      "forma_pagamento": "pix",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "João",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-03T15:00:53.996Z"
+    },
+    {
+      "id": "1b98",
+      "reserva_id": "ecbc",
+      "forma_pagamento": "dinheiro",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "Camila",
+      "valor_recebido": 50,
+      "troco": 33.9,
+      "data": "2025-07-03T15:16:56.597Z"
+    },
+    {
+      "id": "a521",
+      "reserva_id": "ecbc",
+      "forma_pagamento": "pix",
+      "valor": 16.1,
+      "caixa_id": "88e3",
+      "pagador": "Joao",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-03T15:21:00.483Z"
+    },
+    {
+      "id": "42d7",
+      "reserva_id": "42d6",
+      "cliente_nome": "Ana Lúcia Santos",
+      "forma_pagamento": "pix",
+      "valor": 8.05,
+      "caixa_id": "0286",
+      "pagador": "Ana Lucia",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-07T16:04:51.961Z"
     }
   ]
 }

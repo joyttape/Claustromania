@@ -18,12 +18,12 @@ import SalasForm from '@/components/layout/salas/SalasForm.vue'
 import Reservas from '@/components/layout/Reservas/Reservas.vue'
 import ReservasForm from '@/components/layout/Reservas/ReservasForm.vue'
 import ReservasDetail from '@/components/layout/Reservas/ReservasDetail.vue'
+import Transacao from '@/components/layout/Reservas/Transacao.vue'
 import SalasDetail from '@/components/layout/salas/SalasDetail.vue'
 import JogosDetail from '@/components/layout/Jogos/JogosDetail.vue'
 import Caixa from '@/components/layout/Caixa/Caixa.vue'
 import FormCaixa from '@/components/layout/Caixa/FormCaixa.vue'
 import CaixaDetail from '@/components/layout/Caixa/CaixaDetail.vue'
-import Relatorios from '@/components/layout/Relatórios/Relatorios.vue'
 
 import { Form } from 'react-router-dom'
 
@@ -126,6 +126,16 @@ const router = createRouter({
       component: ReservasDetail
     },
     {
+      path: '/reservas/detalhe/transacao/:id',
+      name: "Transacao",
+      component: Transacao
+    },
+    {
+      path: '/reservas/transacao/:id',
+      name: "Transacao",
+      component: Transacao
+    },
+    {
      path: '/salas/detalhe/:id',
      name: 'DetalhesSala',
      component: SalasDetail
@@ -154,15 +164,7 @@ const router = createRouter({
       path: '/caixa/detalhe/:id',
       name: 'CaixaDetalhe',
       component: CaixaDetail
-    },
-    {
-      path: '/relatorios',
-      name: 'Relatorios',
-      component: Relatorios
     }
-
-
-    
   ]
 })
 

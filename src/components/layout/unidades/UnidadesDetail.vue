@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+    <div
+      id="spinner"
+      class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+    >
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
         <span class="sr-only">Loading...</span>
       </div>
@@ -21,14 +24,15 @@
                 <div class="d-flex align-items-start gap-4">
                   <form @submit.prevent="salvarAlteracoes" class="flex-grow-1" novalidate>
                     <h6 class="mb-3">Dados da Unidade</h6>
+
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="nome" class="form-label">Nome</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="nome" 
-                          v-model="unidade.nome" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="nome"
+                          v-model="unidade.nome"
                           :class="{ 'is-invalid': v$.nome.$error }"
                           required
                         />
@@ -37,13 +41,14 @@
                           <div v-if="!v$.nome.minLength">Nome deve ter no mínimo 3 caracteres.</div>
                         </div>
                       </div>
+
                       <div class="col-md-4">
                         <label for="cnpj" class="form-label">CNPJ</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="cnpj" 
-                          v-model="unidade.cnpj" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cnpj"
+                          v-model="unidade.cnpj"
                           @input="aplicarMascaraCNPJ"
                           :class="{ 'is-invalid': v$.cnpj.$error }"
                           required
@@ -53,20 +58,54 @@
                           <div v-if="!v$.cnpj.cnpjValido">CNPJ inválido.</div>
                         </div>
                       </div>
+
                       <div class="col-md-4">
                         <label for="telefone" class="form-label">Telefone</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="telefone" 
-                          v-model="unidade.telefone" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="telefone"
+                          v-model="unidade.telefone"
                           @input="aplicarMascaraTelefone"
                           :class="{ 'is-invalid': v$.telefone.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.telefone.$error">
-                          Telefone é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.telefone.$error">Telefone é obrigatório.</div>
+                      </div>
+                    </div>
+
+                    <!-- Campo Gerente com autocomplete -->
+                    <div class="row mb-3">
+                      <div class="col-md-6 position-relative">
+                        <label for="gerente" class="form-label">Gerente</label>
+                        <input
+                            id="gerente"
+                            type="text"
+                            class="form-control"
+                            v-model="gerentePesquisa"
+                            @input="pesquisarGerente"
+                            @focus="mostrarSugestoesGerente = gerentesFiltrados.length > 0"
+                            @blur="onBlurGerente"
+                            :class="{ 'is-invalid': v$.gerente_id.$error }"
+                            autocomplete="off"
+                            placeholder="Digite para buscar gerente..."
+                            required
+                          />
+                          <div
+                            v-if="mostrarSugestoesGerente"
+                            class="list-group position-absolute w-100"
+                            style="z-index: 1050; max-height: 200px; overflow-y: auto;"
+                          >
+                            <button
+                              type="button"
+                              class="list-group-item list-group-item-action"
+                              v-for="gerente in gerentesFiltrados"
+                              :key="gerente.id"
+                              @mousedown.prevent="selecionarGerente(gerente)"
+                            >
+                              {{ gerente.nome }}
+                            </button>
+                          </div>
                       </div>
                     </div>
 
@@ -74,73 +113,61 @@
                       <div class="col-md-4">
                         <label class="form-label">Status</label>
                         <div class="form-check mt-2">
-                          <input 
-                            class="form-check-input" 
-                            type="checkbox" 
-                            id="status" 
-                            v-model="unidade.status" 
-                          />
+                          <input class="form-check-input" type="checkbox" id="status" v-model="unidade.status" />
                           <label class="form-check-label" for="status">Unidade ativa</label>
                         </div>
                       </div>
+
                       <div class="col-md-4">
                         <label for="capacidade" class="form-label">Capacidade</label>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          id="capacidade" 
-                          v-model="unidade.capacidade" 
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="capacidade"
+                          v-model="unidade.capacidade"
                           :class="{ 'is-invalid': v$.capacidade.$error }"
                         />
-                        <div class="invalid-feedback" v-if="v$.capacidade.$error">
-                          Informe uma capacidade válida.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.capacidade.$error">Informe uma capacidade válida.</div>
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-6">
                         <label for="diasFuncionamento" class="form-label">Dias de Funcionamento</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="diasFuncionamento" 
-                          v-model="unidade.diasFuncionamento" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="diasFuncionamento"
+                          v-model="unidade.diasFuncionamento"
                           :class="{ 'is-invalid': v$.diasFuncionamento.$error }"
                           placeholder="Ex: Segunda a Sexta, 9h às 18h / Sábado 10h às 14h"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.diasFuncionamento.$error">
-                          Informe os dias de funcionamento.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.diasFuncionamento.$error">Informe os dias de funcionamento.</div>
                       </div>
                       <div class="col-md-3">
                         <label for="horarioAbertura" class="form-label">Horário de Abertura</label>
-                        <input 
-                          type="time" 
-                          class="form-control" 
-                          id="horarioAbertura" 
-                          v-model="unidade.horarioAbertura" 
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="horarioAbertura"
+                          v-model="unidade.horarioAbertura"
                           :class="{ 'is-invalid': v$.horarioAbertura.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.horarioAbertura.$error">
-                          Horário de abertura é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.horarioAbertura.$error">Horário de abertura é obrigatório.</div>
                       </div>
                       <div class="col-md-3">
                         <label for="horarioFechamento" class="form-label">Horário de Fechamento</label>
-                        <input 
-                          type="time" 
-                          class="form-control" 
-                          id="horarioFechamento" 
-                          v-model="unidade.horarioFechamento" 
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="horarioFechamento"
+                          v-model="unidade.horarioFechamento"
                           :class="{ 'is-invalid': v$.horarioFechamento.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.horarioFechamento.$error">
-                          Horário de fechamento é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.horarioFechamento.$error">Horário de fechamento é obrigatório.</div>
                       </div>
                     </div>
 
@@ -148,78 +175,65 @@
                     <div class="row mb-3">
                       <div class="col-md-6">
                         <label for="logradouro" class="form-label">Logradouro</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="logradouro" 
-                          v-model="unidade.logradouro" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="logradouro"
+                          v-model="unidade.logradouro"
                           :class="{ 'is-invalid': v$.logradouro.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.logradouro.$error">
-                          Logradouro é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.logradouro.$error">Logradouro é obrigatório.</div>
                       </div>
                       <div class="col-md-2">
                         <label for="numero" class="form-label">Número</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="numero" 
-                          v-model="unidade.numero" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="numero"
+                          v-model="unidade.numero"
                           :class="{ 'is-invalid': v$.numero.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.numero.$error">
-                          Número é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.numero.$error">Número é obrigatório.</div>
                       </div>
                       <div class="col-md-4">
                         <label for="complemento" class="form-label">Complemento</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="complemento" 
-                          v-model="unidade.complemento" 
-                        />
+                        <input type="text" class="form-control" id="complemento" v-model="unidade.complemento" />
                       </div>
                     </div>
 
                     <div class="row mb-3">
                       <div class="col-md-3">
                         <label for="bairro" class="form-label">Bairro</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="bairro" 
-                          v-model="unidade.bairro" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="bairro"
+                          v-model="unidade.bairro"
                           :class="{ 'is-invalid': v$.bairro.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.bairro.$error">
-                          Bairro é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.bairro.$error">Bairro é obrigatório.</div>
                       </div>
                       <div class="col-md-3">
                         <label for="cidade" class="form-label">Cidade</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="cidade" 
-                          v-model="unidade.cidade" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cidade"
+                          v-model="unidade.cidade"
                           :class="{ 'is-invalid': v$.cidade.$error }"
                           required
                         />
-                        <div class="invalid-feedback" v-if="v$.cidade.$error">
-                          Cidade é obrigatória.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.cidade.$error">Cidade é obrigatória.</div>
                       </div>
                       <div class="col-md-3">
                         <label for="estado" class="form-label">Estado</label>
-                        <select 
-                          class="form-select" 
-                          id="estado" 
-                          v-model="unidade.estado" 
+                        <select
+                          class="form-select"
+                          id="estado"
+                          v-model="unidade.estado"
                           :class="{ 'is-invalid': v$.estado.$error }"
                           required
                         >
@@ -252,17 +266,15 @@
                           <option value="SE">SE</option>
                           <option value="TO">TO</option>
                         </select>
-                        <div class="invalid-feedback" v-if="v$.estado.$error">
-                          Estado é obrigatório.
-                        </div>
+                        <div class="invalid-feedback" v-if="v$.estado.$error">Estado é obrigatório.</div>
                       </div>
                       <div class="col-md-3">
                         <label for="cep" class="form-label">CEP</label>
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          id="cep" 
-                          v-model="unidade.cep" 
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cep"
+                          v-model="unidade.cep"
                           @input="aplicarMascaraCep"
                           :class="{ 'is-invalid': v$.cep.$error }"
                           required
@@ -282,18 +294,7 @@
                     </div>
                   </form>
 
-                  <!-- Foto -->
-                  <div class="position-relative" style="width: 100px; height: 100px; margin-left: 20px;">
-                    <label for="foto" class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100" style="cursor: pointer; border-radius: 12px;">
-                      <template v-if="fotoPreview">
-                        <img :src="fotoPreview" alt="Preview" class="w-100 h-100" style="object-fit: cover; border-radius: 12px;" />
-                      </template>
-                      <template v-else>
-                        <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
-                      </template>
-                    </label>
-                    <input type="file" id="foto" class="d-none" accept="image/*" @change="onFileChange" />
-                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -321,6 +322,12 @@ const route = useRoute()
 const router = useRouter()
 const unidadeId = route.params.id as string
 
+const listaGerentes = ref<Array<{ id: number; nome: string }>>([])
+const gerentesFiltrados = ref<Array<{ id: number; nome: string }>>([])
+const gerentePesquisa = ref('')
+const mostrarSugestoesGerente = ref(false)
+
+
 const unidade = reactive({
   nome: '',
   cnpj: '',
@@ -337,38 +344,39 @@ const unidade = reactive({
   cidade: '',
   estado: '',
   cep: '',
-  foto: null as File | null
+  gerente_id: null as number | null,
+  gerente_nome: ''
 })
 
 const fotoPreview = ref<string | null>(null)
 
 const rules = {
-  nome: { 
-    required, 
-    minLength: minLength(3) 
+  nome: {
+    required,
+    minLength: minLength(3)
   },
-  cnpj: { 
-    required, 
+  cnpj: {
+    required,
     cnpjValido: (value: string) => {
-      if (!value) return true;
-      const cnpjLimpo = value.replace(/\D/g, '');
-      return cnpjLimpo.length === 14;
+      if (!value) return true
+      const cnpjLimpo = value.replace(/\D/g, '')
+      return cnpjLimpo.length === 14
     }
   },
-  telefone: { 
+  telefone: {
     required,
-    minLength: minLength(14) // (00) 0000-0000 ou (00) 00000-0000
+    minLength: minLength(14)
   },
-  diasFuncionamento: { 
+  diasFuncionamento: {
     required,
     minLength: minLength(3)
   },
   horarioAbertura: { required },
-  horarioFechamento: { 
+  horarioFechamento: {
     required,
     horarioValido: (value: string) => {
-      if (!unidade.horarioAbertura || !value) return true;
-      return unidade.horarioAbertura < value;
+      if (!unidade.horarioAbertura || !value) return true
+      return unidade.horarioAbertura < value
     }
   },
   logradouro: { required },
@@ -376,24 +384,58 @@ const rules = {
   bairro: { required },
   cidade: { required },
   estado: { required },
-  cep: { 
+  cep: {
     required,
-    minLength: minLength(9) // 00000-000
+    minLength: minLength(9)
   },
   capacidade: {
     numeric
+  },
+  gerente_id: {
+    required
   }
 }
+const onBlurGerente = (event: FocusEvent) => {
+  const relatedTarget = event.relatedTarget as HTMLElement | null
+  if (
+    relatedTarget &&
+    relatedTarget.classList.contains('list-group-item')
+  ) {
+    return
+  }
+  mostrarSugestoesGerente.value = false
+}
+
 
 const v$ = useVuelidate(rules, unidade)
 
-const onFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    const file = target.files[0]
-    unidade.foto = file
-    fotoPreview.value = URL.createObjectURL(file)
+const carregarGerentes = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/funcionarios?cargo=Gerente')
+    listaGerentes.value = res.data
+  } catch (error) {
+    console.error('Erro ao carregar gerentes:', error)
   }
+}
+
+const pesquisarGerente = () => {
+  if (gerentePesquisa.value.length < 2) {
+    gerentesFiltrados.value = []
+    mostrarSugestoesGerente.value = false
+    return
+  }
+  const texto = gerentePesquisa.value.toLowerCase()
+  gerentesFiltrados.value = listaGerentes.value.filter((g) =>
+    g.nome.toLowerCase().includes(texto)
+  )
+  mostrarSugestoesGerente.value = gerentesFiltrados.value.length > 0
+}
+
+const selecionarGerente = (gerente: { id: number; nome: string }) => {
+  unidade.gerente_id = gerente.id
+  unidade.gerente_nome = gerente.nome
+  gerentePesquisa.value = gerente.nome
+  mostrarSugestoesGerente.value = false
 }
 
 const aplicarMascaraTelefone = () => {
@@ -438,8 +480,17 @@ const carregarUnidade = async () => {
       bairro: dados.bairro || dados.endereco?.bairro || '',
       cidade: dados.cidade || dados.endereco?.cidade || '',
       estado: dados.estado || dados.endereco?.estado || '',
-      cep: dados.cep || dados.endereco?.cep || ''
+      cep: dados.cep || dados.endereco?.cep || '',
+      gerente_id: dados.gerente_id || null,
+      gerente_nome: '',
     })
+
+    // Se já tem gerente_id, buscar nome para preencher o input
+    if (unidade.gerente_id) {
+      const gerenteRes = await axios.get(`http://10.210.8.51:3000/funcionarios/${unidade.gerente_id}`)
+      unidade.gerente_nome = gerenteRes.data.nome
+      gerentePesquisa.value = gerenteRes.data.nome
+    }
 
     // Aplicar máscaras após carregar os dados
     if (unidade.cnpj) aplicarMascaraCNPJ()
@@ -450,7 +501,7 @@ const carregarUnidade = async () => {
     Swal.fire({
       icon: 'error',
       title: 'Erro ao carregar unidade!',
-      text: 'Tente novamente mais tarde.',
+      text: 'Tente novamente mais tarde.'
     })
   }
 }
@@ -461,7 +512,7 @@ const salvarAlteracoes = async () => {
   if (!isValid) {
     Swal.fire({
       icon: 'error',
-      title: 'Corrija os erros no formulário antes de enviar.',
+      title: 'Corrija os erros no formulário antes de enviar.'
     })
     return
   }
@@ -488,7 +539,7 @@ const salvarAlteracoes = async () => {
       estado: unidade.estado,
       cep: cepLimpo
     },
-    foto: unidade.foto ? 'tem-foto' : null
+    gerente_id: unidade.gerente_id,
   }
 
   try {
@@ -505,7 +556,7 @@ const salvarAlteracoes = async () => {
     Swal.fire({
       icon: 'error',
       title: 'Erro ao salvar!',
-      text: 'Tente novamente mais tarde.',
+      text: 'Tente novamente mais tarde.'
     })
   }
 }
@@ -537,14 +588,16 @@ const excluirUnidade = async () => {
       Swal.fire({
         icon: 'error',
         title: 'Erro ao excluir!',
-        text: 'Tente novamente mais tarde.',
+        text: 'Tente novamente mais tarde.'
       })
     }
   }
 }
 
 onMounted(() => {
+  carregarGerentes()
   carregarUnidade()
+
   const script = document.createElement('script')
   script.src = '/src/components/js/maincode.js'
   script.async = true

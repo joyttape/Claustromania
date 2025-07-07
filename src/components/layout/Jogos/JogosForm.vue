@@ -177,7 +177,7 @@ async function cadastrarJogo() {
   }
 
   try {
-    const response = await axios.post('http://10.210.8.51:3000/jogos', dadosEnvio)
+    const response = await axios.post('http://localhost:3000/jogos', dadosEnvio)
     if (response.status === 201) {
       Toast.fire({ icon: 'success', title: `Jogo "${jogo.nome}" cadastrado!` })
       limparFormulario()

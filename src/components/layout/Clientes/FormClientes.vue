@@ -243,37 +243,7 @@
                       Salvar
                     </button>
                   </form>
-
-                  <!-- Foto no canto superior direito -->
-                  <div
-                    class="position-relative"
-                    style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;"
-                  >
-                    <label
-                      for="foto"
-                      class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100"
-                      style="cursor: pointer; overflow: hidden; border-radius: 12px;"
-                    >
-                      <template v-if="fotoPreview">
-                        <img
-                          :src="fotoPreview"
-                          alt="Preview"
-                          class="w-100 h-100"
-                          style="object-fit: cover; border-radius: 12px;"
-                        />
-                      </template>
-                      <template v-else>
-                        <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
-                      </template>
-                    </label>
-                    <input
-                      type="file"
-                      id="foto"
-                      class="d-none"
-                      accept="image/*"
-                      @change="onFileChange"
-                    />
-                  </div>
+                  
                 </div>
               </div>
             </div>
@@ -298,7 +268,6 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue';
 import FooterBarVue from '@/components/layout/FooterBar.vue';
 import { Toast } from '@/components/common/toast';
 
-// Estado reativo dos dados do cliente
 const cliente = reactive({
   nome: '',
   cpf: '',
@@ -313,13 +282,10 @@ const cliente = reactive({
   cidade: '',
   estado: '',
   cep: '',
-  foto: null as File | null,
 });
 
-// Preview da foto
 const fotoPreview = ref<string | null>(null);
 
-// Regras de validação
 const rules = {
   nome: { required, minLength: minLength(3) },
   cpf: { required, numeric, minLength: minLength(11) },
@@ -332,14 +298,6 @@ const rules = {
 const v$ = useVuelidate(rules, cliente);
 
 const router = useRouter();
-
-function onFileChange(event: Event) {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    cliente.foto = target.files[0];
-    fotoPreview.value = URL.createObjectURL(cliente.foto);
-  }
-}
 
 function limparFormulario() {
   cliente.nome = '';
@@ -355,7 +313,6 @@ function limparFormulario() {
   cliente.cidade = '';
   cliente.estado = '';
   cliente.cep = '';
-  cliente.foto = null;
   fotoPreview.value = null;
   v$.value.$reset();
 }
@@ -386,7 +343,6 @@ async function cadastrarCliente() {
     cidade: cliente.cidade,
     estado: cliente.estado,
     cep: cliente.cep,
-    // foto pode ser enviado separado via FormData se quiser
   };
 
   try {

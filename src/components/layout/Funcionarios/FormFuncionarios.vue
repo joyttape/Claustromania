@@ -302,35 +302,6 @@
                     <button type="submit" class="btn btn-primary">Salvar</button>
                   </form>
 
-                  <div
-                    class="position-relative"
-                    style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;"
-                  >
-                    <label
-                      for="foto"
-                      class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100"
-                      style="cursor: pointer; overflow: hidden; border-radius: 12px;"
-                    >
-                      <template v-if="fotoPreview">
-                        <img
-                          :src="fotoPreview"
-                          alt="Preview"
-                          class="w-100 h-100"
-                          style="object-fit: cover; border-radius: 12px;"
-                        />
-                      </template>
-                      <template v-else>
-                        <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
-                      </template>
-                    </label>
-                    <input
-                      type="file"
-                      id="foto"
-                      class="d-none"
-                      accept="image/*"
-                      @change="onFileChange"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -375,7 +346,6 @@ const funcionario = reactive({
   estado: '',
   cep: '',
 
-  foto: null as File | null,
 })
 
 const fotoPreview = ref<string | null>(null)
@@ -397,13 +367,6 @@ const v$ = useVuelidate(rules, funcionario)
 
 const router = useRouter()
 
-function onFileChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    funcionario.foto = target.files[0]
-    fotoPreview.value = URL.createObjectURL(funcionario.foto)
-  }
-}
 
 function limparFormulario() {
   funcionario.nome = ''
@@ -424,8 +387,6 @@ function limparFormulario() {
   funcionario.cidade = ''
   funcionario.estado = ''
   funcionario.cep = ''
-
-  funcionario.foto = null
   fotoPreview.value = null
   v$.value.$reset()
 }
@@ -464,7 +425,7 @@ async function cadastrarFuncionario() {
   }
 
   try {
-    const response = await axios.post('http://10.210.8.51:3000/funcionarios', dadosEnvio, {
+    const response = await axios.post('http://localhost:3000/funcionarios', dadosEnvio, {
       headers: { 'Content-Type': 'application/json' },
     })
 

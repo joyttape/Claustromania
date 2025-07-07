@@ -24,41 +24,17 @@
                   <div class="row mb-3">
                     <div class="col-md-4">
                       <label for="data_reserva" class="form-label">Data da Reserva</label>
-                      <input
-                        type="date"
-                        class="form-control"
-                        id="data_reserva"
-                        v-model="reserva.data_reserva"
-                        :class="{ 'is-invalid': v$.data_reserva.$error }"
-                        required
-                      />
+                      <input type="date" class="form-control" id="data_reserva" v-model="reserva.data_reserva" :class="{ 'is-invalid': v$.data_reserva.$error }" required />
                       <div class="invalid-feedback" v-if="v$.data_reserva.$error">Data da reserva é obrigatória.</div>
                     </div>
                     <div class="col-md-4">
                       <label for="hora_reserva" class="form-label">Hora da Reserva</label>
-                      <input
-                        type="time"
-                        class="form-control"
-                        id="hora_reserva"
-                        v-model="reserva.hora_reserva"
-                        :class="{ 'is-invalid': v$.hora_reserva.$error }"
-                        required
-                      />
+                      <input type="time" class="form-control" id="hora_reserva" v-model="reserva.hora_reserva" :class="{ 'is-invalid': v$.hora_reserva.$error }" required />
                       <div class="invalid-feedback" v-if="v$.hora_reserva.$error">Hora da reserva é obrigatória.</div>
                     </div>
                     <div class="col-md-4">
                       <label for="numero_jogadores" class="form-label">Número de Jogadores</label>
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="numero_jogadores"
-                        v-model.number="reserva.numero_jogadores"
-                        @change="calcularValorTotal"
-                        :class="{ 'is-invalid': v$.numero_jogadores.$error }"
-                        min="1"
-                        :max="capacidadeSalaSelecionada"
-                        required
-                      />
+                      <input type="number" class="form-control" id="numero_jogadores" v-model.number="reserva.numero_jogadores" @change="calcularValorTotal" :class="{ 'is-invalid': v$.numero_jogadores.$error }" min="1" :max="capacidadeSalaSelecionada" required />
                       <div class="invalid-feedback" v-if="v$.numero_jogadores.$error">
                         <span v-if="v$.numero_jogadores.minValue">Número mínimo: 1.</span>
                         <span v-if="v$.numero_jogadores.maxValue">Excede capacidade da sala ({{ capacidadeSalaSelecionada }}).</span>
@@ -66,31 +42,16 @@
                     </div>
                   </div>
 
-                  <!-- Valor Total e Status -->
                   <div class="row mb-3">
                     <div class="col-md-6">
                       <label for="valor_total" class="form-label">Valor Total (R$)</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="valor_total"
-                        v-model="reserva.valor_total"
-                        readonly
-                        :class="{ 'is-invalid': v$.valor_total.$error }"
-                        required
-                      />
+                      <input type="text" class="form-control" id="valor_total" v-model="reserva.valor_total" readonly :class="{ 'is-invalid': v$.valor_total.$error }" required />
                       <small class="text-light" v-if="jogoSelecionado">Valor unitário: R$ {{ formatarMoeda(jogoSelecionado.Preco) }}</small>
                       <div class="invalid-feedback" v-if="v$.valor_total.$error">Valor inválido.</div>
                     </div>
                     <div class="col-md-6">
                       <label for="status" class="form-label">Status</label>
-                      <select
-                        class="form-select"
-                        id="status"
-                        v-model="reserva.status"
-                        :class="{ 'is-invalid': v$.status.$error }"
-                        required
-                      >
+                      <select class="form-select" id="status" v-model="reserva.status" :class="{ 'is-invalid': v$.status.$error }" required>
                         <option disabled value="">Selecione</option>
                         <option value="reservado">Reservado</option>
                         <option value="confirmado">Confirmado</option>
@@ -105,54 +66,30 @@
                     <div class="col-md-6">
                       <label for="jogo" class="form-label">Jogo</label>
                       <div class="position-relative">
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="jogo"
-                          v-model="jogoPesquisa"
-                          @input="pesquisarJogo"
-                          @focus="mostrarSugestoesJogo = true"
-                          placeholder="Pesquisar jogo..."
-                          :class="{ 'is-invalid': v$.jogo_id.$error }"
-                          autocomplete="off"
-                          required
-                        />
-                        <div
-                          v-if="mostrarSugestoesJogo && jogosFiltrados.length > 0"
-                          class="list-group position-absolute w-100 z-3 mt-1"
-                          style="max-height: 200px; overflow-y: auto;"
-                        >
-                          <button
-                            type="button"
-                            class="list-group-item list-group-item-action"
-                            v-for="jogo in jogosFiltrados"
-                            :key="jogo.id"
-                            @click="selecionarJogo(jogo)"
-                          >
-                            {{ jogo.NomeJogo }}
-                          </button>
+                        <input type="text" class="form-control" id="jogo" v-model="jogoPesquisa" @input="pesquisarJogo" @focus="mostrarSugestoesJogo = true" placeholder="Pesquisar jogo..." :class="{ 'is-invalid': v$.jogo_id.$error }" autocomplete="off" required />
+                        <div v-if="mostrarSugestoesJogo && jogosFiltrados.length > 0" class="list-group position-absolute w-100 z-3 mt-1" style="max-height: 200px; overflow-y: auto;">
+                          <button type="button" class="list-group-item list-group-item-action" v-for="jogo in jogosFiltrados" :key="jogo.id" @click="selecionarJogo(jogo)">{{ jogo.NomeJogo }}</button>
                         </div>
                       </div>
                       <small class="text-light" v-if="reserva.jogo_nome">Selecionado: <strong>{{ reserva.jogo_nome }}</strong></small>
                     </div>
 
                     <div class="col-md-6">
+                      <label for="unidade" class="form-label">Unidade</label>
+                      <select class="form-select" id="unidade" v-model="reserva.unidade_id" :class="{ 'is-invalid': v$.unidade_id.$error }" required @change="filtrarSalasPorJogoEUnidade">
+                        <option disabled value="">Selecione uma unidade</option>
+                        <option v-for="unidade in listaUnidades" :key="unidade.id" :value="unidade.id">{{ unidade.nome }}</option>
+                      </select>
+                      <div class="invalid-feedback" v-if="v$.unidade_id.$error">Unidade obrigatória.</div>
+                    </div>
+                  </div>
+
+                  <div class="row mb-3">
+                    <div class="col-md-12">
                       <label for="sala" class="form-label">Sala</label>
-                      <select
-                        class="form-select"
-                        id="sala"
-                        v-model="reserva.sala_id"
-                        :class="{ 'is-invalid': v$.sala_id.$error }"
-                        :disabled="!reserva.jogo_id"
-                        required
-                      >
+                      <select class="form-select" id="sala" v-model="reserva.sala_id" :class="{ 'is-invalid': v$.sala_id.$error }" :disabled="!reserva.jogo_id || !reserva.unidade_id" required>
                         <option disabled value="">Selecione uma sala</option>
-                        <option
-                          v-for="sala in salasDisponiveis"
-                          :key="sala.id"
-                          :value="sala.id"
-                          :disabled="reserva.numero_jogadores > sala.Jogadores"
-                        >
+                        <option v-for="sala in salasDisponiveis" :key="sala.id" :value="sala.id" :disabled="reserva.numero_jogadores > sala.Jogadores">
                           Sala {{ sala.Numero }} (Capacidade: {{ sala.Jogadores }})
                         </option>
                       </select>
@@ -167,32 +104,9 @@
                     <div class="col-12">
                       <label for="cliente" class="form-label">Cliente</label>
                       <div class="position-relative">
-                        <input
-                          type="text"
-                          class="form-control"
-                          id="cliente"
-                          v-model="clientePesquisa"
-                          @input="pesquisarCliente"
-                          @focus="mostrarSugestoesCliente = true"
-                          placeholder="Pesquisar cliente..."
-                          :class="{ 'is-invalid': v$.cliente_id.$error }"
-                          autocomplete="off"
-                          required
-                        />
-                        <div
-                          v-if="mostrarSugestoesCliente && clientesFiltrados.length > 0"
-                          class="list-group position-absolute w-100 z-3 mt-1"
-                          style="max-height: 200px; overflow-y: auto;"
-                        >
-                          <button
-                            type="button"
-                            class="list-group-item list-group-item-action"
-                            v-for="cliente in clientesFiltrados"
-                            :key="cliente.id"
-                            @click="selecionarCliente(cliente)"
-                          >
-                            {{ cliente.nome }}
-                          </button>
+                        <input type="text" class="form-control" id="cliente" v-model="clientePesquisa" @input="pesquisarCliente" @focus="mostrarSugestoesCliente = true" placeholder="Pesquisar cliente..." :class="{ 'is-invalid': v$.cliente_id.$error }" autocomplete="off" required />
+                        <div v-if="mostrarSugestoesCliente && clientesFiltrados.length > 0" class="list-group position-absolute w-100 z-3 mt-1" style="max-height: 200px; overflow-y: auto;">
+                          <button type="button" class="list-group-item list-group-item-action" v-for="cliente in clientesFiltrados" :key="cliente.id" @click="selecionarCliente(cliente)">{{ cliente.nome }}</button>
                         </div>
                       </div>
                       <small class="text-light" v-if="reserva.cliente_nome">Selecionado: <strong>{{ reserva.cliente_nome }}</strong></small>
@@ -202,16 +116,20 @@
                   <div class="row mb-3">
                     <div class="col-12">
                       <label for="observacoes" class="form-label">Observações</label>
-                      <textarea
-                        class="form-control"
-                        id="observacoes"
-                        rows="2"
-                        v-model="reserva.observacoes"
-                        placeholder="Observações sobre a reserva"
-                        :class="{ 'is-invalid': v$.observacoes.$error }"
-                      ></textarea>
+                      <textarea class="form-control" id="observacoes" rows="2" v-model="reserva.observacoes" placeholder="Observações sobre a reserva" :class="{ 'is-invalid': v$.observacoes.$error }"></textarea>
                       <div class="invalid-feedback" v-if="v$.observacoes.$error">Máximo 500 caracteres.</div>
                     </div>
+                  </div>
+
+                  <div class="col-md-6 mb-3">
+                    <label for="forma_pagamento" class="form-label">Forma de Pagamento</label>
+                    <select class="form-select" id="forma_pagamento" v-model="reserva.forma_pagamento" :class="{ 'is-invalid': v$.forma_pagamento?.$error }" required>
+                      <option disabled value="">Selecione</option>
+                      <option value="pix">PIX</option>
+                      <option value="dinheiro">Dinheiro</option>
+                      <option value="cartao">Cartão</option>
+                    </select>
+                    <div class="invalid-feedback" v-if="v$.forma_pagamento?.$error">Forma de pagamento obrigatória.</div>
                   </div>
 
                   <button type="submit" class="btn btn-primary">
@@ -254,11 +172,17 @@ interface Sala {
   Numero: string
   Jogadores: number
   Status: boolean
+  unidade_id: string | number
   Jogos: { id: string | number; NomeJogo: string }[]
 }
 
 interface Cliente {
   id: number
+  nome: string
+}
+
+interface Unidade {
+  id: string | number
   nome: string
 }
 
@@ -273,7 +197,9 @@ const reserva = reactive({
   sala_id: null as string | number | null,
   cliente_id: null as number | null,
   cliente_nome: '',
-  observacoes: ''
+  observacoes: '',
+  forma_pagamento: '',
+  unidade_id: ''
 })
 
 const loading = ref(false)
@@ -288,6 +214,7 @@ const listaClientes = ref<Cliente[]>([])
 
 const salasDisponiveis = ref<Sala[]>([])
 const listaSalas = ref<Sala[]>([])
+const listaUnidades = ref<Unidade[]>([])
 
 const mostrarSugestoesJogo = ref(false)
 const mostrarSugestoesCliente = ref(false)
@@ -316,8 +243,7 @@ const pesquisarJogo = () => {
     return
   }
   jogosFiltrados.value = listaJogos.value.filter(j => {
-    if (!j) return false
-    if (!j.NomeJogo) return false
+    if (!j || !j.NomeJogo) return false
     return j.NomeJogo.toLowerCase().includes(jogoPesquisa.value.toLowerCase())
   })
 }
@@ -329,12 +255,8 @@ const selecionarJogo = (jogo: Jogo) => {
   jogoSelecionado.value = jogo
   mostrarSugestoesJogo.value = false
 
-  salasDisponiveis.value = listaSalas.value.filter(sala =>
-    sala.Jogos?.some(j => String(j.id) === String(jogo.id))
-  )
-
+  filtrarSalasPorJogoEUnidade()
   reserva.sala_id = null
-
   calcularValorTotal()
 }
 
@@ -343,14 +265,13 @@ const pesquisarCliente = async () => {
     clientesFiltrados.value = []
     return
   }
-
   if (listaClientes.value.length > 0) {
     clientesFiltrados.value = listaClientes.value.filter(c =>
       c.nome.toLowerCase().includes(clientePesquisa.value.toLowerCase())
     )
   } else {
     try {
-      const res = await axios.get(`http://10.210.8.51:3000/clientes?nome=${clientePesquisa.value}`)
+      const res = await axios.get(`http://localhost:3000/clientes?nome=${clientePesquisa.value}`)
       clientesFiltrados.value = res.data
     } catch {
       clientesFiltrados.value = []
@@ -367,11 +288,28 @@ const selecionarCliente = (cliente: Cliente) => {
 
 const carregarSalas = async () => {
   try {
-    const res = await axios.get('http://10.210.8.51:3000/salas')
+    const res = await axios.get('http://localhost:3000/salas')
     listaSalas.value = res.data
   } catch {
     listaSalas.value = []
   }
+}
+
+const carregarUnidades = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/unidades')
+    listaUnidades.value = res.data
+  } catch {
+    listaUnidades.value = []
+  }
+}
+
+const filtrarSalasPorJogoEUnidade = () => {
+  salasDisponiveis.value = listaSalas.value.filter(sala => {
+    const jogoRelacionado = sala.Jogos?.some(j => String(j.id) === String(reserva.jogo_id))
+    const unidadeCorreta = String(sala.unidade_id) === String(reserva.unidade_id)
+    return jogoRelacionado && unidadeCorreta
+  })
 }
 
 const rules = {
@@ -396,7 +334,9 @@ const rules = {
   jogo_id: { required },
   sala_id: { required },
   cliente_id: { required },
-  observacoes: { maxLength: maxLength(500) }
+  observacoes: { maxLength: maxLength(500) },
+  forma_pagamento: { required },
+  unidade_id: { required }
 }
 
 const v$ = useVuelidate(rules, reserva)
@@ -474,6 +414,7 @@ onMounted(async () => {
     listaJogos.value = jogos.data
     listaClientes.value = clientes.data
     await carregarSalas()
+    await carregarUnidades()
   } catch (err) {
     console.error('Erro ao carregar dados:', err)
   }
@@ -481,4 +422,5 @@ onMounted(async () => {
   document.getElementById('spinner')?.classList.remove('show')
 })
 </script>
+
 

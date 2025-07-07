@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div id="spinner" class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+    <div
+      id="spinner"
+      class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+    >
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
         <span class="sr-only">Loading...</span>
       </div>
@@ -15,33 +18,56 @@
           <div class="row bg-secondary rounded mx-0 p-4">
             <h2 class="mb-4">Jogadores</h2>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <!-- Barra de pesquisa e filtros -->
+            <div class="d-flex flex-wrap align-items-center mb-4 gap-2">
               <input
                 type="text"
-                class="form-control w-50"
-                placeholder="Pesquisar jogador..."
+                v-model="searchTerm"
+                class="form-control"
+                style="min-width: 250px;"
+                placeholder="Pesquisar por nome ou CPF..."
               />
-              <router-link to="/clientes/formclientes" class="btn btn-primary ms-3">
+
+              <div class="d-flex align-items-center">
+                <label class="text-white me-2">Sexo:</label>
+                <select v-model="selectedSexo" class="form-select">
+                  <option value="">Todos</option>
+                  <option value="Masculino">Masculino</option>
+                  <option value="Feminino">Feminino</option>
+                </select>
+              </div>
+
+              <div class="d-flex align-items-center">
+                <label class="text-white me-2">Ordem:</label>
+                <select v-model="ordemAlfabetica" class="form-select">
+                  <option value="">Padrão</option>
+                  <option value="asc">A → Z</option>
+                  <option value="desc">Z → A</option>
+                </select>
+              </div>
+
+              <router-link to="/clientes/formclientes" class="btn btn-primary ms-auto">
                 <i class="fa fa-plus me-2"></i>Cadastrar
               </router-link>
             </div>
 
+            <!-- Tabela -->
             <div class="table-responsive">
               <table class="table table-hover text-white">
                 <thead>
                   <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">CPF</th>
-                    <th scope="col">Sexo</th>
-                    <th scope="col">Data Nascimento</th>
-                    <th scope="col">E-mail</th>
-                    <th scope="col"></th>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Sexo</th>
+                    <th>Data Nascimento</th>
+                    <th>E-mail</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(jogador, index) in listaclientes" :key="index">
-                    <th scope="row">{{ jogador.id }}</th>
+                  <tr v-for="(jogador, index) in jogadoresFiltradosOrdenados" :key="index">
+                    <th>{{ jogador.id }}</th>
                     <td>{{ jogador.nome }}</td>
                     <td>{{ jogador.cpf }}</td>
                     <td>{{ jogador.sexo }}</td>
@@ -83,14 +109,46 @@ export default defineComponent({
         sexo: string
         dataNascimento: string
         email: string
-      }>
+      }>,
+      searchTerm: '',
+      selectedSexo: '',
+      ordemAlfabetica: ''
     }
   },
+
+  computed: {
+  jogadoresFiltradosOrdenados() {
+    let resultado = this.listaclientes
+    
+    const termo = this.searchTerm.toLowerCase().trim()
+
+    if (termo) {
+      resultado = resultado.filter((j) =>
+        j.nome.toLowerCase().includes(termo) || j.cpf.includes(termo)
+      )
+    }
+
+    if (this.selectedSexo) {
+      resultado = resultado.filter((j) =>
+        j.sexo.toLowerCase().trim() === this.selectedSexo.toLowerCase().trim()
+      )
+    }
+
+    if (this.ordemAlfabetica === 'asc') {
+      resultado = resultado.slice().sort((a, b) => a.nome.localeCompare(b.nome))
+    } else if (this.ordemAlfabetica === 'desc') {
+      resultado = resultado.slice().sort((a, b) => b.nome.localeCompare(a.nome))
+    }
+
+    return resultado
+  }
+},
+
 
   methods: {
     async buscarClientes() {
       try {
-        const response = await axios.get('http://10.210.8.51:3000/clientes', {
+        const response = await axios.get('http://localhost:3000/clientes', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'

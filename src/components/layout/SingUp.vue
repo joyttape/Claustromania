@@ -51,7 +51,6 @@
                   <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="lembrar" />
                   <label class="form-check-label" for="exampleCheck1">Lembre de mim</label>
                 </div>
-                <a href="#">Esqueci minha senha</a>
               </div>
 
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign Up</button>
@@ -94,7 +93,7 @@ onMounted(() => {
 
 const buscarFuncionario = async (emailProcurado: string) => {
   try {
-    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
+    const response = await axios.get('http:localhost:3000/funcionarios')
     const funcionarios = response.data
     const funcionario = funcionarios.find((f: any) => f.email === emailProcurado)
 
@@ -127,7 +126,7 @@ const handleSignUp = async () => {
   }
 
   try {
-    const response = await axios.get('http://10.210.8.51:3000/funcionarios')
+    const response = await axios.get('http://localhost:3000/funcionarios')
     const funcionario = response.data.find((f: any) => f.email === email.value)
 
     if (!funcionario) {
@@ -139,7 +138,7 @@ const handleSignUp = async () => {
       return
     }
 
-    await axios.patch(`http://10.210.8.51:3000/funcionarios/${funcionario.id}`, {
+    await axios.patch(`http://localhost:3000/funcionarios/${funcionario.id}`, {
       senha: senha.value,
     })
 

@@ -15,34 +15,57 @@
           <div class="row bg-secondary rounded mx-0 p-4">
             <h2 class="mb-4">Unidades Cadastradas</h2>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <!-- Filtros e busca -->
+            <div class="d-flex flex-wrap align-items-center mb-4 gap-2">
               <input
                 type="text"
-                class="form-control w-50"
-                placeholder="Pesquisar unidade..."
+                v-model="searchTerm"
+                class="form-control"
+                style="min-width: 250px"
+                placeholder="Pesquisar por nome ou telefone..."
               />
-              <router-link to="/unidades/form" class="btn btn-primary ms-3">
+
+              <div class="d-flex align-items-center">
+                <label class="text-white me-2">Status:</label>
+                <select v-model="selectedStatus" class="form-select">
+                  <option value="">Todos</option>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Inativo">Inativo</option>
+                </select>
+              </div>
+
+              <div class="d-flex align-items-center">
+                <label class="text-white me-2">Ordem:</label>
+                <select v-model="ordemAlfabetica" class="form-select">
+                  <option value="">Padrão</option>
+                  <option value="asc">A → Z</option>
+                  <option value="desc">Z → A</option>
+                </select>
+              </div>
+
+              <router-link to="/unidades/form" class="btn btn-primary ms-auto">
                 <i class="fa fa-plus me-2"></i>Cadastrar
               </router-link>
             </div>
 
+            <!-- Tabela -->
             <div class="table-responsive">
               <table class="table table-hover text-white">
                 <thead>
                   <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Nome</th>
-                    <th scope="col">Capacidade</th>
-                    <th scope="col">Horário Abertura</th>
-                    <th scope="col">Horário Fechamento</th>
-                    <th scope="col">Telefone</th>
-                    <th scope="col">Status</th>
-                    <th scope="col"></th>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Capacidade</th>
+                    <th>Horário Abertura</th>
+                    <th>Horário Fechamento</th>
+                    <th>Telefone</th>
+                    <th>Status</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(unidade, index) in listaunidades" :key="index">
-                    <th scope="row">{{ unidade.id }}</th>
+                  <tr v-for="(unidade, index) in unidadesFiltradasOrdenadas" :key="index">
+                    <th>{{ unidade.id }}</th>
                     <td>{{ unidade.NomeUnidade }}</td>
                     <td>{{ unidade.Capacidade }}</td>
                     <td>{{ unidade.Horario_Abert }}</td>
@@ -83,40 +106,71 @@ export default defineComponent({
         NomeUnidade: string
         Capacidade: number
         Horario_Abert: string
-        Horario_Fecha: string,
+        Horario_Fecha: string
         Telefone: string
         Status: boolean
-      }>
+      }>,
+      searchTerm: '',
+      selectedStatus: '',
+      ordemAlfabetica: ''
+    }
+  },
+
+  computed: {
+    unidadesFiltradasOrdenadas() {
+      let resultado = this.listaunidades
+      const termo = this.searchTerm.toLowerCase().trim()
+
+      if (termo) {
+        resultado = resultado.filter(u =>
+          u.NomeUnidade.toLowerCase().includes(termo) ||
+          u.Telefone.toLowerCase().includes(termo)
+        )
+      }
+
+      if (this.selectedStatus) {
+        resultado = resultado.filter(u =>
+          u.Status === (this.selectedStatus === 'Ativo')
+        )
+      }
+
+      if (this.ordemAlfabetica === 'asc') {
+        resultado = resultado.slice().sort((a, b) => a.NomeUnidade.localeCompare(b.NomeUnidade))
+      } else if (this.ordemAlfabetica === 'desc') {
+        resultado = resultado.slice().sort((a, b) => b.NomeUnidade.localeCompare(a.NomeUnidade))
+      }
+
+      return resultado
     }
   },
 
   methods: {
-  async buscarUnidades() {
-    try {
-      const response = await axios.get('http://10.210.8.51:3000/unidades', {
-        headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': '69420'
-        }
-      });
+    async buscarUnidades() {
+      try {
+        const response = await axios.get('http://localhost:3000/unidades', {
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': '69420'
+          }
+        })
 
-      if (response.status === 200) {
-        this.listaunidades = response.data.map((item: any) => ({
-          id: item.id,
-          NomeUnidade: item.nome || 'Não informado',
-          Capacidade: item.capacidade || 0,
-          Horario_Abert: item.horarioAbertura || '',
-          Horario_Fecha: item.horarioFechamento || '',
-          Telefone: item.telefone || '',
-          Status: item.status // Note que na API está "status" (minúsculo)
-        }));
-        console.log('Unidades carregadas:', this.listaunidades); // Para debug
+        if (response.status === 200) {
+          this.listaunidades = response.data.map((item: any) => ({
+            id: item.id,
+            NomeUnidade: item.nome || 'Não informado',
+            Capacidade: item.capacidade || 0,
+            Horario_Abert: item.horarioAbertura || '',
+            Horario_Fecha: item.horarioFechamento || '',
+            Telefone: item.telefone || '',
+            Status: !!item.status
+          }))
+          console.log('Unidades carregadas:', this.listaunidades)
+        }
+      } catch (error) {
+        console.error('Erro ao buscar unidades:', error)
       }
-    } catch (error) {
-      console.error('Erro ao buscar unidades:', error);
     }
-  }
-},
+  },
 
   components: {
     NavHeaderBarVue,
@@ -134,3 +188,4 @@ export default defineComponent({
   }
 })
 </script>
+

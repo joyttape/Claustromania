@@ -59,6 +59,16 @@
                     </select>
                   </div>
 
+                  <div class="mb-3">
+                    <label for="unidade" class="form-label">Unidade</label>
+                    <select id="unidade" class="form-select" v-model="sala.unidade_id" required>
+                      <option disabled value="">Selecione uma unidade</option>
+                      <option v-for="unidade in listaUnidades" :key="unidade.id" :value="unidade.id">
+                        {{ unidade.nome }}
+                      </option>
+                    </select>
+                  </div>
+
                     <div class="mb-3">
                       <div class="d-flex align-items-center justify-content-between mb-1">
                         <label for="jogos" class="form-label mb-0">Jogos Associados</label>
@@ -123,6 +133,7 @@
                           </button>
                         </div>
                       </div>
+
                     </div>
 
 
@@ -162,10 +173,12 @@ const sala = reactive({
   Numero: '',
   Jogadores: 0,
   Status: true,
-  JogosIds: [] as number[]
+  JogosIds: [] as number[],
+  unidade_id: ''
 })
 
 const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
+const listaUnidades = ref<{ id: number; nome: string }[]>([])
 
 const modoEdicaoJogos = ref(false)
 const jogosSelecionadosAntes = ref<number[]>([])
@@ -188,7 +201,7 @@ const nomesJogosSelecionados = computed(() => {
 
 const buscarJogos = async () => {
   try {
-    const response = await axios.get('http://10.210.8.51:3000/jogos', {
+    const response = await axios.get('http://localhost:3000/jogos', {
       headers: { 'Content-Type': 'application/json' }
     })
     if (response.status === 200) {
@@ -203,6 +216,19 @@ const buscarJogos = async () => {
   }
 }
 
+const buscarUnidades = async () => {
+  try {
+    const response = await axios.get('http://10.210.8.51:3000/unidades')
+    if (response.status === 200) {
+      listaUnidades.value = response.data
+    }
+  } catch (error) {
+    console.error('Erro ao buscar unidades:', error)
+    Swal.fire('Erro', 'Não foi possível carregar as unidades.', 'error')
+  }
+}
+
+
 const carregarSala = async () => {
   try {
     const response = await axios.get(`http://localhost:3000/salas/${salaId}`)
@@ -211,7 +237,8 @@ const carregarSala = async () => {
     sala.Numero = data.Numero ?? ''
     sala.Jogadores = data.Jogadores ?? 0
     sala.Status = data.Status ?? true
-    sala.JogosIds = data.Jogos ? data.Jogos.map((j: any) => j.id) : []
+    sala.JogosIds = data.Jogos ? data.Jogos.map((j: any) => j.id) : [],
+    sala.unidade_id = data.unidade_id ?? ''
   } catch (error) {
     console.error('Erro ao carregar sala:', error)
     Swal.fire({
@@ -232,7 +259,8 @@ const salvarAlteracoes = async () => {
       Numero: sala.Numero,
       Jogadores: Number(sala.Jogadores),
       Status: sala.Status,
-      Jogos: jogosSelecionados
+      Jogos: jogosSelecionados,
+      unidade_id: sala.unidade_id
     }
 
     await axios.put(`http://localhost:3000/salas/${salaId}`, dadosParaSalvar)
@@ -288,6 +316,7 @@ const excluirSala = async () => {
 onMounted(async () => {
   await buscarJogos()
   await carregarSala()
+  await buscarUnidades()
 
   const script = document.createElement('script')
   script.src = '/src/components/js/maincode.js'

@@ -302,35 +302,6 @@
                     </div>
                   </form>
 
-                  <div
-                    class="position-relative"
-                    style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;"
-                  >
-                    <label
-                      for="foto"
-                      class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100"
-                      style="cursor: pointer; overflow: hidden; border-radius: 12px;"
-                    >
-                      <template v-if="fotoPreview">
-                        <img
-                          :src="fotoPreview"
-                          alt="Preview"
-                          class="w-100 h-100"
-                          style="object-fit: cover; border-radius: 12px;"
-                        />
-                      </template>
-                      <template v-else>
-                        <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
-                      </template>
-                    </label>
-                    <input
-                      type="file"
-                      id="foto"
-                      class="d-none"
-                      accept="image/*"
-                      @change="onFileChange"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -349,7 +320,6 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
 
-// Vuelidate
 import useVuelidate from '@vuelidate/core'
 import {
   required,
@@ -387,7 +357,6 @@ const funcionario = reactive({
   cidade: '',
   estado: '',
   cep: '',
-  foto: null as File | null,
 })
 
 const fotoPreview = ref<string | null>(null)
@@ -417,15 +386,6 @@ const rules = {
 
 const $v = useVuelidate(rules, { funcionario })
 
-const onFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files[0]) {
-    const file = target.files[0]
-    funcionario.foto = file
-    fotoPreview.value = URL.createObjectURL(file)
-  }
-}
-
 const carregarFuncionario = async () => {
   loading.value = true
   try {
@@ -450,10 +410,6 @@ const carregarFuncionario = async () => {
     funcionario.cidade = dados.cidade || ''
     funcionario.estado = dados.estado || ''
     funcionario.cep = dados.cep || ''
-
-    if (dados.foto) {
-      fotoPreview.value = dados.foto
-    }
   } catch (error) {
     console.error('Erro ao carregar funcionário:', error)
     Swal.fire({
@@ -510,7 +466,7 @@ const cancelarAlteracoes = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`)
+      await axios.delete(`http://localhost:3000/funcionarios/${funcionarioId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Excluído com sucesso!',

@@ -50,6 +50,21 @@
                       <option :value="false">Inativo</option>
                     </select>
                   </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label">Unidade</label>
+                    <select
+                      class="form-select"
+                      v-model="sala.unidade_id"
+                      :class="{ 'is-invalid': v$.unidade_id.$error }"
+                    >
+                      <option disabled value="">Selecione uma unidade</option>
+                      <option v-for="unidade in listaUnidades" :key="unidade.id" :value="unidade.id">
+                        {{ unidade.nome }}
+                      </option>
+                    </select>
+                    <div class="invalid-feedback" v-if="v$.unidade_id.$error">Unidade obrigatória.</div>
+                  </div>
 
                   <div class="mb-3">
                     <label class="form-label">Jogos Associados</label>
@@ -98,22 +113,23 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
-// Estado da sala
 const sala = reactive({
   Numero: '',
   Jogadores: null as number | null,
   Status: true,
-  JogosSelecionados: [] as Array<{ id: number; NomeJogo: string }>
+  JogosSelecionados: [] as Array<{ id: number; NomeJogo: string }>,
+  unidade_id: ''
+
 })
 
-// Lista de jogos
 const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
+const listaUnidades = ref<{ id: number; nome: string }[]>([])
 
-// Regras de validação
 const rules = {
   Numero: { required, minLength: minLength(1) },
   Jogadores: { required, minValue: minValue(1) },
-  JogosSelecionados: { required }
+  JogosSelecionados: { required },
+  unidade_id: { required }
 }
 
 const v$ = useVuelidate(rules, sala)
@@ -122,21 +138,24 @@ const router = useRouter()
 
 onMounted(async () => {
   try {
-    const response = await axios.get('http://localhost:3000/jogos', {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    const [resJogos, resUnidades] = await Promise.all([
+      axios.get('http://localhost:3000/jogos'),
+      axios.get('http://localhost:3000/unidades')
+    ])
 
-    if (response.status === 200) {
-      listaJogos.value = response.data.map((jogo: any) => ({
+    if (resJogos.status === 200) {
+      listaJogos.value = resJogos.data.map((jogo: any) => ({
         id: jogo.id,
         NomeJogo: jogo.NomeJogo
       }))
     }
+
+    if (resUnidades.status === 200) {
+      listaUnidades.value = resUnidades.data
+    }
   } catch (error) {
-    console.error('Erro ao buscar jogos:', error)
-    Swal.fire('Erro', 'Não foi possível carregar os jogos.', 'error')
+    console.error('Erro ao carregar dados:', error)
+    Swal.fire('Erro', 'Não foi possível carregar os jogos ou unidades.', 'error')
   }
 })
 
@@ -156,11 +175,12 @@ const cadastrarSala = async () => {
     Numero: sala.Numero,
     Jogadores: sala.Jogadores,
     Status: sala.Status,
-    Jogos: sala.JogosSelecionados
+    Jogos: sala.JogosSelecionados,
+    unidade_id: sala.unidade_id
   }
 
   try {
-    const response = await axios.post('http://10.210.8.51:3000/salas', dadosParaSalvar, {
+    const response = await axios.post('http://localhost:3000/salas', dadosParaSalvar, {
       headers: { 'Content-Type': 'application/json' }
     })
 
@@ -184,6 +204,7 @@ const limparFormulario = () => {
   sala.Jogadores = null
   sala.Status = true
   sala.JogosSelecionados = []
-  v$.value.$reset()
+  v$.value.$reset(),
+  sala.unidade_id = ''
 }
 </script>

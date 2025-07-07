@@ -29,10 +29,8 @@
                 <h6 class="mb-4">Cadastro de Unidades</h6>
 
                 <div class="d-flex align-items-start gap-4">
-                  <!-- Formulário -->
                   <form @submit.prevent="cadastrarUnidade" class="flex-grow-1" novalidate>
-                    <h6 class="mb-3">Dados da Unidade</h6>
-
+                    
                     <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="nome" class="form-label">Nome</label>
@@ -117,52 +115,93 @@
                       </div>
                     </div>
 
-                     <div class="row mb-3">
-                        <div class="col-md-6">
-                          <label for="diasFuncionamento" class="form-label">Dias de Funcionamento</label>
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="diasFuncionamento" class="form-label">Dias de Funcionamento</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="diasFuncionamento"
+                          v-model="unidade.diasFuncionamento"
+                          :class="{ 'is-invalid': v$.diasFuncionamento.$error }"
+                          placeholder="Ex: Segunda a Sexta, 9h às 18h / Sábado, 10h às 16h"
+                          required
+                        />
+                        <div class="invalid-feedback" v-if="v$.diasFuncionamento.$error">
+                          Informe os dias de funcionamento.
+                        </div>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label for="horarioAbertura" class="form-label">Horário de Abertura</label>
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="horarioAbertura"
+                          v-model="unidade.horarioAbertura"
+                          :class="{ 'is-invalid': v$.horarioAbertura.$error }"
+                          required
+                        />
+                        <div class="invalid-feedback" v-if="v$.horarioAbertura.$error">
+                          Horário de abertura é obrigatório.
+                        </div>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label for="horarioFechamento" class="form-label">Horário de Fechamento</label>
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="horarioFechamento"
+                          v-model="unidade.horarioFechamento"
+                          :class="{ 'is-invalid': v$.horarioFechamento.$error }"
+                          required
+                        />
+                        <div class="invalid-feedback" v-if="v$.horarioFechamento.$error">
+                          Horário de fechamento é obrigatório.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="gerente" class="form-label">Gerente</label>
+                        <div class="position-relative">
                           <input
                             type="text"
                             class="form-control"
-                            id="diasFuncionamento"
-                            v-model="unidade.diasFuncionamento"
-                            :class="{ 'is-invalid': v$.diasFuncionamento.$error }"
-                            placeholder="Ex: Segunda a Sexta, 9h às 18h / Sábado, 10h às 16h"
+                            id="gerente"
+                            v-model="gerentePesquisa"
+                            @input="pesquisarGerente"
+                            @focus="mostrarSugestoesGerente = true"
+                            autocomplete="off"
+                            placeholder="Pesquisar gerente..."
+                            :class="{ 'is-invalid': v$.gerente_id?.$error }"
                             required
                           />
-                          <div class="invalid-feedback" v-if="v$.diasFuncionamento.$error">
-                            Informe os dias de funcionamento.
+                          <div
+                            v-if="mostrarSugestoesGerente && gerentesFiltrados.length > 0"
+                            class="list-group position-absolute w-100 z-3 mt-1"
+                            style="max-height: 200px; overflow-y: auto;"
+                          >
+                            <button
+                              type="button"
+                              class="list-group-item list-group-item-action"
+                              v-for="gerente in gerentesFiltrados"
+                              :key="gerente.id"
+                              @click="selecionarGerente(gerente)"
+                            >
+                              {{ gerente.nome }}
+                            </button>
                           </div>
                         </div>
-
-                        <div class="col-md-3">
-                          <label for="horarioAbertura" class="form-label">Horário de Abertura</label>
-                          <input
-                            type="time"
-                            class="form-control"
-                            id="horarioAbertura"
-                            v-model="unidade.horarioAbertura"
-                            :class="{ 'is-invalid': v$.horarioAbertura.$error }"
-                            required
-                          />
-                          <div class="invalid-feedback" v-if="v$.horarioAbertura.$error">
-                            Horário de abertura é obrigatório.
-                          </div>
+                        <small class="text-light" v-if="unidade.gerente_nome">
+                          Selecionado: <strong>{{ unidade.gerente_nome }}</strong>
+                        </small>
+                        <div class="invalid-feedback" v-if="v$.gerente_id?.$error">
+                          Gerente é obrigatório.
                         </div>
-
-                        <div class="col-md-3">
-                          <label for="horarioFechamento" class="form-label">Horário de Fechamento</label>
-                          <input
-                            type="time"
-                            class="form-control"
-                            id="horarioFechamento"
-                            v-model="unidade.horarioFechamento"
-                            :class="{ 'is-invalid': v$.horarioFechamento.$error }"
-                            required
-                          />
-                          <div class="invalid-feedback" v-if="v$.horarioFechamento.$error">
-                            Horário de fechamento é obrigatório.
-                          </div>
-                        </div>
+                      </div>
                     </div>
 
                     <h6 class="mb-3 mt-4">Endereço</h6>
@@ -302,36 +341,6 @@
                     </button>
                   </form>
 
-                  <!-- Foto no canto superior direito -->
-                  <div
-                    class="position-relative"
-                    style="width: 100px; height: 100px; margin-left: 20px; margin-top: -10px;"
-                  >
-                    <label
-                      for="foto"
-                      class="d-flex align-items-center justify-content-center bg-dark text-white rounded border border-light w-100 h-100"
-                      style="cursor: pointer; overflow: hidden; border-radius: 12px;"
-                    >
-                      <template v-if="fotoPreview">
-                        <img
-                          :src="fotoPreview"
-                          alt="Preview"
-                          class="w-100 h-100"
-                          style="object-fit: cover; border-radius: 12px;"
-                        />
-                      </template>
-                      <template v-else>
-                        <i class="fa fa-camera" style="font-size: 1.5rem;"></i>
-                      </template>
-                    </label>
-                    <input
-                      type="file"
-                      id="foto"
-                      class="d-none"
-                      accept="image/*"
-                      @change="onFileChange"
-                    />
-                  </div>
                 </div>
               </div>
             </div>
@@ -345,16 +354,16 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useVuelidate } from '@vuelidate/core';
-import { required, minLength, numeric } from '@vuelidate/validators';
-import axios from 'axios';
+import { reactive, ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minLength, numeric } from '@vuelidate/validators'
+import axios from 'axios'
 
-import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue';
-import NavSideBarVue from '@/components/layout/NavSideBar.vue';
-import FooterBarVue from '@/components/layout/FooterBar.vue';
-import { Toast } from '@/components/common/toast';
+import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
+import NavSideBarVue from '@/components/layout/NavSideBar.vue'
+import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { Toast } from '@/components/common/toast'
 
 const unidade = reactive({
   nome: '',
@@ -363,8 +372,8 @@ const unidade = reactive({
   status: false,
   capacidade: '',
   diasFuncionamento: '',
-  horarioAbertura: '',  
-  horarioFechamento: '', 
+  horarioAbertura: '',
+  horarioFechamento: '',
   logradouro: '',
   numero: '',
   complemento: '',
@@ -372,178 +381,199 @@ const unidade = reactive({
   cidade: '',
   estado: '',
   cep: '',
-  foto: null as File | null,
-});
+  gerente_id: null as string | number | null,
+  gerente_nome: '',
+})
 
-const fotoPreview = ref<string | null>(null);
+const fotoPreview = ref<string | null>(null)
+
+const listaGerentes = ref<{ id: number; nome: string }[]>([])
+const gerentesFiltrados = ref<{ id: number; nome: string }[]>([])
+const gerentePesquisa = ref('')
+const mostrarSugestoesGerente = ref(false)
 
 const rules = {
-  nome: { 
-    required, 
-    minLength: minLength(3) 
-  },
-  cnpj: { 
-    required, 
-    cnpjValido: (value: string) => {
-      if (!value) return true;
-      const cnpjLimpo = value.replace(/\D/g, '');
-      return cnpjLimpo.length === 14;
-    }
-  },
-  telefone: { 
+  nome: {
     required,
-    minLength: minLength(14) // (00) 0000-0000 ou (00) 00000-0000
+    minLength: minLength(3),
+  },
+  cnpj: {
+    required,
+    cnpjValido: (value: string) => {
+      if (!value) return true
+      const cnpjLimpo = value.replace(/\D/g, '')
+      return cnpjLimpo.length === 14
+    },
+  },
+  telefone: {
+    required,
+    minLength: minLength(14),
   },
   logradouro: { required },
   numero: { required },
   bairro: { required },
   cidade: { required },
   estado: { required },
-  cep: { 
+  cep: {
     required,
-    minLength: minLength(9) // 00000-000
+    minLength: minLength(9),
   },
   capacidade: {
-    numeric
+    numeric,
   },
-   diasFuncionamento: { 
+  diasFuncionamento: {
     required,
-    minLength: minLength(3) // Pelo menos 3 caracteres
+    minLength: minLength(3),
   },
   horarioAbertura: { required },
-  horarioFechamento: { 
+  horarioFechamento: {
     required,
     horarioValido: (value: string) => {
-      if (!unidade.horarioAbertura || !value) return true;
-      return unidade.horarioAbertura < value;
-    }
-  }
-};
-
-const v$ = useVuelidate(rules, unidade);
-
-const router = useRouter();
-
-function onFileChange(event: Event) {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) {
-    unidade.foto = target.files[0];
-    fotoPreview.value = URL.createObjectURL(unidade.foto);
-  }
+      if (!unidade.horarioAbertura || !value) return true
+      return unidade.horarioAbertura < value
+    },
+  },
+  gerente_id: { required },
 }
 
+const v$ = useVuelidate(rules, unidade)
+
+const router = useRouter()
+
 function limparFormulario() {
-  unidade.nome = '';
-  unidade.cnpj = '';
-  unidade.telefone = '';
-  unidade.status = false;
-  unidade.capacidade = '';
-  unidade.logradouro = '';
-  unidade.numero = '';
-  unidade.complemento = '';
-  unidade.bairro = '';
-  unidade.cidade = '';
-  unidade.estado = '';
-  unidade.cep = '';
-  unidade.foto = null;
-  fotoPreview.value = null;
-  v$.value.$reset();
+  unidade.nome = ''
+  unidade.cnpj = ''
+  unidade.telefone = ''
+  unidade.status = false
+  unidade.capacidade = ''
+  unidade.logradouro = ''
+  unidade.numero = ''
+  unidade.complemento = ''
+  unidade.bairro = ''
+  unidade.cidade = ''
+  unidade.estado = ''
+  unidade.cep = ''
+  unidade.gerente_id = null
+  unidade.gerente_nome = ''
+  fotoPreview.value = null
+  gerentePesquisa.value = ''
+  gerentesFiltrados.value = []
+  mostrarSugestoesGerente.value = false
+  v$.value.$reset()
 }
 
 async function cadastrarUnidade() {
-  const isValid = await v$.value.$validate();
+  const isValid = await v$.value.$validate()
 
   if (!isValid) {
     Toast.fire({
       icon: 'error',
       title: 'Corrija os erros no formulário antes de enviar.',
-    });
-    return;
+    })
+    return
   }
 
-  const cnpjLimpo = unidade.cnpj.replace(/\D/g, '');
-  const telefoneLimpo = unidade.telefone.replace(/\D/g, '');
-  const cepLimpo = unidade.cep.replace(/\D/g, '');
+  const cnpjLimpo = unidade.cnpj.replace(/\D/g, '')
+  const telefoneLimpo = unidade.telefone.replace(/\D/g, '')
+  const cepLimpo = unidade.cep.replace(/\D/g, '')
 
   const dadosEnvio = {
     nome: unidade.nome,
     cnpj: cnpjLimpo,
     telefone: telefoneLimpo,
-    status: unidade.status,
-    capacidade: unidade.capacidade || 0,
+    status: unidade.status ? 1 : 0,
+    capacidade: unidade.capacidade ? Number(unidade.capacidade) : null,
     diasFuncionamento: unidade.diasFuncionamento,
-    horarioFuncionamento: {
-      abertura: unidade.horarioAbertura,
-      fechamento: unidade.horarioFechamento
-    },
-    endereco: {
-      logradouro: unidade.logradouro,
-      numero: unidade.numero,
-      complemento: unidade.complemento || '', // Valor padrão caso não seja informado
-      bairro: unidade.bairro,
-      cidade: unidade.cidade,
-      estado: unidade.estado,
-      cep: cepLimpo
-    },
-    foto: unidade.foto ? 'tem-foto' : null,
-    id: Math.random().toString(36).substring(2, 8)
-  };
+    horarioAbertura: unidade.horarioAbertura,
+    horarioFechamento: unidade.horarioFechamento,
+    logradouro: unidade.logradouro,
+    numero: unidade.numero,
+    complemento: unidade.complemento,
+    bairro: unidade.bairro,
+    cidade: unidade.cidade,
+    estado: unidade.estado,
+    cep: cepLimpo,
+    gerente_id: unidade.gerente_id,
+  }
 
   try {
-    const response = await axios.post('http://10.210.8.51:3000/unidades', dadosEnvio, {
-      headers: { 'Content-Type': 'application/json' },
-    });
-
-    if (response.status === 201) {
-      Toast.fire({
-        icon: 'success',
-        title: `Unidade ${unidade.nome} cadastrada com sucesso!`,
-      });
-      limparFormulario();
-      router.push('/unidades');
-    }
+    Toast.fire({
+      icon: 'success',
+      title: 'Unidade cadastrada com sucesso!',
+    })
+    limparFormulario()
+    router.push('/unidades')
   } catch (error) {
-    console.error('Erro ao cadastrar unidade:', error);
-    let errorMessage = 'Erro ao cadastrar unidade.';
-    
-    if (axios.isAxiosError(error) && error.response?.data?.message) {
-      errorMessage += ` Detalhes: ${error.response.data.message}`;
-    }
-
+    console.error(error)
     Toast.fire({
       icon: 'error',
-      title: errorMessage,
-    });
+      title: 'Erro ao cadastrar unidade. Tente novamente.',
+    })
   }
-}
-
-function aplicarMascaraTelefone() {
-  let v = unidade.telefone.replace(/\D/g, '');
-  if (v.length > 10) {
-    v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-  } else {
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-  }
-  unidade.telefone = v;
-}
-
-function aplicarMascaraCep() {
-  let v = unidade.cep.replace(/\D/g, '');
-  v = v.replace(/^(\d{5})(\d{0,3}).*/, '$1-$2');
-  unidade.cep = v;
 }
 
 function aplicarMascaraCNPJ() {
-  let v = unidade.cnpj.replace(/\D/g, '');
-  v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{0,2}).*/, '$1.$2.$3/$4-$5');
-  unidade.cnpj = v;
+  let v = unidade.cnpj.replace(/\D/g, '')
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2')
+  v = v.replace(/(\d{4})(\d)/, '$1-$2')
+  unidade.cnpj = v
+}
+
+function aplicarMascaraTelefone() {
+  let v = unidade.telefone.replace(/\D/g, '')
+  if (v.length > 10) {
+    v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3')
+  } else {
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3')
+  }
+  unidade.telefone = v
+}
+
+function aplicarMascaraCep() {
+  let v = unidade.cep.replace(/\D/g, '')
+  if (v.length > 5) {
+    v = v.replace(/^(\d{5})(\d{1,3}).*/, '$1-$2')
+  }
+  unidade.cep = v
+}
+
+const carregarGerentes = async () => {
+  try {
+    const res = await axios.get('http://10.210.8.51:3000/funcionarios?cargo=Gerente')
+    listaGerentes.value = res.data
+  } catch (error) {
+    console.error('Erro ao carregar gerentes:', error)
+  }
+}
+
+const pesquisarGerente = () => {
+  if (gerentePesquisa.value.length < 2) {
+    gerentesFiltrados.value = []
+    return
+  }
+  const texto = gerentePesquisa.value.toLowerCase()
+  gerentesFiltrados.value = listaGerentes.value.filter(g =>
+    g.nome.toLowerCase().includes(texto)
+  )
+}
+
+const selecionarGerente = (gerente: { id: number; nome: string }) => {
+  unidade.gerente_id = gerente.id
+  unidade.gerente_nome = gerente.nome
+  gerentePesquisa.value = gerente.nome
+  mostrarSugestoesGerente.value = false
 }
 
 onMounted(() => {
-  document.getElementById('spinner')?.classList.remove('show');
-  const script = document.createElement('script');
-  script.src = '/src/components/js/maincode.js';
-  script.async = true;
-  document.body.appendChild(script);
-});
+  document.getElementById('spinner')?.classList.remove('show')
+  carregarGerentes()
+})
 </script>
+
+<style>
+.list-group.position-absolute {
+  z-index: 1000;
+}
+</style>
