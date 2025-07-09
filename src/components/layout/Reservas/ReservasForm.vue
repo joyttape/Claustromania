@@ -297,7 +297,7 @@ const carregarSalas = async () => {
 
 const carregarUnidades = async () => {
   try {
-    const res = await axios.get('http://10.210.8.51:3000/unidades')
+    const res = await axios.get('http://localhost:3000/unidades')
     listaUnidades.value = res.data
   } catch {
     listaUnidades.value = []
@@ -376,19 +376,22 @@ const cadastrarReserva = async () => {
       ...reserva,
       valor_total: parseFloat(reserva.valor_total.replace('.', '').replace(',', '.'))
     }
-    const res = await axios.post('http://10.210.8.51:3000/reservas', payload)
-    if (res.status === 201) {
-      Swal.fire({
-        icon: 'success',
-        title: `Reserva para ${reserva.cliente_nome} cadastrada com sucesso!`,
-        toast: true,
-        position: 'top-end',
-        timer: 2500,
-        timerProgressBar: true,
-        showConfirmButton: false
-      })
-      router.push('/reservas')
-    }
+    const res = await axios.post('http://localhost:3000/reservas', payload)
+if (res.status === 201) {
+  const reservaCriada = res.data
+
+  Swal.fire({
+    icon: 'success',
+    title: `Reserva para ${reserva.cliente_nome} cadastrada com sucesso!`,
+    toast: true,
+    position: 'top-end',
+    timer: 2500,
+    timerProgressBar: true,
+    showConfirmButton: false
+  })
+
+  router.push(`/reservas/transacao/${reservaCriada.id}`)
+}
   } catch (e: any) {
     Swal.fire({
       icon: 'error',
@@ -408,8 +411,8 @@ const cadastrarReserva = async () => {
 onMounted(async () => {
   try {
     const [jogos, clientes] = await Promise.all([
-      axios.get('http://10.210.8.51:3000/jogos'),
-      axios.get('http://10.210.8.51:3000/clientes')
+      axios.get('http://localhost:3000/jogos'),
+      axios.get('http://localhost:3000/clientes')
     ])
     listaJogos.value = jogos.data
     listaClientes.value = clientes.data
@@ -424,3 +427,18 @@ onMounted(async () => {
 </script>
 
 
+<style scoped>
+:deep(input.form-control:read-only) {
+  background-color: black !important;
+  color: inherit !important;
+  opacity: 1;
+}
+
+:deep(input.form-control:disabled),
+:deep(select.form-select:disabled) {
+  background-color: black !important;
+  color: inherit !important;
+  opacity: 1;
+  cursor: not-allowed;
+}
+</style>

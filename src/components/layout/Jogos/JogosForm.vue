@@ -27,8 +27,8 @@
                         required
                       />
                       <div class="invalid-feedback" v-if="v$.nome.$error">
-                        <div v-if="!v$.nome.required">Nome é obrigatório.</div>
-                        <div v-if="!v$.nome.minLength">Mínimo de 3 caracteres.</div>
+                        <div v-if="v$.nome.required">Nome é obrigatório.</div>
+                        <div v-if="v$.nome.minLength">Mínimo de 3 caracteres.</div>
                       </div>
                     </div>
 
@@ -73,14 +73,15 @@
                         inputmode="numeric"
                         class="form-control"
                         v-model="precoFormatado"
+                        @input="aplicarMascaraDinheiro"
                         :class="{ 'is-invalid': v$.preco.$error }"
+                        placeholder="R$ 0,00"
                         required
                       />
                       <div class="invalid-feedback" v-if="v$.preco.$error">
                         Preço é obrigatório e deve ser um número.
                       </div>
-                  </div>
-
+                    </div>
                   </div>
 
                   <div class="mb-3">
@@ -110,7 +111,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref, watch, onMounted } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength } from '@vuelidate/validators'
@@ -143,22 +144,45 @@ const rules = {
 
 const v$ = useVuelidate(rules, jogo)
 
-watch(precoFormatado, (valor) => {
-  const apenasNumeros = valor.replace(/\D/g, '')
-  const convertido = parseFloat((parseInt(apenasNumeros || '0') / 100).toFixed(2))
-  jogo.preco = convertido
-})
+const formatarDinheiro = (valor: string) => {
+  let v = valor.replace(/\D/g, '')
+  
+  if (v.length === 0) return ''
+  
+  const numero = parseInt(v)
+  
+  const reais = numero / 100
+  
+  return reais.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
 
-watch(() => jogo.preco, (valor) => {
-  if (valor !== null) {
-    precoFormatado.value = valor.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    })
+const aplicarMascaraDinheiro = () => {
+  const valorFormatado = formatarDinheiro(precoFormatado.value)
+  precoFormatado.value = valorFormatado
+  
+  const apenasNumeros = precoFormatado.value.replace(/\D/g, '')
+  if (apenasNumeros) {
+    jogo.preco = parseFloat((parseInt(apenasNumeros) / 100).toFixed(2))
   } else {
-    precoFormatado.value = ''
+    jogo.preco = null
   }
-})
+}
+
+const formatarPrecoCarregado = (preco: number) => {
+  if (preco === null || preco === undefined) return ''
+  
+  return preco.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
 
 async function cadastrarJogo() {
   const isValid = await v$.value.$validate()
@@ -173,7 +197,7 @@ async function cadastrarJogo() {
     Descricao: jogo.descricao,
     Duracao: jogo.duracao,
     Dificuldade: jogo.dificuldade,
-    Preco: jogo.preco
+    Preco: jogo.preco 
   }
 
   try {
@@ -214,3 +238,5 @@ textarea {
   resize: none;
 }
 </style>
+
+

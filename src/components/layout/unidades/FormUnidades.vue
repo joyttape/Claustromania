@@ -59,6 +59,8 @@
                           v-model="unidade.cnpj"
                           @input="aplicarMascaraCNPJ"
                           :class="{ 'is-invalid': v$.cnpj.$error }"
+                          maxlength="18"
+                          placeholder="00.000.000/0000-00"
                           required
                         />
                         <div class="invalid-feedback" v-if="v$.cnpj.$error">
@@ -78,10 +80,13 @@
                           v-model="unidade.telefone"
                           @input="aplicarMascaraTelefone"
                           :class="{ 'is-invalid': v$.telefone.$error }"
+                          maxlength="15"
+                          placeholder="(00) 00000-0000"
                           required
                         />
                         <div class="invalid-feedback" v-if="v$.telefone.$error">
-                          Telefone é obrigatório.
+                          <div v-if="!v$.telefone.required">Telefone é obrigatório.</div>
+                          <div v-if="!v$.telefone.telefoneValido">Telefone inválido.</div>
                         </div>
                       </div>
                     </div>
@@ -323,15 +328,15 @@
                           class="form-control"
                           id="cep"
                           v-model="unidade.cep"
-                          @input="aplicarMascaraCep"
+                          @input="aplicarMascaraCEP"
                           :class="{ 'is-invalid': v$.cep.$error }"
+                          maxlength="9"
+                          placeholder="00000-000"
                           required
                         />
                         <div class="invalid-feedback" v-if="v$.cep.$error">
                           <div v-if="!v$.cep.required">CEP é obrigatório.</div>
-                          <div v-if="!v$.cep.minLength">
-                            CEP deve ter 8 dígitos.
-                          </div>
+                          <div v-if="!v$.cep.cepValido">CEP inválido.</div>
                         </div>
                       </div>
                     </div>
@@ -392,6 +397,61 @@ const gerentesFiltrados = ref<{ id: number; nome: string }[]>([])
 const gerentePesquisa = ref('')
 const mostrarSugestoesGerente = ref(false)
 
+const cnpjValido = (value: string) => {
+  if (!value) return true;
+  
+  const cnpj = value.replace(/\D/g, '');
+  
+  if (cnpj.length !== 14) return false;
+  
+  if (/^(\d)\1{13}$/.test(cnpj)) return false;
+  
+  let tamanho = cnpj.length - 2;
+  let numeros = cnpj.substring(0, tamanho);
+  let digitos = cnpj.substring(tamanho);
+  let soma = 0;
+  let pos = tamanho - 7;
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  
+  let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+  if (resultado !== parseInt(digitos.charAt(0))) return false;
+  
+  tamanho = tamanho + 1;
+  numeros = cnpj.substring(0, tamanho);
+  soma = 0;
+  pos = tamanho - 7;
+  
+  for (let i = tamanho; i >= 1; i--) {
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+    if (pos < 2) pos = 9;
+  }
+  
+  resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
+  if (resultado !== parseInt(digitos.charAt(1))) return false;
+  
+  return true;
+};
+
+const telefoneValido = (value: string) => {
+  if (!value) return true;
+  
+  const telefone = value.replace(/\D/g, '');
+  
+  return telefone.length === 10 || telefone.length === 11;
+};
+
+const cepValido = (value: string) => {
+  if (!value) return true;
+  
+  const cep = value.replace(/\D/g, '');
+  
+  return cep.length === 8;
+};
+
 const rules = {
   nome: {
     required,
@@ -399,15 +459,11 @@ const rules = {
   },
   cnpj: {
     required,
-    cnpjValido: (value: string) => {
-      if (!value) return true
-      const cnpjLimpo = value.replace(/\D/g, '')
-      return cnpjLimpo.length === 14
-    },
+    cnpjValido,
   },
   telefone: {
     required,
-    minLength: minLength(14),
+    telefoneValido,
   },
   logradouro: { required },
   numero: { required },
@@ -416,7 +472,7 @@ const rules = {
   estado: { required },
   cep: {
     required,
-    minLength: minLength(9),
+    cepValido,
   },
   capacidade: {
     numeric,
@@ -440,12 +496,57 @@ const v$ = useVuelidate(rules, unidade)
 
 const router = useRouter()
 
+function aplicarMascaraCNPJ(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 14) {
+    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+  }
+  
+  unidade.cnpj = value;
+}
+
+function aplicarMascaraTelefone(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    if (value.length <= 10) {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+  }
+  
+  unidade.telefone = value;
+}
+
+function aplicarMascaraCEP(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 8) {
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  
+  unidade.cep = value;
+}
+
 function limparFormulario() {
   unidade.nome = ''
   unidade.cnpj = ''
   unidade.telefone = ''
   unidade.status = false
   unidade.capacidade = ''
+  unidade.diasFuncionamento = ''
+  unidade.horarioAbertura = ''
+  unidade.horarioFechamento = ''
   unidade.logradouro = ''
   unidade.numero = ''
   unidade.complemento = ''
@@ -512,36 +613,9 @@ async function cadastrarUnidade() {
   }
 }
 
-function aplicarMascaraCNPJ() {
-  let v = unidade.cnpj.replace(/\D/g, '')
-  v = v.replace(/^(\d{2})(\d)/, '$1.$2')
-  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2')
-  v = v.replace(/(\d{4})(\d)/, '$1-$2')
-  unidade.cnpj = v
-}
-
-function aplicarMascaraTelefone() {
-  let v = unidade.telefone.replace(/\D/g, '')
-  if (v.length > 10) {
-    v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3')
-  } else {
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3')
-  }
-  unidade.telefone = v
-}
-
-function aplicarMascaraCep() {
-  let v = unidade.cep.replace(/\D/g, '')
-  if (v.length > 5) {
-    v = v.replace(/^(\d{5})(\d{1,3}).*/, '$1-$2')
-  }
-  unidade.cep = v
-}
-
 const carregarGerentes = async () => {
   try {
-    const res = await axios.get('http://10.210.8.51:3000/funcionarios?cargo=Gerente')
+    const res = await axios.get('http://localhost:3000/funcionarios?cargo=Gerente')
     listaGerentes.value = res.data
   } catch (error) {
     console.error('Erro ao carregar gerentes:', error)

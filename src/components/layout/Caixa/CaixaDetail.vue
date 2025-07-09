@@ -29,8 +29,11 @@
                     <div class="col-md-6">
                       <label for="valor_abertura" class="form-label">Valor de Abertura (R$)</label>
                       <input
-                        v-maska="'#,##0.00'" data-maska-tokens="separator:." data-maska-reverse
-                        type="text" class="form-control" v-model="caixa.valor_abertura" required
+                        type="text"
+                        class="form-control"
+                        v-model="caixa.valor_abertura_formatado"
+                        @input="aplicarMascaraValorAbertura"
+                        required
                       />
                     </div>
                   </div>
@@ -43,8 +46,10 @@
                     <div class="col-md-6">
                       <label for="valor_fechamento" class="form-label">Valor de Fechamento (R$)</label>
                       <input
-                        v-maska="'#,##0.00'" data-maska-tokens="separator:." data-maska-reverse
-                        type="text" class="form-control" v-model="caixa.valor_fechamento"
+                        type="text"
+                        class="form-control"
+                        v-model="caixa.valor_fechamento_formatado"
+                        @input="aplicarMascaraValorFechamento"
                       />
                     </div>
                   </div>
@@ -131,9 +136,11 @@ const id = route.params.id as string
 
 const caixa = reactive({
   data_abertura: '',
-  valor_abertura: '',
+  valor_abertura_formatado: '',
+  valor_abertura: null as number | null,
   data_fechamento: '',
-  valor_fechamento: '',
+  valor_fechamento_formatado: '',
+  valor_fechamento: null as number | null,
   status: '',
   observacao: '',
   funcionario_id: null as number | null,
@@ -145,15 +152,25 @@ const funcionariosFiltrados = ref<Array<{ id: number; nome: string }>>([])
 const listaFuncionarios = ref<Array<{ id: number; nome: string }>>([])
 const mostrarSugestoes = ref(false)
 
+const formatarValorParaExibicao = (valor: number | null): string => {
+  if (valor === null || valor === undefined) return '';
+  return 'R$ ' + valor.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 const buscarCaixa = async () => {
   try {
     const res = await axios.get(`http://localhost:3000/caixas/${id}`)
     const dados = res.data
     Object.assign(caixa, {
       data_abertura: dados.data_abertura,
-      valor_abertura: dados.valor_abertura?.toString().replace('.', ',') ?? '',
+      valor_abertura: dados.valor_abertura,
+      valor_abertura_formatado: formatarValorParaExibicao(dados.valor_abertura),
       data_fechamento: dados.data_fechamento,
-      valor_fechamento: dados.valor_fechamento?.toString().replace('.', ',') ?? '',
+      valor_fechamento: dados.valor_fechamento,
+      valor_fechamento_formatado: formatarValorParaExibicao(dados.valor_fechamento),
       status: dados.status,
       observacao: dados.observacao,
       funcionario_id: dados.funcionario_id
@@ -199,15 +216,57 @@ const selecionarFuncionario = (func: { id: number; nome: string }) => {
   mostrarSugestoes.value = false
 }
 
+const aplicarMascaraValorAbertura = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    caixa.valor_abertura_formatado = '';
+    caixa.valor_abertura = null;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  caixa.valor_abertura_formatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  caixa.valor_abertura = valorEmReais;
+}
+
+const aplicarMascaraValorFechamento = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    caixa.valor_fechamento_formatado = '';
+    caixa.valor_fechamento = null;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  caixa.valor_fechamento_formatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  caixa.valor_fechamento = valorEmReais;
+}
+
 const salvarAlteracoes = async () => {
   try {
     const dados = {
       data_abertura: caixa.data_abertura,
-      valor_abertura: parseFloat(caixa.valor_abertura.replace('.', '').replace(',', '.')),
+      valor_abertura: caixa.valor_abertura,
       data_fechamento: caixa.data_fechamento || null,
-      valor_fechamento: caixa.valor_fechamento
-        ? parseFloat(caixa.valor_fechamento.replace('.', '').replace(',', '.'))
-        : null,
+      valor_fechamento: caixa.valor_fechamento,
       status: caixa.status,
       observacao: caixa.observacao,
       funcionario_id: caixa.funcionario_id

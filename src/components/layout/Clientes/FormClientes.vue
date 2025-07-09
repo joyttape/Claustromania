@@ -29,7 +29,6 @@
                 <h6 class="mb-4">Cadastro de Clientes</h6>
 
                 <div class="d-flex align-items-start gap-4">
-                  <!-- Formulário -->
                   <form @submit.prevent="cadastrarCliente" class="flex-grow-1" novalidate>
                     <h6 class="mb-3">Dados Pessoais</h6>
 
@@ -59,14 +58,14 @@
                           class="form-control"
                           id="cpf"
                           v-model="cliente.cpf"
+                          @input="aplicarMascaraCPF"
                           :class="{ 'is-invalid': v$.cpf.$error }"
+                          maxlength="14"
+                          placeholder="000.000.000-00"
                         />
                         <div class="invalid-feedback" v-if="v$.cpf.$error">
                           <div v-if="!v$.cpf.required">CPF é obrigatório.</div>
-                          <div v-if="!v$.cpf.numeric">CPF deve conter apenas números.</div>
-                          <div v-if="!v$.cpf.minLength">
-                            CPF deve ter pelo menos 11 dígitos.
-                          </div>
+                          <div v-if="!v$.cpf.cpfValido">CPF inválido.</div>
                         </div>
                       </div>
 
@@ -122,6 +121,27 @@
                       </div>
 
                       <div class="col-md-4">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="telefone"
+                          v-model="cliente.telefone"
+                          @input="aplicarMascaraTelefone"
+                          :class="{ 'is-invalid': v$.telefone.$error }"
+                          maxlength="15"
+                          placeholder="(00) 00000-0000"
+                          required
+                        />
+                        <div class="invalid-feedback" v-if="v$.telefone.$error">
+                          <div v-if="!v$.telefone.required">Telefone é obrigatório.</div>
+                          <div v-if="!v$.telefone.telefoneValido">Telefone inválido.</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-12">
                         <label for="nivel" class="form-label">Nível de Experiência</label>
                         <select
                           class="form-select"
@@ -235,6 +255,9 @@
                           class="form-control"
                           id="cep"
                           v-model="cliente.cep"
+                          @input="aplicarMascaraCEP"
+                          maxlength="9"
+                          placeholder="00000-000"
                         />
                       </div>
                     </div>
@@ -260,7 +283,7 @@
 import { reactive, ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
-import { required, minLength, email, numeric } from '@vuelidate/validators';
+import { required, minLength, email } from '@vuelidate/validators';
 import axios from 'axios';
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue';
@@ -274,6 +297,7 @@ const cliente = reactive({
   dataNascimento: '',
   sexo: '',
   email: '',
+  telefone: '',
   nivel: '',
   logradouro: '',
   numero: '',
@@ -286,18 +310,103 @@ const cliente = reactive({
 
 const fotoPreview = ref<string | null>(null);
 
+const cpfValido = (value: string) => {
+  if (!value) return true;
+  
+  const cpf = value.replace(/\D/g, '');
+  
+  if (cpf.length !== 11) return false;
+  
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+  
+  let soma = 0;
+  for (let i = 0; i < 9; i++) {
+    soma += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let resto = 11 - (soma % 11);
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.charAt(9))) return false;
+  
+  soma = 0;
+  for (let i = 0; i < 10; i++) {
+    soma += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  resto = 11 - (soma % 11);
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.charAt(10))) return false;
+  
+  return true;
+};
+
+const telefoneValido = (value: string) => {
+  if (!value) return true;
+  
+  const telefone = value.replace(/\D/g, '');
+  
+  return telefone.length === 10 || telefone.length === 11;
+};
+
 const rules = {
   nome: { required, minLength: minLength(3) },
-  cpf: { required, numeric, minLength: minLength(11) },
+  cpf: { required, cpfValido },
   dataNascimento: { required },
   sexo: { required },
   email: { required, email },
+  telefone: { required, telefoneValido },
   nivel: { required },
+  logradouro: { required },
+  numero: { required },
+  complemento: { required },
+  bairro: { required },
+  cidade: { required },
+  estado: { required },
+  cep: { required }
 };
 
 const v$ = useVuelidate(rules, cliente);
 
 const router = useRouter();
+
+function aplicarMascaraCPF(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  
+  cliente.cpf = value;
+}
+
+function aplicarMascaraTelefone(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    if (value.length <= 10) {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+  }
+  
+  cliente.telefone = value;
+}
+
+function aplicarMascaraCEP(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 8) {
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  
+  cliente.cep = value;
+}
 
 function limparFormulario() {
   cliente.nome = '';
@@ -305,6 +414,7 @@ function limparFormulario() {
   cliente.dataNascimento = '';
   cliente.sexo = '';
   cliente.email = '';
+  cliente.telefone = '';
   cliente.nivel = '';
   cliente.logradouro = '';
   cliente.numero = '';
@@ -313,7 +423,6 @@ function limparFormulario() {
   cliente.cidade = '';
   cliente.estado = '';
   cliente.cep = '';
-  fotoPreview.value = null;
   v$.value.$reset();
 }
 
@@ -335,6 +444,7 @@ async function cadastrarCliente() {
     dataNascimento: cliente.dataNascimento,
     sexo: cliente.sexo,
     email: cliente.email,
+    telefone: cliente.telefone,
     nivel: cliente.nivel,
     logradouro: cliente.logradouro,
     numero: cliente.numero,
@@ -342,7 +452,7 @@ async function cadastrarCliente() {
     bairro: cliente.bairro,
     cidade: cliente.cidade,
     estado: cliente.estado,
-    cep: cliente.cep,
+    cep: cliente.cep
   };
 
   try {
@@ -374,3 +484,4 @@ onMounted(() => {
   document.body.appendChild(script);
 });
 </script>
+

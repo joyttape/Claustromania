@@ -57,9 +57,9 @@
                         type="text"
                         class="form-control"
                         id="preco"
-                        v-model="jogo.Preco"
-                        @input="formatarPreco"
-                        @keypress="bloquearLetras"
+                        v-model="precoFormatado"
+                        @input="aplicarMascaraDinheiro"
+                        inputmode="numeric"
                         placeholder="R$ 0,00"
                         required
                       />
@@ -115,24 +115,61 @@ const jogo = reactive({
   Descricao: '',
   Duracao: '',
   Dificuldade: '',
-  Preco: ''
+  Preco: null as number | null
 })
 
+const precoFormatado = ref('')
 const loading = ref(true)
 
-const formatarPreco = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  let valor = target.value.replace(/\D/g, '')
-
-  valor = (parseInt(valor, 10) / 100).toFixed(2)
-  valor = valor.replace('.', ',')
-  jogo.Preco = `R$ ${valor}`
+const formatarDinheiro = (valor: string | number) => {
+  if (valor === null || valor === undefined || valor === '') return ''
+  
+  let numeroValor: number
+  
+  if (typeof valor === 'string') {
+    const v = valor.replace(/\D/g, '')
+    
+    if (v.length === 0) return ''
+    
+    const numero = parseInt(v)
+    
+    numeroValor = numero / 100
+  } else {
+    numeroValor = valor
+  }
+  
+  return numeroValor.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 }
 
-const bloquearLetras = (event: KeyboardEvent) => {
-  const tecla = event.key
-  if (!/[\d.,]/.test(tecla)) {
-    event.preventDefault()
+const formatarPrecoCarregado = (preco: number | string) => {
+  if (preco === null || preco === undefined || preco === '') return ''
+  
+  const numeroPreco = typeof preco === 'string' ? parseFloat(preco) : preco
+  
+  if (isNaN(numeroPreco)) return ''
+  
+  return numeroPreco.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
+const aplicarMascaraDinheiro = () => {
+  const valorFormatado = formatarDinheiro(precoFormatado.value)
+  precoFormatado.value = valorFormatado
+  
+  const apenasNumeros = precoFormatado.value.replace(/\D/g, '')
+  if (apenasNumeros) {
+    jogo.Preco = parseFloat((parseInt(apenasNumeros) / 100).toFixed(2))
+  } else {
+    jogo.Preco = null
   }
 }
 
@@ -147,7 +184,10 @@ const carregarJogo = async () => {
     jogo.Descricao = dados.Descricao || ''
     jogo.Duracao = dados.Duracao || ''
     jogo.Dificuldade = dados.Dificuldade || ''
-    jogo.Preco = dados.Preco || ''
+    
+    jogo.Preco = dados.Preco || null
+    precoFormatado.value = formatarPrecoCarregado(dados.Preco)
+    
   } catch (error) {
     console.error('Erro ao carregar jogo:', error)
     Swal.fire({
@@ -162,7 +202,16 @@ const carregarJogo = async () => {
 
 const salvarAlteracoes = async () => {
   try {
-    await axios.put(`http://10.210.8.51:3000/jogos/${jogoId}`, jogo)
+    const dadosEnvio = {
+      id: jogo.id,
+      NomeJogo: jogo.NomeJogo,
+      Descricao: jogo.Descricao,
+      Duracao: jogo.Duracao,
+      Dificuldade: jogo.Dificuldade,
+      Preco: jogo.Preco
+    }
+    
+    await axios.put(`http://localhost:3000/jogos/${jogoId}`, dadosEnvio)
     await Swal.fire({
       icon: 'success',
       title: 'Jogo salvo com sucesso!',
@@ -222,9 +271,9 @@ onMounted(() => {
 })
 </script>
 
-
 <style scoped>
 textarea {
   resize: none;
 }
 </style>
+

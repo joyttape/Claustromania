@@ -6,14 +6,15 @@
       "dataNascimento": "2005-03-05",
       "sexo": "masculino",
       "email": "joaopedrogundimg@gmail.com",
+      "telefone": "69992087903",
       "nivel": "Intermediario",
       "logradouro": "Avenida Rio Branco",
       "numero": "1434",
       "complemento": "Jp Assessoria",
       "bairro": "Setor 2",
       "cidade": "Jaru",
-      "estado": "RO",
-      "cep": "76890-00",
+      "estado": "RJ",
+      "cep": "7689000",
       "id": "75dfjo"
     },
     {
@@ -33,12 +34,12 @@
       "id": "pdkxgx"
     },
     {
-      "id": "ukl1h1",
       "nome": "Carlos Almeida",
-      "cpf": "621626233262",
+      "cpf": "62162623332",
       "dataNascimento": "1999-08-06",
       "sexo": "masculino",
       "email": "carlos.almeida@example.com",
+      "telefone": "",
       "nivel": "Intermediario",
       "logradouro": "Rua das Flores",
       "numero": "123",
@@ -46,7 +47,25 @@
       "bairro": "Centro",
       "cidade": "São Paulo",
       "estado": "SP",
-      "cep": "01001-000"
+      "cep": "01001000",
+      "id": "ukl1h1"
+    },
+    {
+      "id": "5bjomr",
+      "nome": "Krystal",
+      "cpf": "035.503.132-92",
+      "dataNascimento": "2005-03-05",
+      "sexo": "feminino",
+      "email": "jeiososasj@gmail.com",
+      "telefone": "(69) 99208-7903",
+      "nivel": "Novato",
+      "logradouro": "Avenida Rio Branco",
+      "numero": "1434",
+      "complemento": "Jp Assessoria",
+      "bairro": "Setor 2",
+      "cidade": "Jaru",
+      "estado": "RO",
+      "cep": "76890-000"
     }
   ],
   "salas": [
@@ -56,12 +75,25 @@
       "Status": true,
       "Jogos": [
         {
+          "id": "1",
+          "NomeJogo": "O Mistério da Mansão Abandonada",
+          "Dificuldade": "Médio",
+          "Preco": 80.5,
+          "Duracao": "60 minutos"
+        },
+        {
           "id": "8862",
-          "NomeJogo": "Hora de aventura"
+          "NomeJogo": "Hora de aventura",
+          "Dificuldade": "Fácil",
+          "Preco": 100,
+          "Duracao": "60 minutos"
         },
         {
           "id": "8bdb",
-          "NomeJogo": "Divertidamente"
+          "NomeJogo": "Divertidamente",
+          "Dificuldade": "Fácil",
+          "Preco": 60,
+          "Duracao": "90 minutos"
         }
       ],
       "unidade_id": "sg4rb5",
@@ -125,19 +157,22 @@
       "dataNascimento": "2602-06-06",
       "sexo": "masculino",
       "email": "joaopedrogundimg@gmail.com",
-      "cargo": "sss",
+      "telefone": "69992087903",
+      "cargo": "Gerente",
       "salario": 11222,
+      "salarioFormatado": "R$ 11.222,00",
       "dataContratacao": "8162-05-06",
       "turno": "tarde",
-      "status": false,
+      "status": true,
       "logradouro": "Afdvdsvd",
       "numero": "vdvds",
       "complemento": "vsdvds",
       "bairro": "vdsvds",
       "cidade": "vdvdvd",
       "estado": "RO",
-      "cep": "dsvdvds",
-      "id": "g18npn"
+      "cep": "",
+      "id": "g18npn",
+      "senha": "joao0503"
     },
     {
       "nome": "vfvfdb",
@@ -165,8 +200,10 @@
       "dataNascimento": "2622-06-03",
       "sexo": "feminino",
       "email": "camila@gmail.com",
+      "telefone": "69992087903",
       "cargo": "Gerente",
       "salario": 12000,
+      "salarioFormatado": "R$ 12.000,00",
       "dataContratacao": "2025-06-05",
       "turno": "integral",
       "status": true,
@@ -176,8 +213,7 @@
       "bairro": "vdsvds",
       "cidade": "vdvdvd",
       "estado": "PR",
-      "cep": "dsvdvds",
-      "foto": null,
+      "cep": "",
       "id": "a2lkrw",
       "senha": "camila"
     },
@@ -220,7 +256,8 @@
       "bairro": "Jardim América",
       "cidade": "Jaru",
       "estado": "RO",
-      "cep": "76890-000"
+      "cep": "76890-000",
+      "senha": "joel"
     },
     {
       "id": "paw2mv",
@@ -261,7 +298,30 @@
       "bairro": "Centro",
       "cidade": "São Paulo",
       "estado": "SP",
-      "cep": "01001-000"
+      "cep": "01001-000",
+      "senha": null
+    },
+    {
+      "id": "9uwcu0",
+      "nome": "Maria Clara",
+      "cpf": "03550313292",
+      "dataNascimento": "2006-01-02",
+      "sexo": "feminino",
+      "email": "maria@gmail.com",
+      "telefone": "69998231256",
+      "cargo": "Caixa",
+      "salario": 2500,
+      "dataContratacao": "2024-05-06",
+      "turno": "integral",
+      "status": true,
+      "logradouro": "Rua das Flores",
+      "numero": "0002",
+      "complemento": "Açaí Point",
+      "bairro": "Setor 2",
+      "cidade": "Jaru",
+      "estado": "RO",
+      "cep": "768900",
+      "senha": "maria"
     }
   ],
   "jogos": [
@@ -270,7 +330,7 @@
       "NomeJogo": "O Mistério da Mansão Abandonada",
       "Descricao": "Desvende os segredos de uma mansão mal-assombrada onde ninguém sai o mesmo.",
       "Duracao": "60 minutos",
-      "Dificuldade": "Média",
+      "Dificuldade": "Médio",
       "Preco": 80.5
     },
     {
@@ -279,7 +339,7 @@
       "Descricao": "kjbkjbklnklmlçoml",
       "Duracao": "60 minutos",
       "Dificuldade": "Fácil",
-      "Preco": 8.05
+      "Preco": 100
     },
     {
       "id": "8bdb",
@@ -294,7 +354,7 @@
   "unidades": [
     {
       "nome": "Claustromania Ji-Paraná",
-      "cnpj": "06262630303651",
+      "cnpj": "12345678000195",
       "telefone": "69992087903",
       "status": true,
       "capacidade": "500",
@@ -308,10 +368,9 @@
         "bairro": "Jardim América",
         "cidade": "Rio de Janeiro",
         "estado": "RJ",
-        "cep": "22041001"
+        "cep": "78900000"
       },
-      "gerente_id": "paw2mv",
-      "foto": null,
+      "gerente_id": "a2lkrw",
       "id": "eufbqe"
     },
     {
@@ -359,14 +418,14 @@
   ],
   "caixas": [
     {
-      "id": "88e3",
       "data_abertura": "2025-06-05T20:00",
       "valor_abertura": 1300,
-      "data_fechamento": null,
-      "valor_fechamento": null,
+      "data_fechamento": "2025-07-09T09:17",
+      "valor_fechamento": 6000,
       "status": "aberto",
       "observacao": "csdvdsvdsdfcds",
-      "funcionario_id": "a2lkrw"
+      "funcionario_id": "a2lkrw",
+      "id": "88e3"
     },
     {
       "id": "e33c",
@@ -389,14 +448,24 @@
       "id": "e1cc"
     },
     {
-      "id": "0286",
-      "data_abertura": "2025-07-07T12:00",
+      "data_abertura": "2025-07-09T12:00",
       "valor_abertura": 1300,
       "data_fechamento": null,
       "valor_fechamento": null,
       "status": "aberto",
       "observacao": "Abrindo caixa",
-      "funcionario_id": "r3c2jd"
+      "funcionario_id": "r3c2jd",
+      "id": "0286"
+    },
+    {
+      "id": "ea09",
+      "data_abertura": "2024-07-09T09:12",
+      "valor_abertura": 10000,
+      "data_fechamento": "2024-07-09T20:00",
+      "valor_fechamento": 10000,
+      "status": "fechado",
+      "observacao": "vsvdfda",
+      "funcionario_id": "g18npn"
     }
   ],
   "reservas": [
@@ -405,7 +474,7 @@
       "hora_reserva": "00:00",
       "numero_jogadores": 2,
       "valor_total": 16.1,
-      "status": "confirmado",
+      "status": "reservado",
       "jogo_id": "8862",
       "sala_id": "1",
       "cliente_id": "75dfjo",
@@ -429,6 +498,66 @@
       "observacoes": "",
       "forma_pagamento": "pix",
       "unidade_id": "sg4rb5"
+    },
+    {
+      "data_reserva": "2025-07-09",
+      "hora_reserva": "09:00",
+      "numero_jogadores": 15,
+      "valor_total": 1500,
+      "status": "concluido",
+      "jogo_id": "8862",
+      "sala_id": "1",
+      "cliente_id": "75dfjo",
+      "observacoes": "",
+      "unidade_id": "sg4rb5",
+      "forma_pagamento": "pix",
+      "id": "4604"
+    },
+    {
+      "id": "1320",
+      "data_reserva": "2025-07-09",
+      "hora_reserva": "14:00",
+      "numero_jogadores": 5,
+      "valor_total": 402.5,
+      "status": "reservado",
+      "jogo_id": "1",
+      "jogo_nome": "O Mistério da Mansão Abandonada",
+      "sala_id": "1",
+      "cliente_id": "pdkxgx",
+      "cliente_nome": "Ana Lúcia Santos",
+      "observacoes": "vsddvcs",
+      "forma_pagamento": "dinheiro",
+      "unidade_id": "sg4rb5"
+    },
+    {
+      "id": "4574",
+      "data_reserva": "2025-09-09",
+      "hora_reserva": "09:25",
+      "numero_jogadores": 4,
+      "valor_total": 400,
+      "status": "reservado",
+      "jogo_id": "8862",
+      "jogo_nome": "Hora de aventura",
+      "sala_id": "1",
+      "cliente_id": "pdkxgx",
+      "cliente_nome": "Ana Lúcia Santos",
+      "observacoes": "vdcsdvd",
+      "forma_pagamento": "pix",
+      "unidade_id": "sg4rb5"
+    },
+    {
+      "data_reserva": "2025-07-09",
+      "hora_reserva": "10:05",
+      "numero_jogadores": 4,
+      "valor_total": 240,
+      "status": "cancelado",
+      "jogo_id": "8bdb",
+      "sala_id": "1",
+      "cliente_id": "pdkxgx",
+      "observacoes": "",
+      "unidade_id": "sg4rb5",
+      "forma_pagamento": "pix",
+      "id": "3846"
     }
   ],
   "transacoes": [
@@ -513,6 +642,30 @@
       "valor_recebido": null,
       "troco": 0,
       "data": "2025-07-07T16:04:51.961Z"
+    },
+    {
+      "id": "ad9c",
+      "reserva_id": "4604",
+      "cliente_nome": "Joao Pedro Gundim",
+      "forma_pagamento": "pix",
+      "valor": 1500,
+      "caixa_id": "88e3",
+      "pagador": "João Pedro",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-09T13:36:41.171Z"
+    },
+    {
+      "id": "de47",
+      "reserva_id": "3846",
+      "cliente_nome": "Ana Lúcia Santos",
+      "forma_pagamento": "pix",
+      "valor": 240,
+      "caixa_id": "88e3",
+      "pagador": "Ana Lúcia",
+      "valor_recebido": null,
+      "troco": 0,
+      "data": "2025-07-09T14:05:42.678Z"
     }
   ]
 }

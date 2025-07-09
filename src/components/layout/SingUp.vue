@@ -46,13 +46,6 @@
                 <div class="invalid-feedback">{{ senhaError }}</div>
               </div>
 
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="lembrar" />
-                  <label class="form-check-label" for="exampleCheck1">Lembre de mim</label>
-                </div>
-              </div>
-
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Sign Up</button>
             </form>
 
@@ -93,7 +86,7 @@ onMounted(() => {
 
 const buscarFuncionario = async (emailProcurado: string) => {
   try {
-    const response = await axios.get('http:localhost:3000/funcionarios')
+    const response = await axios.get('http://localhost:3000/funcionarios')
     const funcionarios = response.data
     const funcionario = funcionarios.find((f: any) => f.email === emailProcurado)
 
@@ -160,3 +153,11 @@ const handleSignUp = async () => {
   }
 }
 </script>
+
+<style scoped>
+::v-deep input.form-control:disabled {
+  background-color: black !important;
+  color: inherit !important;
+  opacity: 1;
+}
+</style>

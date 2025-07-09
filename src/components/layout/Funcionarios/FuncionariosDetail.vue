@@ -55,7 +55,10 @@
                           id="cpf"
                           class="form-control"
                           v-model="funcionario.cpf"
+                          @input="aplicarMascaraCPF"
                           :class="{ 'is-invalid': $v.funcionario.cpf.$error }"
+                          maxlength="14"
+                          placeholder="000.000.000-00"
                         />
                         <div class="invalid-feedback" v-if="$v.funcionario.cpf.$error">
                           CPF inválido.
@@ -112,6 +115,25 @@
                       </div>
 
                       <div class="col-md-4">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input
+                          type="text"
+                          id="telefone"
+                          class="form-control"
+                          v-model="funcionario.telefone"
+                          @input="aplicarMascaraTelefone"
+                          :class="{ 'is-invalid': $v.funcionario.telefone.$error }"
+                          maxlength="15"
+                          placeholder="(00) 00000-0000"
+                        />
+                        <div class="invalid-feedback" v-if="$v.funcionario.telefone.$error">
+                          Telefone inválido.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-4">
                         <label for="cargo" class="form-label">Cargo</label>
                         <input
                           type="text"
@@ -125,19 +147,19 @@
                           Cargo é obrigatório.
                         </div>
                       </div>
-                    </div>
 
-                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="salario" class="form-label">Salário</label>
                         <input
-                          type="number"
+                          type="text"
                           id="salario"
-                          step="0.01"
                           class="form-control"
-                          v-model.number="funcionario.salario"
+                          v-model="funcionario.salarioFormatado"
+                          @input="aplicarMascaraSalario"
+                          placeholder="R$ 0,00"
                         />
                       </div>
+
                       <div class="col-md-4">
                         <label for="dataContratacao" class="form-label">Data da Contratação</label>
                         <input
@@ -147,6 +169,9 @@
                           v-model="funcionario.dataContratacao"
                         />
                       </div>
+                    </div>
+
+                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="turno" class="form-label">Turno</label>
                         <select
@@ -165,9 +190,7 @@
                           Selecione o turno.
                         </div>
                       </div>
-                    </div>
 
-                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="status" class="form-label">Status</label>
                         <select
@@ -280,6 +303,9 @@
                           id="cep"
                           class="form-control"
                           v-model="funcionario.cep"
+                          @input="aplicarMascaraCEP"
+                          maxlength="9"
+                          placeholder="00000-000"
                         />
                       </div>
                     </div>
@@ -344,8 +370,10 @@ const funcionario = reactive({
   dataNascimento: '',
   sexo: '',
   email: '',
+  telefone: '',
   cargo: '',
   salario: 0,
+  salarioFormatado: '',
   dataContratacao: '',
   turno: '',
   status: null as boolean | null,
@@ -359,7 +387,6 @@ const funcionario = reactive({
   cep: '',
 })
 
-const fotoPreview = ref<string | null>(null)
 const loading = ref(true)
 
 const cpfValido = helpers.withMessage(
@@ -367,7 +394,37 @@ const cpfValido = helpers.withMessage(
   (value: string) => {
     if (!value) return true 
     const cpfLimpo = value.replace(/\D/g, '')
-    return cpfLimpo.length === 11
+    
+    if (cpfLimpo.length !== 11) return false;
+    
+    if (/^(\d)\1{10}$/.test(cpfLimpo)) return false;
+    
+    let soma = 0;
+    for (let i = 0; i < 9; i++) {
+      soma += parseInt(cpfLimpo.charAt(i)) * (10 - i);
+    }
+    let resto = 11 - (soma % 11);
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpfLimpo.charAt(9))) return false;
+    
+    soma = 0;
+    for (let i = 0; i < 10; i++) {
+      soma += parseInt(cpfLimpo.charAt(i)) * (11 - i);
+    }
+    resto = 11 - (soma % 11);
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpfLimpo.charAt(10))) return false;
+    
+    return true;
+  }
+)
+
+const telefoneValido = helpers.withMessage(
+  'Telefone inválido',
+  (value: string) => {
+    if (!value) return true;
+    const telefone = value.replace(/\D/g, '');
+    return telefone.length === 10 || telefone.length === 11;
   }
 )
 
@@ -378,6 +435,7 @@ const rules = {
     dataNascimento: { required },
     sexo: { required },
     email: { required, email },
+    telefone: { telefoneValido },
     cargo: { required },
     turno: { required },
     status: { required },
@@ -386,19 +444,132 @@ const rules = {
 
 const $v = useVuelidate(rules, { funcionario })
 
+function aplicarMascaraCPF(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  
+  funcionario.cpf = value;
+}
+
+function aplicarMascaraTelefone(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    if (value.length <= 10) {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+  }
+  
+  funcionario.telefone = value;
+}
+
+function aplicarMascaraCEP(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 8) {
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  
+  funcionario.cep = value;
+}
+
+function aplicarMascaraSalario(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    funcionario.salarioFormatado = '';
+    funcionario.salario = 0;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  funcionario.salarioFormatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  funcionario.salario = valorEmReais;
+}
+
+function formatarCPF(cpf: string): string {
+  if (!cpf) return '';
+  const apenasNumeros = cpf.replace(/\D/g, '');
+  if (apenasNumeros.length === 11) {
+    return apenasNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+  return cpf;
+}
+
+function formatarTelefone(telefone: string): string {
+  if (!telefone) return '';
+  const apenasNumeros = telefone.replace(/\D/g, '');
+  
+  if (apenasNumeros.length === 10) {
+    return apenasNumeros.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  } else if (apenasNumeros.length === 11) {
+    return apenasNumeros.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  }
+  return telefone;
+}
+
+function formatarCEP(cep: string): string {
+  if (!cep) return '';
+  const apenasNumeros = cep.replace(/\D/g, '');
+  if (apenasNumeros.length === 8) {
+    return apenasNumeros.replace(/(\d{5})(\d{3})/, '$1-$2');
+  }
+  return cep;
+}
+
+function formatarSalario(salario: number): string {
+  if (!salario && salario !== 0) return '';
+  return 'R$ ' + salario.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function removerMascaras(dados: any) {
+  return {
+    ...dados,
+    cpf: dados.cpf ? dados.cpf.replace(/\D/g, '') : '',
+    telefone: dados.telefone ? dados.telefone.replace(/\D/g, '') : '',
+    cep: dados.cep ? dados.cep.replace(/\D/g, '') : '',
+    salario: dados.salario || 0
+  };
+}
+
 const carregarFuncionario = async () => {
   loading.value = true
   try {
-    const response = await axios.get(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`)
+    const response = await axios.get(`http://localhost:3000/funcionarios/${funcionarioId}`)
     const dados = response.data
 
     funcionario.nome = dados.nome || ''
-    funcionario.cpf = dados.cpf || ''
+    funcionario.cpf = formatarCPF(dados.cpf || '')
     funcionario.dataNascimento = dados.dataNascimento || ''
     funcionario.sexo = dados.sexo || ''
     funcionario.email = dados.email || ''
+    funcionario.telefone = formatarTelefone(dados.telefone || '')
     funcionario.cargo = dados.cargo || ''
     funcionario.salario = dados.salario || 0
+    funcionario.salarioFormatado = formatarSalario(dados.salario || 0)
     funcionario.dataContratacao = dados.dataContratacao || ''
     funcionario.turno = dados.turno || ''
     funcionario.status = typeof dados.status === 'boolean' ? dados.status : null
@@ -409,7 +580,7 @@ const carregarFuncionario = async () => {
     funcionario.bairro = dados.bairro || ''
     funcionario.cidade = dados.cidade || ''
     funcionario.estado = dados.estado || ''
-    funcionario.cep = dados.cep || ''
+    funcionario.cep = formatarCEP(dados.cep || '')
   } catch (error) {
     console.error('Erro ao carregar funcionário:', error)
     Swal.fire({
@@ -434,7 +605,9 @@ const salvarAlteracoes = async () => {
   }
 
   try {
-    await axios.put(`http://10.210.8.51:3000/funcionarios/${funcionarioId}`, funcionario)
+    const dadosParaSalvar = removerMascaras(funcionario);
+    
+    await axios.put(`http://localhost:3000/funcionarios/${funcionarioId}`, dadosParaSalvar)
     await Swal.fire({
       icon: 'success',
       title: 'Salvo com sucesso!',
@@ -503,3 +676,5 @@ onMounted(() => {
   display: block;
 }
 </style>
+
+

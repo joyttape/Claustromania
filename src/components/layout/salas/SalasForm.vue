@@ -66,28 +66,83 @@
                     <div class="invalid-feedback" v-if="v$.unidade_id.$error">Unidade obrigatória.</div>
                   </div>
 
-                  <div class="mb-3">
+                  <div class="mb-4">
                     <label class="form-label">Jogos Associados</label>
-                    <select
-                      class="form-select"
-                      multiple
-                      v-model="sala.JogosSelecionados"
-                      :class="{ 'is-invalid': v$.JogosSelecionados.$error }"
-                    >
-                      <option
-                        v-for="jogo in listaJogos"
-                        :key="jogo.id"
-                        :value="jogo"
+                    <div class="text-muted small mb-3">
+                      Selecione os jogos que estarão disponíveis nesta sala ({{ jogosSelecionados.length }} selecionado{{ jogosSelecionados.length !== 1 ? 's' : '' }})
+                    </div>
+                    
+                    <div class="mb-3">
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Pesquisar jogos..."
+                        v-model="filtroJogos"
+                      />
+                    </div>
+
+                    <div class="mb-3">
+                      <button type="button" class="btn btn-outline-primary btn-sm me-2" @click="selecionarTodos">
+                        ✓ Selecionar Todos
+                      </button>
+                      <button type="button" class="btn btn-outline-primary btn-sm" @click="limparSelecao">
+                        ✗ Limpar Seleção
+                      </button>
+                    </div>
+
+                    <div class="row g-3" style="max-height: 400px; overflow-y: auto;">
+                      <div 
+                        v-for="jogo in jogosFiltrados" 
+                        :key="jogo.id" 
+                        class="col-md-6 col-lg-4"
                       >
-                        {{ jogo.NomeJogo }}
-                      </option>
-                    </select>
-                    <div class="invalid-feedback" v-if="v$.JogosSelecionados.$error">
+                        <div 
+                          class="card h-100 jogo-card"
+                          :class="{ 'jogo-selecionado': isJogoSelecionado(jogo.id) }"
+                          @click="toggleJogo(jogo)"
+                          style="cursor: pointer; transition: all 0.3s ease;"
+                        >
+                          <div class="card-body p-3">
+                            <div class="d-flex align-items-start">
+                              <input
+                                type="checkbox"
+                                class="form-check-input me-3 mt-1"
+                                :checked="isJogoSelecionado(jogo.id)"
+                                @click.stop
+                                @change="toggleJogo(jogo)"
+                                style="transform: scale(1.2);"
+                              />
+                              <div class="flex-grow-1">
+                                <h6 class="card-title mb-2 text-truncate" :title="jogo.NomeJogo">
+                                  {{ jogo.NomeJogo }}
+                                </h6>
+                                <div class="small text-muted mb-1">
+                                  <span class="badge red bg-info me-2">{{ jogo.Dificuldade || 'N/A' }}</span>
+                                  <span class="badge bg-success">{{ formatarPreco(jogo.Preco) }}</span>
+                                </div>
+                                <div class="small text-white">
+                                  ⏱️ {{ jogo.Duracao || 'N/A' }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="jogosFiltrados.length === 0" class="text-center text-muted py-4">
+                      <i class="fas fa-search fa-2x mb-2"></i>
+                      <p>Nenhum jogo encontrado com o filtro "{{ filtroJogos }}"</p>
+                    </div>
+
+                    <div class="invalid-feedback d-block" v-if="v$.JogosSelecionados.$error">
                       Selecione ao menos um jogo.
                     </div>
                   </div>
 
-                  <button type="submit" class="btn btn-primary">Salvar</button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Salvar Sala
+                  </button>
                 </form>
               </div>
             </div>
@@ -101,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, minValue } from '@vuelidate/validators'
@@ -113,17 +168,25 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
+interface Jogo {
+  id: number
+  NomeJogo: string
+  Dificuldade?: string
+  Preco?: number
+  Duracao?: string
+}
+
 const sala = reactive({
   Numero: '',
   Jogadores: null as number | null,
   Status: true,
-  JogosSelecionados: [] as Array<{ id: number; NomeJogo: string }>,
+  JogosSelecionados: [] as Jogo[],
   unidade_id: ''
-
 })
 
-const listaJogos = ref<{ id: number; NomeJogo: string }[]>([])
+const listaJogos = ref<Jogo[]>([])
 const listaUnidades = ref<{ id: number; nome: string }[]>([])
+const filtroJogos = ref('')
 
 const rules = {
   Numero: { required, minLength: minLength(1) },
@@ -133,8 +196,53 @@ const rules = {
 }
 
 const v$ = useVuelidate(rules, sala)
-
 const router = useRouter()
+
+const jogosFiltrados = computed(() => {
+  if (!filtroJogos.value) return listaJogos.value
+  
+  const filtro = filtroJogos.value.toLowerCase()
+  return listaJogos.value.filter(jogo => 
+    jogo.NomeJogo.toLowerCase().includes(filtro) ||
+    (jogo.Dificuldade && jogo.Dificuldade.toLowerCase().includes(filtro))
+  )
+})
+
+const jogosSelecionados = computed(() => sala.JogosSelecionados)
+
+const formatarPreco = (preco?: number) => {
+  if (!preco) return 'Grátis'
+  return preco.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  })
+}
+
+const isJogoSelecionado = (jogoId: number) => {
+  return sala.JogosSelecionados.some(jogo => jogo.id === jogoId)
+}
+
+const toggleJogo = (jogo: Jogo) => {
+  const index = sala.JogosSelecionados.findIndex(j => j.id === jogo.id)
+  
+  if (index > -1) {
+    sala.JogosSelecionados.splice(index, 1)
+  } else {
+    sala.JogosSelecionados.push(jogo)
+  }
+}
+
+const selecionarTodos = () => {
+  jogosFiltrados.value.forEach(jogo => {
+    if (!isJogoSelecionado(jogo.id)) {
+      sala.JogosSelecionados.push(jogo)
+    }
+  })
+}
+
+const limparSelecao = () => {
+  sala.JogosSelecionados.splice(0)
+}
 
 onMounted(async () => {
   try {
@@ -146,7 +254,10 @@ onMounted(async () => {
     if (resJogos.status === 200) {
       listaJogos.value = resJogos.data.map((jogo: any) => ({
         id: jogo.id,
-        NomeJogo: jogo.NomeJogo
+        NomeJogo: jogo.NomeJogo,
+        Dificuldade: jogo.Dificuldade,
+        Preco: jogo.Preco,
+        Duracao: jogo.Duracao
       }))
     }
 
@@ -163,12 +274,12 @@ const cadastrarSala = async () => {
   const valid = await v$.value.$validate()
 
   if (!valid) {
-  Toast.fire({
-    icon: 'error',
-    title: 'Corrija os erros no formulário antes de enviar.',
-  })
-  return
-}
+    Toast.fire({
+      icon: 'error',
+      title: 'Corrija os erros no formulário antes de enviar.',
+    })
+    return
+  }
 
   const dadosParaSalvar = {
     id: Math.floor(Math.random() * 100000),
@@ -204,7 +315,58 @@ const limparFormulario = () => {
   sala.Jogadores = null
   sala.Status = true
   sala.JogosSelecionados = []
-  v$.value.$reset(),
   sala.unidade_id = ''
+  filtroJogos.value = ''
+  v$.value.$reset()
 }
 </script>
+
+<style scoped>
+.jogo-card {
+  background-color: #292d30;
+  border: 2px solid transparent;
+  color: white;
+}
+
+.jogo-card:hover {
+  border-color: #F20519;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.jogo-selecionado {
+  border-color: #8a141e !important;
+  background-color: #292d30 !important;
+}
+
+.jogo-selecionado:hover {
+  border-color: #8a141e !important;
+}
+
+.card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.7rem;
+}
+
+.row.g-3::-webkit-scrollbar {
+  width: 8px;
+}
+
+.row.g-3::-webkit-scrollbar-track {
+  background: #495057;
+  border-radius: 4px;
+}
+
+.row.g-3::-webkit-scrollbar-thumb {
+  background: #6c757d;
+  border-radius: 4px;
+}
+
+.row.g-3::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+</style>

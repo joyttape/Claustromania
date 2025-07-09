@@ -126,11 +126,6 @@ const router = createRouter({
       component: ReservasDetail
     },
     {
-      path: '/reservas/detalhe/transacao/:id',
-      name: "Transacao",
-      component: Transacao
-    },
-    {
       path: '/reservas/transacao/:id',
       name: "Transacao",
       component: Transacao

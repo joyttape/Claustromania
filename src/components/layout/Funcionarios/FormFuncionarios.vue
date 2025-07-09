@@ -56,13 +56,15 @@
                           id="cpf"
                           class="form-control"
                           v-model="funcionario.cpf"
+                          @input="aplicarMascaraCPF"
                           :class="{ 'is-invalid': v$.cpf.$error }"
+                          maxlength="14"
+                          placeholder="000.000.000-00"
                           required
                         />
                         <div class="invalid-feedback" v-if="v$.cpf.$error">
                           <div v-if="!v$.cpf.required">CPF é obrigatório.</div>
-                          <div v-if="!v$.cpf.numeric">CPF deve conter apenas números.</div>
-                          <div v-if="!v$.cpf.minLength">CPF deve ter pelo menos 11 dígitos.</div>
+                          <div v-if="!v$.cpf.cpfValido">CPF inválido.</div>
                         </div>
                       </div>
 
@@ -117,6 +119,27 @@
                       </div>
 
                       <div class="col-md-4">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input
+                          type="text"
+                          id="telefone"
+                          class="form-control"
+                          v-model="funcionario.telefone"
+                          @input="aplicarMascaraTelefone"
+                          :class="{ 'is-invalid': v$.telefone.$error }"
+                          maxlength="15"
+                          placeholder="(00) 00000-0000"
+                          required
+                        />
+                        <div class="invalid-feedback" v-if="v$.telefone.$error">
+                          <div v-if="!v$.telefone.required">Telefone é obrigatório.</div>
+                          <div v-if="!v$.telefone.telefoneValido">Telefone inválido.</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-4">
                         <label for="cargo" class="form-label">Cargo</label>
                         <input
                           type="text"
@@ -128,18 +151,17 @@
                         />
                         <div class="invalid-feedback" v-if="v$.cargo.$error">Cargo é obrigatório.</div>
                       </div>
-                    </div>
 
-                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="salario" class="form-label">Salário</label>
                         <input
-                          type="number"
-                          step="0.01"
+                          type="text"
                           id="salario"
                           class="form-control"
-                          v-model="funcionario.salario"
+                          v-model="funcionario.salarioFormatado"
+                          @input="aplicarMascaraSalario"
                           :class="{ 'is-invalid': v$.salario.$error }"
+                          placeholder="R$ 0,00"
                           required
                         />
                         <div class="invalid-feedback" v-if="v$.salario.$error">Salário é obrigatório.</div>
@@ -157,7 +179,9 @@
                         />
                         <div class="invalid-feedback" v-if="v$.dataContratacao.$error">Data da contratação é obrigatória.</div>
                       </div>
+                    </div>
 
+                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="turno" class="form-label">Turno</label>
                         <select
@@ -175,9 +199,7 @@
                         </select>
                         <div class="invalid-feedback" v-if="v$.turno.$error">Turno é obrigatório.</div>
                       </div>
-                    </div>
 
-                    <div class="row mb-3">
                       <div class="col-md-4">
                         <label for="status" class="form-label">Status</label>
                         <select
@@ -295,6 +317,9 @@
                           id="cep"
                           class="form-control"
                           v-model="funcionario.cep"
+                          @input="aplicarMascaraCEP"
+                          maxlength="9"
+                          placeholder="00000-000"
                         />
                       </div>
                     </div>
@@ -318,7 +343,7 @@
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, email, numeric } from '@vuelidate/validators'
+import { required, minLength, email } from '@vuelidate/validators'
 import axios from 'axios'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
@@ -332,8 +357,10 @@ const funcionario = reactive({
   dataNascimento: '',
   sexo: '',
   email: '',
+  telefone: '',
   cargo: '',
   salario: null as number | null,
+  salarioFormatado: '',
   dataContratacao: '',
   turno: '',
   status: null as boolean | null,
@@ -345,17 +372,58 @@ const funcionario = reactive({
   cidade: '',
   estado: '',
   cep: '',
-
 })
 
 const fotoPreview = ref<string | null>(null)
 
+// Validadores customizados
+const cpfValido = (value: string) => {
+  if (!value) return true; // Deixa o required cuidar da obrigatoriedade
+  
+  // Remove formatação
+  const cpf = value.replace(/\D/g, '');
+  
+  if (cpf.length !== 11) return false;
+  
+  // Verifica se todos os dígitos são iguais
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+  
+  // Validação do primeiro dígito verificador
+  let soma = 0;
+  for (let i = 0; i < 9; i++) {
+    soma += parseInt(cpf.charAt(i)) * (10 - i);
+  }
+  let resto = 11 - (soma % 11);
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.charAt(9))) return false;
+  
+  // Validação do segundo dígito verificador
+  soma = 0;
+  for (let i = 0; i < 10; i++) {
+    soma += parseInt(cpf.charAt(i)) * (11 - i);
+  }
+  resto = 11 - (soma % 11);
+  if (resto === 10 || resto === 11) resto = 0;
+  if (resto !== parseInt(cpf.charAt(10))) return false;
+  
+  return true;
+};
+
+const telefoneValido = (value: string) => {
+  if (!value) return true;
+  
+  const telefone = value.replace(/\D/g, '');
+  
+  return telefone.length === 10 || telefone.length === 11;
+};
+
 const rules = {
   nome: { required, minLength: minLength(3) },
-  cpf: { required, numeric, minLength: minLength(11) },
+  cpf: { required, cpfValido },
   dataNascimento: { required },
   sexo: { required },
   email: { required, email },
+  telefone: { required, telefoneValido },
   cargo: { required },
   salario: { required },
   dataContratacao: { required },
@@ -367,6 +435,68 @@ const v$ = useVuelidate(rules, funcionario)
 
 const router = useRouter()
 
+function aplicarMascaraCPF(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  }
+  
+  funcionario.cpf = value;
+}
+
+function aplicarMascaraTelefone(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 11) {
+    if (value.length <= 10) {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+      value = value.replace(/(\d{2})(\d)/, '($1) $2');
+      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+  }
+  
+  funcionario.telefone = value;
+}
+
+function aplicarMascaraCEP(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value.length <= 8) {
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+  }
+  
+  funcionario.cep = value;
+}
+
+function aplicarMascaraSalario(event: Event) {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    funcionario.salarioFormatado = '';
+    funcionario.salario = null;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  funcionario.salarioFormatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  funcionario.salario = valorEmReais;
+}
 
 function limparFormulario() {
   funcionario.nome = ''
@@ -374,8 +504,10 @@ function limparFormulario() {
   funcionario.dataNascimento = ''
   funcionario.sexo = ''
   funcionario.email = ''
+  funcionario.telefone = ''
   funcionario.cargo = ''
   funcionario.salario = null
+  funcionario.salarioFormatado = ''
   funcionario.dataContratacao = ''
   funcionario.turno = ''
   funcionario.status = null
@@ -405,10 +537,11 @@ async function cadastrarFuncionario() {
   const dadosEnvio = {
     id: Math.random().toString(36).substring(2, 8),
     nome: funcionario.nome,
-    cpf: funcionario.cpf,
+    cpf: funcionario.cpf.replace(/\D/g, ''),
     dataNascimento: funcionario.dataNascimento,
     sexo: funcionario.sexo,
     email: funcionario.email,
+    telefone: funcionario.telefone.replace(/\D/g, ''),
     cargo: funcionario.cargo,
     salario: funcionario.salario,
     dataContratacao: funcionario.dataContratacao,
@@ -421,7 +554,8 @@ async function cadastrarFuncionario() {
     bairro: funcionario.bairro,
     cidade: funcionario.cidade,
     estado: funcionario.estado,
-    cep: funcionario.cep,
+    cep: funcionario.cep.replace(/\D/g, ''),
+    senha: null
   }
 
   try {
@@ -453,3 +587,4 @@ onMounted(() => {
   document.body.appendChild(script)
 })
 </script>
+

@@ -39,14 +39,12 @@
                     <div class="col-md-6">
                       <label for="valor_abertura" class="form-label">Valor de Abertura (R$)</label>
                       <input
-                        v-maska="'#,##0.00'"
-                        data-maska-tokens="separator:."
-                        data-maska-reverse
                         type="text"
                         class="form-control"
                         id="valor_abertura"
-                        v-model="caixa.valor_abertura"
+                        v-model="caixa.valor_abertura_formatado"
                         :class="{ 'is-invalid': v$.valor_abertura.$error }"
+                        @input="aplicarMascaraValorAbertura"
                         required
                       />
                       <div class="invalid-feedback" v-if="v$.valor_abertura.$error">
@@ -73,15 +71,13 @@
                     <div class="col-md-6">
                       <label for="valor_fechamento" class="form-label">Valor de Fechamento (R$)</label>
                       <input
-                        v-maska="'#,##0.00'"
-                        data-maska-tokens="separator:."
-                        data-maska-reverse
                         type="text"
                         class="form-control"
                         id="valor_fechamento"
-                        v-model="caixa.valor_fechamento"
+                        v-model="caixa.valor_fechamento_formatado"
                         :class="{ 'is-invalid': v$.valor_fechamento.$error }"
                         :disabled="caixa.status !== 'fechado'"
+                        @input="aplicarMascaraValorFechamento"
                       />
                       <div class="invalid-feedback" v-if="v$.valor_fechamento.$error">
                         Valor de fechamento deve ser maior que zero.
@@ -194,9 +190,11 @@ const router = useRouter()
 
 const caixa = reactive({
   data_abertura: '',
-  valor_abertura: '',
+  valor_abertura_formatado: '',
+  valor_abertura: null as number | null,
   data_fechamento: '',
-  valor_fechamento: '',
+  valor_fechamento_formatado: '',
+  valor_fechamento: null as number | null,
   status: '',
   observacao: '',
   funcionario_id: null as number | null,
@@ -213,9 +211,8 @@ const rules = {
   data_abertura: { required },
   valor_abertura: { 
     required,
-    valorValido: helpers.withMessage('Valor deve ser maior que zero', (value: string) => {
-      const valor = parseFloat(value.replace('.', '').replace(',', '.')) || 0
-      return valor > 0
+    valorValido: helpers.withMessage('Valor deve ser maior que zero', (value: number | null) => {
+      return value !== null && value > 0
     })
   },
   data_fechamento: {
@@ -225,10 +222,9 @@ const rules = {
     })
   },
   valor_fechamento: {
-    valido: helpers.withMessage('Valor deve ser maior que zero', (value: string) => {
-      if (!value || caixa.status !== 'fechado') return true
-      const valor = parseFloat(value.replace('.', '').replace(',', '.')) || 0
-      return valor > 0
+    valido: helpers.withMessage('Valor deve ser maior que zero', (value: number | null) => {
+      if (caixa.status !== 'fechado') return true
+      return value !== null && value > 0
     })
   },
   status: { required },
@@ -266,6 +262,50 @@ const selecionarFuncionario = (funcionario: {id: number, nome: string}) => {
   mostrarSugestoes.value = false
 }
 
+const aplicarMascaraValorAbertura = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    caixa.valor_abertura_formatado = '';
+    caixa.valor_abertura = null;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  caixa.valor_abertura_formatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  caixa.valor_abertura = valorEmReais;
+}
+
+const aplicarMascaraValorFechamento = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  let value = input.value.replace(/\D/g, '');
+  
+  if (value === '') {
+    caixa.valor_fechamento_formatado = '';
+    caixa.valor_fechamento = null;
+    return;
+  }
+  
+  const numero = parseInt(value);
+  
+  const valorEmReais = numero / 100;
+  
+  caixa.valor_fechamento_formatado = 'R$ ' + valorEmReais.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  caixa.valor_fechamento = valorEmReais;
+}
+
 const cadastrarCaixa = async () => {
   const isValid = await v$.value.$validate()
   
@@ -283,9 +323,9 @@ const cadastrarCaixa = async () => {
   try {
     const dados = {
       data_abertura: caixa.data_abertura,
-      valor_abertura: parseFloat(caixa.valor_abertura.replace('.', '').replace(',', '.')),
+      valor_abertura: caixa.valor_abertura,
       data_fechamento: caixa.status === 'fechado' ? caixa.data_fechamento : null,
-      valor_fechamento: caixa.status === 'fechado' ? parseFloat(caixa.valor_fechamento.replace('.', '').replace(',', '.')) : null,
+      valor_fechamento: caixa.status === 'fechado' ? caixa.valor_fechamento : null,
       status: caixa.status,
       observacao: caixa.observacao,
       funcionario_id: caixa.funcionario_id
@@ -324,9 +364,11 @@ const cadastrarCaixa = async () => {
 const limparFormulario = () => {
   Object.assign(caixa, {
     data_abertura: '',
-    valor_abertura: '',
+    valor_abertura_formatado: '',
+    valor_abertura: null,
     data_fechamento: '',
-    valor_fechamento: '',
+    valor_fechamento_formatado: '',
+    valor_fechamento: null,
     status: '',
     observacao: '',
     funcionario_id: null,
@@ -351,3 +393,14 @@ onMounted(async () => {
   document.body.appendChild(script)
 })
 </script>
+
+<style scoped>
+:deep(input.form-control:disabled),
+:deep(input[type="datetime-local"]:disabled),
+:deep(select.form-select:disabled) {
+  background-color: black !important;
+  color: inherit !important;
+  opacity: 1;
+  cursor: not-allowed;
+}
+</style>

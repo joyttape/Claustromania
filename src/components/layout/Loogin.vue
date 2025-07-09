@@ -37,13 +37,6 @@
                 <div class="invalid-feedback">{{ senhaError }}</div>
               </div>
 
-              <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="form-check">
-                  <input type="checkbox" class="form-check-input" id="exampleCheck1" v-model="lembrar" />
-                  <label class="form-check-label" for="exampleCheck1">Lembre de mim</label>
-                </div>
-              </div>
-
               <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Log In</button>
             </form>
 
