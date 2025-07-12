@@ -90,9 +90,9 @@
                           :class="{ 'is-invalid': $v.funcionario.sexo.$error }"
                         >
                           <option disabled value="">Selecione</option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="outro">Outro</option>
+                          <option value="Masculino">Masculino</option>
+                          <option value="Feminino">Feminino</option>
+                          <option value="Outro">Outro</option>
                         </select>
                         <div class="invalid-feedback" v-if="$v.funcionario.sexo.$error">
                           Selecione o sexo.
@@ -181,10 +181,10 @@
                           :class="{ 'is-invalid': $v.funcionario.turno.$error }"
                         >
                           <option disabled value="">Selecione</option>
-                          <option value="manha">Manhã</option>
-                          <option value="tarde">Tarde</option>
-                          <option value="noite">Noite</option>
-                          <option value="integral">Integral</option>
+                          <option value="Manhã">Manhã</option>
+                          <option value="Tarde">Tarde</option>
+                          <option value="Noite">Noite</option>
+                          <option value="Integral">Integral</option>
                         </select>
                         <div class="invalid-feedback" v-if="$v.funcionario.turno.$error">
                           Selecione o turno.

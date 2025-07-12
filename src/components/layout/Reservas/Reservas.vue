@@ -86,6 +86,7 @@
                   <option value="reservado">Reservado</option>
                   <option value="confirmado">Confirmado</option>
                   <option value="cancelado">Cancelado</option>
+                  <option value="concluido">Concluido</option>
                 </select>
               </div>
 
@@ -131,7 +132,7 @@
                   >
                     <th class="fw-bold text-white">{{ reserva.id }}</th>
                     <td>{{ reserva.cliente }}</td>
-                    <td>{{ formatDateTime(reserva.dataHora) }}</td>
+                    <td>{{ formatDateTime(reserva.dataReserva) }}</td>
                     <td>
                       <span
                         class="badge"
@@ -141,7 +142,7 @@
                         {{ getStatusText(reserva.status) }}
                       </span>
                     </td>
-                    <td>{{ reserva.sala?.Numero || '-' }}</td>
+                    <td>{{ reserva.sala?.numero || '-' }}</td>
                     <td>
                       <div class="d-flex gap-2">
                         <router-link 
@@ -188,6 +189,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Reservas',
@@ -196,12 +198,13 @@ export default defineComponent({
       listareservas: [] as Array<{
         id: string
         cliente: string
-        dataHora: string
+        dataReserva: string
         status: string
-        sala: { id: number; Numero: string } | null
+        valorTotal: number
+        salaId: string | null
       }>,
-      clientes: [] as Array<{ id: string; nome: string }>,
-      salas: [] as Array<{ id: number; Numero: string }>,
+      clientes: [] as Array<{ id: string; pessoa: { nome: string } }>,
+      salas: [] as Array<{ id: string; numero: string }>,
       searchTerm: '',
       selectedStatus: '',
       filtroHoje: false,
@@ -210,9 +213,11 @@ export default defineComponent({
   },
 
   computed: {
-    // Lógica simplificada como no código de funcionários
     reservasFiltradas() {
-      let resultado = this.listareservas
+      let resultado = this.listareservas.map(reserva => ({
+        ...reserva,
+        sala: this.salas.find(s => s.id === reserva.salaId) || null
+      }))
 
       const termo = this.searchTerm.toLowerCase().trim()
 
@@ -220,8 +225,7 @@ export default defineComponent({
         resultado = resultado.filter(
           (reserva) =>
             reserva.id.toLowerCase().includes(termo) ||
-            reserva.cliente.toLowerCase().includes(termo)
-        )
+            reserva.cliente.toLowerCase().includes(termo))
       }
 
       if (this.selectedStatus) {
@@ -229,16 +233,9 @@ export default defineComponent({
       }
 
       if (this.filtroHoje) {
-        const hoje = new Date()
-        resultado = resultado.filter((reserva) => {
-          if (!reserva.dataHora) return false
-          const dataReserva = new Date(reserva.dataHora)
-          return (
-            dataReserva.getDate() === hoje.getDate() &&
-            dataReserva.getMonth() === hoje.getMonth() &&
-            dataReserva.getFullYear() === hoje.getFullYear()
-          )
-        })
+        const hoje = new Date().toISOString().split('T')[0]
+        resultado = resultado.filter((reserva) => 
+          reserva.dataReserva && reserva.dataReserva.startsWith(hoje))
       }
 
       if (this.ordemAlfabetica === 'asc') {
@@ -250,21 +247,13 @@ export default defineComponent({
       return resultado
     },
 
-    // Cards de estatísticas mantidos
     totalReservas() {
       return this.listareservas.length
     },
     reservasHoje() {
-      const hoje = new Date()
-      return this.listareservas.filter(reserva => {
-        if (!reserva.dataHora) return false
-        const dataReserva = new Date(reserva.dataHora)
-        return (
-          dataReserva.getDate() === hoje.getDate() &&
-          dataReserva.getMonth() === hoje.getMonth() &&
-          dataReserva.getFullYear() === hoje.getFullYear()
-        )
-      }).length
+      const hoje = new Date().toISOString().split('T')[0]
+      return this.listareservas.filter(reserva => 
+        reserva.dataReserva && reserva.dataReserva.startsWith(hoje)).length
     },
     reservasConfirmadas() {
       return this.listareservas.filter(reserva => reserva.status === 'confirmado').length
@@ -275,19 +264,19 @@ export default defineComponent({
     async buscarReservas() {
       try {
         const [resReservas, resClientes, resSalas] = await Promise.all([
-          axios.get('http://localhost:3000/reservas', {
+          api.get('/api/Reserva', {
             headers: {
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': '69420'
             }
           }),
-          axios.get('http://localhost:3000/clientes', {
+          api.get('/api/Cliente', {
             headers: {
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': '69420'
             }
           }),
-          axios.get('http://localhost:3000/salas', {
+          api.get('/api/Sala', {
             headers: {
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': '69420'
@@ -296,22 +285,22 @@ export default defineComponent({
         ])
 
         this.clientes = resClientes.data
-        this.salas = resSalas.data
+        this.salas = resSalas.data.map((sala: any) => ({
+          id: sala.id,
+          numero: sala.numero || 'N/A' // Ajuste conforme o campo real da sua API
+        }))
 
         if (resReservas.status === 200) {
           this.listareservas = resReservas.data.map((item: any) => {
-            const clienteObj = this.clientes.find((c) => String(c.id) === String(item.cliente_id))
-            const salaObj = this.salas.find((s) => String(s.id) === String(item.sala_id))
-
+            const cliente = this.clientes.find(c => c.id === item.cliente.id)
+            
             return {
               id: item.id,
-              cliente: clienteObj ? clienteObj.nome : 'Desconhecido',
-              dataHora:
-                item.data_reserva && item.hora_reserva
-                  ? new Date(`${item.data_reserva}T${item.hora_reserva}`).toISOString()
-                  : '',
-              status: item.status,
-              sala: salaObj ? { id: salaObj.id, Numero: salaObj.Numero } : null
+              cliente: cliente?.pessoa.nome || 'Cliente desconhecido',
+              dataReserva: item.dataReserva,
+              status: this.determinarStatus(item), // Método novo para determinar status
+              valorTotal: item.valorTotal,
+              salaId: item.fkSalaJogo
             }
           })
         }
@@ -319,6 +308,12 @@ export default defineComponent({
       } catch (error) {
         console.error('Erro ao buscar reservas:', error)
       }
+    },
+
+    determinarStatus(reserva: any): string {
+      // Implemente sua lógica para determinar o status aqui
+      // Por exemplo, baseado em dataReserva, valorTotal, etc.
+      return 'reservado' // Valor padrão - ajuste conforme sua lógica
     },
 
     formatDateTime(dateTimeString: string): string {
@@ -337,7 +332,8 @@ export default defineComponent({
       const classes = {
         'reservado': 'bg-warning text-dark',
         'confirmado': 'bg-success',
-        'cancelado': 'bg-danger'
+        'cancelado': 'bg-danger',
+        'concluido': 'bg-primary' // Mudei para primary para diferenciar de confirmado
       }
       return classes[status as keyof typeof classes] || 'bg-secondary'
     },
@@ -346,7 +342,8 @@ export default defineComponent({
       const icons = {
         'reservado': 'fa fa-clock',
         'confirmado': 'fa fa-check-circle',
-        'cancelado': 'fa fa-times-circle'
+        'cancelado': 'fa fa-times-circle',
+        'concluido': 'fa fa-flag-checkered'
       }
       return icons[status as keyof typeof icons] || 'fa fa-question-circle'
     },
@@ -355,7 +352,8 @@ export default defineComponent({
       const texts = {
         'reservado': 'Reservado',
         'confirmado': 'Confirmado',
-        'cancelado': 'Cancelado'
+        'cancelado': 'Cancelado',
+        'concluido': 'Concluído'
       }
       return texts[status as keyof typeof texts] || status
     }
@@ -379,7 +377,6 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Melhorias visuais mantendo o tema escuro original */
 .enhanced-btn {
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

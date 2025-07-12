@@ -29,12 +29,12 @@
                 <form @submit.prevent="salvarAlteracoes">
                   <div class="row mb-3">
                     <div class="col-md-6">
-                      <label for="numero" class="form-label">Número da Sala</label>
+                      <label for="numero" class="form-label">Nome da Sala</label>
                       <input
                         type="text"
                         class="form-control"
                         id="numero"
-                        v-model="sala.Numero"
+                        v-model="sala.numero"
                         required
                       />
                     </div>
@@ -45,7 +45,7 @@
                         type="number"
                         class="form-control"
                         id="jogadores"
-                        v-model.number="sala.Jogadores"
+                        v-model.number="sala.capacidade"
                         required
                       />
                     </div>
@@ -53,7 +53,7 @@
 
                   <div class="mb-3">
                     <label for="status" class="form-label">Status</label>
-                    <select id="status" class="form-select" v-model="sala.Status" required>
+                    <select id="status" class="form-select" v-model="sala.ativa" required>
                       <option :value="true">Ativo</option>
                       <option :value="false">Inativo</option>
                     </select>
@@ -61,7 +61,7 @@
 
                   <div class="mb-3">
                     <label for="unidade" class="form-label">Unidade</label>
-                    <select id="unidade" class="form-select" v-model="sala.unidade_id" required>
+                    <select id="unidade" class="form-select" v-model="sala.unidadeId" required>
                       <option disabled value="">Selecione uma unidade</option>
                       <option v-for="unidade in listaUnidades" :key="unidade.id" :value="unidade.id">
                         {{ unidade.nome }}
@@ -93,10 +93,10 @@
                               <div class="d-flex align-items-center">
                                 <i class="fas fa-check-circle me-2 text-white"></i>
                                 <div>
-                                  <div class="fw-bold small">{{ jogo.NomeJogo }}</div>
+                                  <div class="fw-bold small">{{ jogo.nome }}</div>
                                   <div class="small">
-                                    <span class="badge bg-light text-dark me-1">{{ jogo.Dificuldade || 'N/A' }}</span>
-                                    <span class="badge bg-warning text-dark">{{ formatarPreco(jogo.Preco) }}</span>
+                                    <span class="badge bg-light text-dark me-1">{{ dificuldadeTexto(jogo.dificuldade) || 'N/A' }}</span>
+                                    <span class="badge bg-warning text-dark">{{ formatarPreco(jogo.preco) }}</span>
                                   </div>
                                 </div>
                               </div>
@@ -156,15 +156,15 @@
                                   style="transform: scale(1.2);"
                                 />
                                 <div class="flex-grow-1">
-                                  <h6 class="card-title mb-2 text-truncate" :title="jogo.NomeJogo">
-                                    {{ jogo.NomeJogo }}
+                                  <h6 class="card-title mb-2 text-truncate" :title="jogo.nome">
+                                    {{ jogo.nome }}
                                   </h6>
                                   <div class="small text-muted mb-1">
-                                    <span class="badge bg-info me-2">{{ jogo.Dificuldade || 'N/A' }}</span>
-                                    <span class="badge bg-success">{{ formatarPreco(jogo.Preco) }}</span>
+                                    <span class="badge bg-info me-2">{{ dificuldadeTexto(jogo.dificuldade) || 'N/A' }}</span>
+                                    <span class="badge bg-success">{{ formatarPreco(jogo.preco) }}</span>
                                   </div>
                                   <div class="small text-white">
-                                    ⏱️ {{ jogo.Duracao || 'N/A' }}
+                                    ⏱️ {{ jogo.duracao || 'N/A' }}
                                   </div>
                                 </div>
                               </div>
@@ -220,219 +220,255 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { api } from '@/common/http'
 
 interface Jogo {
-  id: number
-  NomeJogo: string
-  Dificuldade?: string
-  Preco?: number
-  Duracao?: string
+  id: string;
+  nome: string;       
+  dificuldade?: number; 
+  preco?: number;    
+  duracao?: string;    
 }
 
-const route = useRoute()
-const router = useRouter()
-const salaId = route.params.id as string
+interface Unidade {
+  id: string;          
+  nome: string;
+}
+
+const route = useRoute();
+const router = useRouter();
+const salaId = route.params.id as string;
 
 const sala = reactive({
-  Numero: '',
-  Jogadores: 0,
-  Status: true,
-  JogosIds: [] as number[],
-  unidade_id: ''
-})
+  numero: '',          
+  capacidade: 0,  
+  ativa: true,  
+  jogosIds: [] as string[],
+  unidadeId: ''        
+});
 
-const listaJogos = ref<Jogo[]>([])
-const listaUnidades = ref<{ id: number; nome: string }[]>([])
-const filtroJogos = ref('')
+const listaJogos = ref<Jogo[]>([]);
+const listaUnidades = ref<Unidade[]>([]); 
+const filtroJogos = ref('');
 
-const modoEdicaoJogos = ref(false)
-const jogosSelecionadosAntes = ref<number[]>([])
+const modoEdicaoJogos = ref(false);
+const jogosSelecionadosAntes = ref<string[]>([]); 
 
 const jogosFiltrados = computed(() => {
-  if (!filtroJogos.value) return listaJogos.value
-  
-  const filtro = filtroJogos.value.toLowerCase()
-  return listaJogos.value.filter(jogo => 
-    jogo.NomeJogo.toLowerCase().includes(filtro) ||
-    (jogo.Dificuldade && jogo.Dificuldade.toLowerCase().includes(filtro))
-  )
-})
+  if (!filtroJogos.value) return listaJogos.value;
+
+  const filtro = filtroJogos.value.toLowerCase();
+  return listaJogos.value.filter(jogo =>
+    jogo.nome.toLowerCase().includes(filtro) ||
+    dificuldadeTexto(jogo.dificuldade).toLowerCase().includes(filtro))
+});
 
 const jogosSelecionados = computed(() => {
-  return listaJogos.value.filter(jogo => sala.JogosIds.includes(jogo.id))
-})
+  return listaJogos.value.filter(jogo => sala.jogosIds.includes(jogo.id));
+});
 
 const formatarPreco = (preco?: number) => {
-  if (!preco) return 'Grátis'
+  if (!preco) return 'Grátis';
   return preco.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
-  })
-}
+  });
+};
 
-const isJogoSelecionado = (jogoId: number) => {
-  return sala.JogosIds.includes(jogoId)
-}
+const isJogoSelecionado = (jogoId: string) => {
+  return sala.jogosIds.includes(jogoId);
+};
 
 const toggleJogo = (jogo: Jogo) => {
-  const index = sala.JogosIds.findIndex(id => id === jogo.id)
-  
+  const index = sala.jogosIds.findIndex(id => id === jogo.id);
   if (index > -1) {
-    sala.JogosIds.splice(index, 1)
+    sala.jogosIds.splice(index, 1);
   } else {
-    sala.JogosIds.push(jogo.id)
+    sala.jogosIds.push(jogo.id);
   }
-}
+};
 
 const selecionarTodos = () => {
   jogosFiltrados.value.forEach(jogo => {
     if (!isJogoSelecionado(jogo.id)) {
-      sala.JogosIds.push(jogo.id)
+      sala.jogosIds.push(jogo.id); 
     }
-  })
-}
+  });
+};
 
 const limparSelecao = () => {
-  sala.JogosIds.splice(0)
-}
+  sala.jogosIds = [];
+};
 
 const iniciarEdicaoJogos = () => {
-  jogosSelecionadosAntes.value = [...sala.JogosIds]
-  modoEdicaoJogos.value = true
-}
+  jogosSelecionadosAntes.value = [...sala.jogosIds];
+  modoEdicaoJogos.value = true;
+};
 
 const confirmarEdicaoJogos = () => {
-  modoEdicaoJogos.value = false
-  filtroJogos.value = ''
-}
+  modoEdicaoJogos.value = false;
+  filtroJogos.value = '';
+};
 
 const cancelarEdicaoJogos = () => {
-  sala.JogosIds = [...jogosSelecionadosAntes.value]
-  modoEdicaoJogos.value = false
-  filtroJogos.value = ''
-}
+  sala.jogosIds = [...jogosSelecionadosAntes.value];
+  modoEdicaoJogos.value = false;
+  filtroJogos.value = '';
+};
 
 const buscarJogos = async () => {
   try {
-    const response = await axios.get('http://localhost:3000/jogos', {
-      headers: { 'Content-Type': 'application/json' }
-    })
+    const response = await api.get('/api/Jogo');
     if (response.status === 200) {
       listaJogos.value = response.data.map((jogo: any) => ({
         id: jogo.id,
-        NomeJogo: jogo.NomeJogo,
-        Dificuldade: jogo.Dificuldade,
-        Preco: jogo.Preco,
-        Duracao: jogo.Duracao
-      }))
+        nome: jogo.nome, 
+        dificuldade: jogo.dificuldade,
+        preco: jogo.preco,
+        duracao: jogo.duracao
+      }));
     }
   } catch (error) {
-    console.error('Erro ao buscar jogos:', error)
-    Swal.fire('Erro', 'Não foi possível carregar os jogos.', 'error')
+    console.error('Erro ao buscar jogos:', error);
+    Swal.fire('Erro', 'Não foi possível carregar os jogos.', 'error');
   }
-}
+};
 
 const buscarUnidades = async () => {
   try {
-    const response = await axios.get('http://localhost:3000/unidades')
+    const response = await api.get('/api/Unidade');
     if (response.status === 200) {
-      listaUnidades.value = response.data
+      listaUnidades.value = response.data.map((unidade: any) => ({
+        id: unidade.id,
+        nome: unidade.nome
+      }));
     }
   } catch (error) {
-    console.error('Erro ao buscar unidades:', error)
-    Swal.fire('Erro', 'Não foi possível carregar as unidades.', 'error')
+    console.error('Erro ao buscar unidades:', error);
+    Swal.fire('Erro', 'Não foi possível carregar as unidades.', 'error');
   }
-}
+};
 
 const carregarSala = async () => {
   try {
-    const response = await axios.get(`http://localhost:3000/salas/${salaId}`)
-    const data = response.data
+    const responseSala = await api.get(`/api/Sala/${salaId}`);
+    const dataSala = responseSala.data;
 
-    sala.Numero = data.Numero ?? ''
-    sala.Jogadores = data.Jogadores ?? 0
-    sala.Status = data.Status ?? true
-    sala.JogosIds = data.Jogos ? data.Jogos.map((j: any) => j.id) : []
-    sala.unidade_id = data.unidade_id ?? ''
+    sala.numero = dataSala.nome ?? ''; 
+    sala.capacidade = dataSala.capacidade ?? 0; 
+    sala.ativa = dataSala.ativa ?? true;
+    sala.unidadeId = dataSala.fkUnidade ?? '';
+
+    const responseSalaJogos = await api.get('/api/SalaJogo');
+    sala.jogosIds = responseSalaJogos.data 
+      .filter((item: any) => item.fkSala === salaId)
+      .map((item: any) => item.fkJogo.toString());
+
   } catch (error) {
-    console.error('Erro ao carregar sala:', error)
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro ao carregar sala!',
-      text: 'Verifique o console para mais detalhes.'
-    })
+    console.error('Erro ao carregar sala:', error);
+    Swal.fire('Erro', 'Falha ao carregar dados da sala', 'error');
   }
-}
+};
 
 const salvarAlteracoes = async () => {
   try {
-    const jogosSelecionadosCompletos = listaJogos.value.filter(j =>
-      sala.JogosIds.includes(j.id)
-    )
-
-    const dadosParaSalvar = {
-      Numero: sala.Numero,
-      Jogadores: Number(sala.Jogadores),
-      Status: sala.Status,
-      Jogos: jogosSelecionadosCompletos,
-      unidade_id: sala.unidade_id
+    if (!salaId || !sala.unidadeId) { 
+      throw new Error('IDs essenciais não fornecidos');
     }
 
-    await axios.put(`http://localhost:3000/salas/${salaId}`, dadosParaSalvar)
+    const dadosParaSalvar = {
+      id: salaId,
+      nome: sala.numero,
+      capacidade: Number(sala.capacidade), 
+      ativa: sala.ativa,
+      fkUnidade: sala.unidadeId 
+    };
 
-    await Swal.fire({
-      icon: 'success',
-      title: 'Sala atualizada com sucesso!',
-      confirmButtonText: 'OK'
-    })
-    router.push('/salas')
+    await api.put(`/api/Sala/${salaId}`, dadosParaSalvar);
+
+    const { data: relacionamentos } = await api.get('/api/SalaJogo');
+    
+    await Promise.all(
+      relacionamentos
+        .filter((rel: any) => rel.fkSala === salaId)
+        .map((rel: any) => api.delete(`/api/SalaJogo/${rel.id}`))
+    );
+
+    if (sala.jogosIds.length > 0) {
+      await Promise.all(
+        sala.jogosIds.map(jogoId =>
+          api.post('/api/SalaJogo', {
+            fkSala: salaId,
+            fkJogo: jogoId
+          })
+        )
+      );
+    }
+
+    await Swal.fire('Sucesso!', 'Sala atualizada com sucesso', 'success');
+    router.push('/salas');
   } catch (error) {
-    console.error('Erro ao salvar alterações:', error)
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro ao salvar!',
-      text: 'Tente novamente mais tarde.'
-    })
+    console.error('Erro:', error);
+    Swal.fire('Erro', 'Falha ao salvar alterações', 'error');
+  }
+};
+
+const dificuldadeTexto = (valor: number | undefined) => {
+  switch (valor) {
+    case 0: return 'Fácil'
+    case 1: return 'Médio'
+    case 2: return 'Difícil'
+    default: return 'N/A'
   }
 }
 
 const excluirSala = async () => {
-  const resultado = await Swal.fire({
-    title: 'Tem certeza?',
-    text: 'Esta ação não pode ser desfeita.',
+  const confirmacao = await Swal.fire({
+    title: 'Confirmar exclusão',
+    text: 'Esta ação não pode ser desfeita',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#d33',
-    cancelButtonColor: '#aaa',
-    confirmButtonText: 'Sim, excluir',
-    cancelButtonText: 'Cancelar'
-  })
+    confirmButtonText: 'Sim, excluir'
+  });
 
-  if (resultado.isConfirmed) {
-    try {
-      await axios.delete(`http://localhost:3000/salas/${salaId}`)
-      await Swal.fire({
-        icon: 'success',
-        title: 'Sala excluída com sucesso!',
-        confirmButtonText: 'OK'
-      })
-      router.push('/salas')
-    } catch (error) {
-      console.error('Erro ao excluir sala:', error)
-      Swal.fire({
-        icon: 'error',
-        title: 'Erro ao excluir!',
-        text: 'Tente novamente mais tarde.'
-      })
-    }
+  if (!confirmacao.isConfirmed) return;
+
+  try {
+    const { data: relacionamentos } = await api.get('/api/SalaJogo');
+    await Promise.all(
+      relacionamentos
+        .filter((rel: any) => rel.fkSala === salaId)
+        .map((rel: any) => api.delete(`/api/SalaJogo/${rel.id}`))
+    );
+
+    await api.delete(`/api/Sala/${salaId}`);
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Sucesso!',
+      text: 'Sala excluída',
+      timer: 1500,
+      showConfirmButton: false
+    });
+    
+    router.push('/salas');
+    
+  } catch {
+    await Swal.fire({
+      icon: 'error',
+      title: 'Falha',
+      text: 'Não foi possível excluir',
+      confirmButtonText: 'Entendi'
+    });
   }
-}
+};
+
 
 onMounted(async () => {
   await buscarJogos()

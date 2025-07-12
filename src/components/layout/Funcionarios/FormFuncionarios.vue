@@ -95,9 +95,9 @@
                           required
                         >
                           <option disabled value="">Selecione</option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="outro">Outro</option>
+                          <option value="Masculino">Masculino</option>
+                          <option value="Feminino">Feminino</option>
+                          <option value="Outro">Outro</option>
                         </select>
                         <div class="invalid-feedback" v-if="v$.sexo.$error">Sexo é obrigatório.</div>
                       </div>
@@ -192,10 +192,10 @@
                           required
                         >
                           <option disabled value="">Selecione</option>
-                          <option value="manha">Manhã</option>
-                          <option value="tarde">Tarde</option>
-                          <option value="noite">Noite</option>
-                          <option value="integral">Integral</option>
+                          <option value="Manhã">Manhã</option>
+                          <option value="Tarde">Tarde</option>
+                          <option value="Noite">Noite</option>
+                          <option value="Integral">Integral</option>
                         </select>
                         <div class="invalid-feedback" v-if="v$.turno.$error">Turno é obrigatório.</div>
                       </div>
@@ -374,21 +374,16 @@ const funcionario = reactive({
   cep: '',
 })
 
-const fotoPreview = ref<string | null>(null)
 
-// Validadores customizados
 const cpfValido = (value: string) => {
-  if (!value) return true; // Deixa o required cuidar da obrigatoriedade
+  if (!value) return true;
   
-  // Remove formatação
   const cpf = value.replace(/\D/g, '');
   
   if (cpf.length !== 11) return false;
   
-  // Verifica se todos os dígitos são iguais
   if (/^(\d)\1{10}$/.test(cpf)) return false;
   
-  // Validação do primeiro dígito verificador
   let soma = 0;
   for (let i = 0; i < 9; i++) {
     soma += parseInt(cpf.charAt(i)) * (10 - i);
@@ -397,7 +392,6 @@ const cpfValido = (value: string) => {
   if (resto === 10 || resto === 11) resto = 0;
   if (resto !== parseInt(cpf.charAt(9))) return false;
   
-  // Validação do segundo dígito verificador
   soma = 0;
   for (let i = 0; i < 10; i++) {
     soma += parseInt(cpf.charAt(i)) * (11 - i);

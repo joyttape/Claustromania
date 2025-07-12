@@ -110,6 +110,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Unidades',
@@ -161,7 +162,7 @@ export default defineComponent({
   methods: {
     async buscarUnidades() {
       try {
-        const response = await axios.get('http://localhost:3000/unidades', {
+        const response = await api.get('/api/Unidade', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'
@@ -176,7 +177,7 @@ export default defineComponent({
             Horario_Abert: item.horarioAbertura || '',
             Horario_Fecha: item.horarioFechamento || '',
             Telefone: item.telefone || '',
-            Status: !!item.status
+            Status: !!item.ativa
           }))
         }
       } catch (error) {

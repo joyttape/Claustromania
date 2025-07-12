@@ -131,13 +131,13 @@
   </div>
 </template>
 
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Funcionarios',
@@ -196,7 +196,7 @@ export default defineComponent({
   methods: {
     async buscarFuncionarios() {
       try {
-        const response = await axios.get('http://localhost:3000/funcionarios', {
+        const response = await api.get('/api/Funcionario', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'
@@ -206,12 +206,12 @@ export default defineComponent({
         if (response.status === 200) {
           this.listafuncionarios = response.data.map((item: any) => ({
             id: item.id,
-            nome: item.nome || item.Nome || '',
-            cargo: item.cargo || item.Cargo || '',
-            salario: item.salario || item.Salário || 0,
-            dataContratacao: item.dataContratacao || item.Data || '',
-            turno: item.turno || item.Turno || '',
-            status: !!item.status
+            nome: item.pessoa?.nome || '',
+            cargo: item.cargo || '',
+            salario: item.salario || 0,
+            dataContratacao: item.dataContratacao || '',
+            turno: item.turno || '',
+            status: true 
           }))
         }
       } catch (error) {
@@ -221,7 +221,12 @@ export default defineComponent({
 
     formatarData(dataISO: string): string {
       if (!dataISO) return ''
-      const [ano, mes, dia] = dataISO.split('-')
+      
+      const data = new Date(dataISO)
+      const dia = String(data.getDate()).padStart(2, '0')
+      const mes = String(data.getMonth() + 1).padStart(2, '0')
+      const ano = data.getFullYear()
+      
       return `${dia}/${mes}/${ano}`
     }
   },

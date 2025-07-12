@@ -1,5 +1,19 @@
 <template>
   <div>
+
+    <div
+      id="spinner"
+      class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
+    >
+      <div
+        class="spinner-border text-primary"
+        style="width: 3rem; height: 3rem;"
+        role="status"
+      >
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+
     <NavHeaderBarVue />
 
     <div class="d-flex">
@@ -17,7 +31,7 @@
                 <form @submit.prevent="cadastrarSala">
                   <div class="row mb-3">
                     <div class="col-md-6">
-                      <label class="form-label">Número da Sala</label>
+                      <label class="form-label">Nome da Sala</label>
                       <input
                         type="text"
                         class="form-control"
@@ -113,16 +127,16 @@
                                 style="transform: scale(1.2);"
                               />
                               <div class="flex-grow-1">
-                                <h6 class="card-title mb-2 text-truncate" :title="jogo.NomeJogo">
-                                  {{ jogo.NomeJogo }}
-                                </h6>
-                                <div class="small text-muted mb-1">
-                                  <span class="badge red bg-info me-2">{{ jogo.Dificuldade || 'N/A' }}</span>
-                                  <span class="badge bg-success">{{ formatarPreco(jogo.Preco) }}</span>
-                                </div>
-                                <div class="small text-white">
-                                  ⏱️ {{ jogo.Duracao || 'N/A' }}
-                                </div>
+                                <h6 class="card-title mb-2 text-truncate" :title="jogo.nome">
+                                    {{ jogo.nome }}
+                                  </h6>
+                                  <div class="small text-muted mb-1">
+                                    <span class="badge red bg-info me-2">{{ formatarDificuldade(jogo.dificuldade) }}</span>
+                                    <span class="badge bg-success">{{ formatarPreco(jogo.preco) }}</span>
+                                  </div>
+                                  <div class="small text-white">
+                                    ⏱️ {{ jogo.duracao || 'N/A' }}
+                                  </div>
                               </div>
                             </div>
                           </div>
@@ -156,11 +170,11 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, computed } from 'vue'
+import { reactive, ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minLength, minValue } from '@vuelidate/validators'
-import axios from 'axios'
+import { required, minLength, minValue, helpers } from '@vuelidate/validators'
+import { api } from '@/common/http'
 import Swal from 'sweetalert2'
 import { Toast } from '@/components/common/toast'
 
@@ -169,42 +183,61 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 
 interface Jogo {
-  id: number
-  NomeJogo: string
-  Dificuldade?: string
-  Preco?: number
-  Duracao?: string
+  id: string
+  nome: string
+  dificuldade?: number
+  preco?: number
+  duracao?: string
 }
 
-const sala = reactive({
+interface Unidade {
+  id: string
+  nome: string
+}
+
+interface Sala {
+  Numero: string
+  Jogadores: number | null
+  Status: boolean
+  unidade_id: string
+  JogosSelecionados: Jogo[]
+}
+
+const router = useRouter()
+
+const sala = reactive<Sala>({
   Numero: '',
-  Jogadores: null as number | null,
+  Jogadores: null,
   Status: true,
-  JogosSelecionados: [] as Jogo[],
-  unidade_id: ''
+  unidade_id: '',
+  JogosSelecionados: []
 })
 
 const listaJogos = ref<Jogo[]>([])
-const listaUnidades = ref<{ id: number; nome: string }[]>([])
+const listaUnidades = ref<Unidade[]>([])
 const filtroJogos = ref('')
 
 const rules = {
   Numero: { required, minLength: minLength(1) },
   Jogadores: { required, minValue: minValue(1) },
-  JogosSelecionados: { required },
-  unidade_id: { required }
+  unidade_id: { required },
+  JogosSelecionados: {
+    required,
+    jogosSelecionadosValidos: helpers.withMessage(
+      'Selecione ao menos um jogo.',
+      (value: Jogo[]) => value && value.length > 0
+    )
+  }
 }
 
 const v$ = useVuelidate(rules, sala)
-const router = useRouter()
 
 const jogosFiltrados = computed(() => {
   if (!filtroJogos.value) return listaJogos.value
-  
   const filtro = filtroJogos.value.toLowerCase()
-  return listaJogos.value.filter(jogo => 
-    jogo.NomeJogo.toLowerCase().includes(filtro) ||
-    (jogo.Dificuldade && jogo.Dificuldade.toLowerCase().includes(filtro))
+  return listaJogos.value.filter(jogo =>
+    jogo.nome.toLowerCase().includes(filtro) ||
+    formatarDificuldade(jogo.dificuldade).toLowerCase().includes(filtro)
   )
 })
 
@@ -218,13 +251,17 @@ const formatarPreco = (preco?: number) => {
   })
 }
 
-const isJogoSelecionado = (jogoId: number) => {
-  return sala.JogosSelecionados.some(jogo => jogo.id === jogoId)
+const formatarDificuldade = (dificuldade?: number) => {
+  const niveis = ['Fácil', 'Médio', 'Difícil']
+  return dificuldade !== undefined ? niveis[dificuldade] || 'N/A' : 'N/A'
+}
+
+const isJogoSelecionado = (jogoId: string) => {
+  return sala.JogosSelecionados.some(j => j.id === jogoId)
 }
 
 const toggleJogo = (jogo: Jogo) => {
   const index = sala.JogosSelecionados.findIndex(j => j.id === jogo.id)
-  
   if (index > -1) {
     sala.JogosSelecionados.splice(index, 1)
   } else {
@@ -241,61 +278,59 @@ const selecionarTodos = () => {
 }
 
 const limparSelecao = () => {
-  sala.JogosSelecionados.splice(0)
+  sala.JogosSelecionados = []
 }
 
-onMounted(async () => {
+const carregarDados = async () => {
   try {
     const [resJogos, resUnidades] = await Promise.all([
-      axios.get('http://localhost:3000/jogos'),
-      axios.get('http://localhost:3000/unidades')
+      api.get('/api/Jogo'),
+      api.get('/api/Unidade')
     ])
 
-    if (resJogos.status === 200) {
-      listaJogos.value = resJogos.data.map((jogo: any) => ({
-        id: jogo.id,
-        NomeJogo: jogo.NomeJogo,
-        Dificuldade: jogo.Dificuldade,
-        Preco: jogo.Preco,
-        Duracao: jogo.Duracao
-      }))
-    }
+    listaJogos.value = resJogos.data.map((jogo: any) => ({
+      id: jogo.id,
+      nome: jogo.nome,
+      dificuldade: jogo.dificuldade,
+      preco: jogo.preco,
+      duracao: jogo.duracao
+    }))
 
-    if (resUnidades.status === 200) {
-      listaUnidades.value = resUnidades.data
-    }
+    listaUnidades.value = resUnidades.data
   } catch (error) {
     console.error('Erro ao carregar dados:', error)
-    Swal.fire('Erro', 'Não foi possível carregar os jogos ou unidades.', 'error')
+    Swal.fire('Erro', 'Não foi possível carregar jogos ou unidades.', 'error')
   }
-})
+}
 
 const cadastrarSala = async () => {
-  const valid = await v$.value.$validate()
+  const isValid = await v$.value.$validate()
 
-  if (!valid) {
-    Toast.fire({
-      icon: 'error',
-      title: 'Corrija os erros no formulário antes de enviar.',
-    })
+  if (!isValid) {
+    Toast.fire({ icon: 'error', title: 'Corrija os erros no formulário antes de enviar.' })
     return
   }
 
-  const dadosParaSalvar = {
-    id: Math.floor(Math.random() * 100000),
-    Numero: sala.Numero,
-    Jogadores: sala.Jogadores,
-    Status: sala.Status,
-    Jogos: sala.JogosSelecionados,
-    unidade_id: sala.unidade_id
-  }
-
   try {
-    const response = await axios.post('http://localhost:3000/salas', dadosParaSalvar, {
-      headers: { 'Content-Type': 'application/json' }
+    const response = await api.post('/api/Sala', {
+      nome: sala.Numero,
+      capacidade: sala.Jogadores,
+      ativa: sala.Status,
+      fkUnidade: sala.unidade_id
     })
 
     if (response.status === 201) {
+      const novaSalaId = response.data.id
+
+      await Promise.all(
+        sala.JogosSelecionados.map(jogo =>
+          api.post('/api/SalaJogo', {
+            fkSala: novaSalaId,
+            fkJogo: jogo.id
+          })
+        )
+      )
+
       Toast.fire({
         icon: 'success',
         title: `Sala ${sala.Numero} cadastrada com sucesso!`,
@@ -303,10 +338,12 @@ const cadastrarSala = async () => {
 
       limparFormulario()
       router.push('/salas')
+    } else {
+      Swal.fire('Erro', 'Não foi possível cadastrar a sala.', 'error')
     }
   } catch (error) {
     console.error('Erro ao cadastrar sala:', error)
-    Swal.fire('Erro', 'Erro ao cadastrar sala.', 'error')
+    Swal.fire('Erro', 'Ocorreu um erro ao cadastrar a sala.', 'error')
   }
 }
 
@@ -314,11 +351,19 @@ const limparFormulario = () => {
   sala.Numero = ''
   sala.Jogadores = null
   sala.Status = true
-  sala.JogosSelecionados = []
   sala.unidade_id = ''
+  sala.JogosSelecionados = []
   filtroJogos.value = ''
   v$.value.$reset()
 }
+onMounted(() => {
+  carregarDados()
+
+  const script = document.createElement('script')
+  script.src = '/src/components/js/maincode.js'
+  script.async = true
+  document.body.appendChild(script)
+})
 </script>
 
 <style scoped>

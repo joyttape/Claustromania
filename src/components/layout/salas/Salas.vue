@@ -66,7 +66,7 @@
                   <div class="card-header text-light bg-dark d-flex justify-content-between align-items-center">
                     <div>
                       <h5 class="mb-0">
-                        Sala {{ sala.Numero }}
+                        {{ sala.Numero }}
                       </h5>
                       <small class="text-muted">ID: {{ sala.id }}</small>
                     </div>
@@ -148,6 +148,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Salas',
@@ -201,27 +202,39 @@ export default defineComponent({
   },
   methods: {
     async buscarSalas() {
-      try {
-        const response = await axios.get('http://localhost:3000/salas', {
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': '69420'
-          }
-        })
+  try {
+    const [salasRes, salaJogosRes, jogosRes] = await Promise.all([
+      api.get('/api/Sala'),
+      api.get('/api/SalaJogo'),
+      api.get('/api/Jogo')
+    ]);
 
-        if (response.status === 200) {
-          this.listasalas = response.data.map((item: any) => ({
-            id: item.id,
-            Numero: item.Numero || '',
-            Jogadores: item.Jogadores || 0,
-            Status: !!item.Status,
-            Jogos: item.Jogos || []
-          }))
-        }
-      } catch (error) {
-        console.error('Erro ao buscar salas:', error)
-      }
-    }
+    const salas = salasRes.data;
+    const salaJogos = salaJogosRes.data;
+    const jogos = jogosRes.data;
+
+    this.listasalas = salas.map((sala: any) => {
+      const jogosRelacionados = salaJogos
+        .filter((sj: any) => sj.fkSala === sala.id)
+        .map((sj: any) => jogos.find((j: any) => j.id === sj.fkJogo))
+        .filter((j: any) => j !== undefined);
+
+      return {
+        id: sala.id,
+        Numero: sala.nome || 'Sem nome',
+        Jogadores: sala.capacidade || 0,
+        Status: !!sala.ativa,
+        Jogos: jogosRelacionados.map((j: any) => ({
+          id: j.id,
+          NomeJogo: j.nome
+        }))
+      };
+    });
+  } catch (error) {
+    console.error('Erro ao buscar dados da API:', error);
+  }
+}
+
   },
   components: {
     NavHeaderBarVue,

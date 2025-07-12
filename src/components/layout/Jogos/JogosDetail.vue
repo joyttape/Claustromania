@@ -43,11 +43,16 @@
                   <div class="row mb-3">
                     <div class="col-md-6">
                       <label for="dificuldade" class="form-label">Dificuldade</label>
-                      <select class="form-select" id="dificuldade" v-model="jogo.Dificuldade" required>
-                        <option selected disabled value="">Selecione</option>
-                        <option value="Fácil">Fácil</option>
-                        <option value="Médio">Médio</option>
-                        <option value="Difícil">Difícil</option>
+                      <select
+                        class="form-select"
+                        id="dificuldade"
+                        v-model.number="jogo.Dificuldade"
+                        required
+                      >
+                        <option disabled value="">Selecione</option>
+                        <option :value="0">Fácil</option>
+                        <option :value="1">Médio</option>
+                        <option :value="2">Difícil</option>
                       </select>
                     </div>
 
@@ -100,6 +105,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import { api } from '@/common/http'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
@@ -112,7 +118,7 @@ const jogoId = route.params.id as string
 const jogo = reactive({
   id: 0,
   NomeJogo: '',
-  Descricao: '',
+  Descricao: null as number | null,
   Duracao: '',
   Dificuldade: '',
   Preco: null as number | null
@@ -146,7 +152,7 @@ const formatarDinheiro = (valor: string | number) => {
   })
 }
 
-const formatarPrecoCarregado = (preco: number | string) => {
+const formatarPrecoCarregado = (preco: number | string | null) => {
   if (preco === null || preco === undefined || preco === '') return ''
   
   const numeroPreco = typeof preco === 'string' ? parseFloat(preco) : preco
@@ -176,17 +182,17 @@ const aplicarMascaraDinheiro = () => {
 const carregarJogo = async () => {
   loading.value = true
   try {
-    const response = await axios.get(`http://localhost:3000/jogos/${jogoId}`)
+    const response = await api.get(`/api/Jogo/${jogoId}`)
     const dados = response.data
 
     jogo.id = dados.id
-    jogo.NomeJogo = dados.NomeJogo || ''
-    jogo.Descricao = dados.Descricao || ''
-    jogo.Duracao = dados.Duracao || ''
-    jogo.Dificuldade = dados.Dificuldade || ''
+    jogo.NomeJogo = dados.nome || ''
+    jogo.Duracao = dados.duracao || ''
+    jogo.Dificuldade = dados.dificuldade ?? null
+    jogo.Descricao = dados.descricao || ''
+    jogo.Preco = dados.preco ?? null
     
-    jogo.Preco = dados.Preco || null
-    precoFormatado.value = formatarPrecoCarregado(dados.Preco)
+    precoFormatado.value = dados.preco !== null ? formatarPrecoCarregado(dados.preco) : ''
     
   } catch (error) {
     console.error('Erro ao carregar jogo:', error)
@@ -204,14 +210,14 @@ const salvarAlteracoes = async () => {
   try {
     const dadosEnvio = {
       id: jogo.id,
-      NomeJogo: jogo.NomeJogo,
-      Descricao: jogo.Descricao,
-      Duracao: jogo.Duracao,
-      Dificuldade: jogo.Dificuldade,
-      Preco: jogo.Preco
+      nome: jogo.NomeJogo,
+      descricao: jogo.Descricao,
+      duracao: jogo.Duracao,
+      dificuldade: jogo.Dificuldade,
+      preco: jogo.Preco
     }
     
-    await axios.put(`http://localhost:3000/jogos/${jogoId}`, dadosEnvio)
+    await api.put(`/api/Jogo/${jogoId}`, dadosEnvio)
     await Swal.fire({
       icon: 'success',
       title: 'Jogo salvo com sucesso!',
@@ -243,7 +249,7 @@ const cancelarAlteracoes = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/jogos/${jogoId}`)
+      await api.delete(`/api/Jogo/${jogoId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Jogo excluído com sucesso!',

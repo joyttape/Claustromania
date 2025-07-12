@@ -95,9 +95,9 @@
                           :class="{ 'is-invalid': v$.sexo.$error }"
                         >
                           <option disabled value="">Selecione</option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="outro">Outro</option>
+                          <option value="Masculino">Masculino</option>
+                          <option value="Feminino">Feminino</option>
+                          <option value="Outro">Outro</option>
                         </select>
                         <div class="invalid-feedback" v-if="v$.sexo.$error">
                           Sexo é obrigatório.
@@ -140,26 +140,25 @@
                       </div>
                     </div>
 
-                    <div class="row mb-3">
-                      <div class="col-md-12">
-                        <label for="nivel" class="form-label">Nível de Experiência</label>
-                        <select
-                          class="form-select"
-                          id="nivel"
-                          v-model="cliente.nivel"
-                          :class="{ 'is-invalid': v$.nivel.$error }"
-                        >
-                          <option disabled value="">Selecione</option>
-                          <option value="Novato">Novato</option>
-                          <option value="Intermediario">Intermediário</option>
-                          <option value="Experiente">Experiente</option>
-                          <option value="Profissional">Profissional</option>
-                        </select>
-                        <div class="invalid-feedback" v-if="v$.nivel.$error">
-                          Nível de experiência é obrigatório.
-                        </div>
+                    <div class="col-md-12">
+                      <label for="nivel" class="form-label">Nível de Experiência</label>
+                      <select
+                        class="form-select"
+                        id="nivel"
+                        v-model.number="cliente.nivel"
+                        :class="{ 'is-invalid': v$.nivel.$error }"
+                      >
+                        <option disabled value="">Selecione</option>
+                        <option :value="0">Novato</option>
+                        <option :value="1">Intermediário</option>
+                        <option :value="2">Experiente</option>
+                        <option :value="3">Profissional</option>
+                      </select>
+                      <div class="invalid-feedback" v-if="v$.nivel.$error">
+                        Nível de experiência é obrigatório.
                       </div>
                     </div>
+
 
                     <h6 class="mb-3 mt-4">Endereço</h6>
                     <div class="row mb-3">
@@ -285,11 +284,14 @@ import { useRouter } from 'vue-router';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, email } from '@vuelidate/validators';
 import axios from 'axios';
+import Swal from 'sweetalert2'
+
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue';
 import NavSideBarVue from '@/components/layout/NavSideBar.vue';
 import FooterBarVue from '@/components/layout/FooterBar.vue';
 import { Toast } from '@/components/common/toast';
+import { api } from '@/common/http';
 
 const cliente = reactive({
   nome: '',
@@ -298,7 +300,7 @@ const cliente = reactive({
   sexo: '',
   email: '',
   telefone: '',
-  nivel: '',
+  nivel: 0,
   logradouro: '',
   numero: '',
   complemento: '',
@@ -306,43 +308,30 @@ const cliente = reactive({
   cidade: '',
   estado: '',
   cep: '',
+  senha: null
 });
-
-const fotoPreview = ref<string | null>(null);
 
 const cpfValido = (value: string) => {
   if (!value) return true;
-  
   const cpf = value.replace(/\D/g, '');
-  
-  if (cpf.length !== 11) return false;
-  
-  if (/^(\d)\1{10}$/.test(cpf)) return false;
-  
+  if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+
   let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpf.charAt(i)) * (10 - i);
-  }
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
   let resto = 11 - (soma % 11);
-  if (resto === 10 || resto === 11) resto = 0;
+  if (resto >= 10) resto = 0;
   if (resto !== parseInt(cpf.charAt(9))) return false;
-  
+
   soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpf.charAt(i)) * (11 - i);
-  }
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
   resto = 11 - (soma % 11);
-  if (resto === 10 || resto === 11) resto = 0;
-  if (resto !== parseInt(cpf.charAt(10))) return false;
-  
-  return true;
+  if (resto >= 10) resto = 0;
+  return resto === parseInt(cpf.charAt(10));
 };
 
 const telefoneValido = (value: string) => {
   if (!value) return true;
-  
   const telefone = value.replace(/\D/g, '');
-  
   return telefone.length === 10 || telefone.length === 11;
 };
 
@@ -364,26 +353,22 @@ const rules = {
 };
 
 const v$ = useVuelidate(rules, cliente);
-
 const router = useRouter();
 
 function aplicarMascaraCPF(event: Event) {
   const input = event.target as HTMLInputElement;
   let value = input.value.replace(/\D/g, '');
-  
   if (value.length <= 11) {
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d)/, '$1.$2');
     value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
   }
-  
   cliente.cpf = value;
 }
 
 function aplicarMascaraTelefone(event: Event) {
   const input = event.target as HTMLInputElement;
   let value = input.value.replace(/\D/g, '');
-  
   if (value.length <= 11) {
     if (value.length <= 10) {
       value = value.replace(/(\d{2})(\d)/, '($1) $2');
@@ -393,18 +378,15 @@ function aplicarMascaraTelefone(event: Event) {
       value = value.replace(/(\d{5})(\d)/, '$1-$2');
     }
   }
-  
   cliente.telefone = value;
 }
 
 function aplicarMascaraCEP(event: Event) {
   const input = event.target as HTMLInputElement;
   let value = input.value.replace(/\D/g, '');
-  
   if (value.length <= 8) {
     value = value.replace(/(\d{5})(\d)/, '$1-$2');
   }
-  
   cliente.cep = value;
 }
 
@@ -415,7 +397,7 @@ function limparFormulario() {
   cliente.sexo = '';
   cliente.email = '';
   cliente.telefone = '';
-  cliente.nivel = '';
+  cliente.nivel = 0;
   cliente.logradouro = '';
   cliente.numero = '';
   cliente.complemento = '';
@@ -427,52 +409,46 @@ function limparFormulario() {
 }
 
 async function cadastrarCliente() {
-  const isValid = await v$.value.$validate();
-
-  if (!isValid) {
-    Toast.fire({
-      icon: 'error',
-      title: 'Corrija os erros no formulário antes de enviar.',
-    });
-    return;
-  }
-
-  const dadosEnvio = {
-    id: Math.random().toString(36).substring(2, 8),
-    nome: cliente.nome,
-    cpf: cliente.cpf,
-    dataNascimento: cliente.dataNascimento,
-    sexo: cliente.sexo,
-    email: cliente.email,
-    telefone: cliente.telefone,
-    nivel: cliente.nivel,
-    logradouro: cliente.logradouro,
-    numero: cliente.numero,
-    complemento: cliente.complemento,
-    bairro: cliente.bairro,
-    cidade: cliente.cidade,
-    estado: cliente.estado,
-    cep: cliente.cep
-  };
-
   try {
-    const response = await axios.post('http://localhost:3000/clientes', dadosEnvio, {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const dadosEnvio = {
+      nivelExperiencia: cliente.nivel,
+      pessoa: {
+        nome: cliente.nome,
+        cpf: cliente.cpf.replace(/\D/g, ''),
+        dataNascimento: cliente.dataNascimento,
+        sexo: cliente.sexo,
+        email: cliente.email,
+        senha: cliente.senha || "SenhaPadrao123",
+        endereco: {
+          logradouro: cliente.logradouro,
+          numero: cliente.numero,
+          complemento: cliente.complemento,
+          bairro: cliente.bairro,
+          cidade: cliente.cidade,
+          estado: cliente.estado,
+          cep: cliente.cep.replace(/\D/g, '')
+        }
+      }
+    };
 
-    if (response.status === 201) {
-      Toast.fire({
-        icon: 'success',
-        title: `Cliente ${cliente.nome} cadastrado com sucesso!`,
-      });
-      limparFormulario();
-      router.push('/clientes');
-    }
-  } catch (error) {
-    console.error('Erro ao cadastrar cliente:', error);
-    Toast.fire({
-      icon: 'error',
-      title: 'Erro ao cadastrar cliente. Veja o console para mais detalhes.',
+    await api.post('/api/Cliente', dadosEnvio);
+
+    await Swal.fire({
+      icon: 'success',
+      title: 'Salvo com sucesso!',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'OK'
+    });
+    
+    limparFormulario();
+    router.push('/clientes');
+
+  } catch {
+    await Swal.fire({
+      icon: 'warning',
+      title: 'Ocorreu uma dificuldade',
+      text: 'Dados já existem.',
+      confirmButtonColor: '#d33'
     });
   }
 }
@@ -484,4 +460,3 @@ onMounted(() => {
   document.body.appendChild(script);
 });
 </script>
-

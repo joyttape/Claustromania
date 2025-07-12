@@ -58,9 +58,9 @@
                         required
                       >
                         <option disabled value="">Selecione</option>
-                        <option value="Fácil">Fácil</option>
-                        <option value="Médio">Médio</option>
-                        <option value="Difícil">Difícil</option>
+                        <option :value="0">Fácil</option>
+                        <option :value="1">Médio</option>
+                        <option :value="2">Difícil</option>
                       </select>
                       <div class="invalid-feedback" v-if="v$.dificuldade.$error">Dificuldade é obrigatória.</div>
                     </div>
@@ -115,12 +115,12 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength } from '@vuelidate/validators'
-import axios from 'axios'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { Toast } from '@/components/common/toast'
+import { api } from '@/common/http'
 
 const router = useRouter()
 
@@ -128,7 +128,7 @@ const jogo = reactive({
   nome: '',
   descricao: '',
   duracao: '',
-  dificuldade: '',
+  dificuldade: null as number | null,
   preco: null as number | null,
 })
 
@@ -191,17 +191,17 @@ async function cadastrarJogo() {
     return
   }
 
-  const dadosEnvio = {
-    Id: Math.random().toString(36).substring(2, 8),
-    NomeJogo: jogo.nome,
-    Descricao: jogo.descricao,
-    Duracao: jogo.duracao,
-    Dificuldade: jogo.dificuldade,
-    Preco: jogo.preco 
-  }
+const dadosEnvio = {
+  nome: jogo.nome,
+  descricao: jogo.descricao,
+  duracao: jogo.duracao,
+  dificuldade: jogo.dificuldade,
+  preco: jogo.preco
+}
+
 
   try {
-    const response = await axios.post('http://localhost:3000/jogos', dadosEnvio)
+    const response = await api.post('/api/Jogo', dadosEnvio)
     if (response.status === 201) {
       Toast.fire({ icon: 'success', title: `Jogo "${jogo.nome}" cadastrado!` })
       limparFormulario()

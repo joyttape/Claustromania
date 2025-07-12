@@ -42,9 +42,9 @@
                 <label class="text-white me-2 fw-semibold">Dificuldade:</label>
                 <select v-model="selectedDificuldade" class="form-select enhanced-select">
                   <option value="">Todas</option>
-                  <option value="Fácil">Fácil</option>
-                  <option value="Média">Média</option>
-                  <option value="Difícil">Difícil</option>
+                  <option value=0>Fácil</option>
+                  <option value=1>Média</option>
+                  <option value=2>Difícil</option>
                 </select>
               </div>
 
@@ -77,7 +77,7 @@
                     <td>{{ jogo.NomeJogo }}</td>
                     <td>{{ jogo.Descricao }}</td>
                     <td>{{ jogo.Duracao }}</td>
-                    <td>{{ jogo.Dificuldade }}</td>
+                    <td>{{ traduzirDificuldade(jogo.Dificuldade) }}</td>
                     <td>{{ jogo.Preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</td>
                     <td>
                       <router-link :to="`/jogos/detalhe/${jogo.id}`" class="btn btn-sm btn-outline-light enhanced-btn-sm">
@@ -111,7 +111,7 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
-import axios from 'axios'
+import { api } from '@/common/http';
 
 export default defineComponent({
   name: 'Jogos',
@@ -143,11 +143,12 @@ export default defineComponent({
         )
       }
 
-      if (this.selectedDificuldade) {
+      if (this.selectedDificuldade !== '') {
         resultado = resultado.filter(j =>
-          j.Dificuldade.toLowerCase().trim() === this.selectedDificuldade.toLowerCase().trim()
+          Number(j.Dificuldade) === Number(this.selectedDificuldade)
         )
       }
+
 
       if (this.ordemAlfabetica === 'asc') {
         resultado = resultado.slice().sort((a, b) => a.NomeJogo.localeCompare(b.NomeJogo))
@@ -162,7 +163,7 @@ export default defineComponent({
   methods: {
     async buscarjogos() {
       try {
-        const response = await axios.get('http://localhost:3000/jogos', {
+        const response = await api.get('/api/Jogo', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'
@@ -171,15 +172,28 @@ export default defineComponent({
         if (response.status === 200) {
           this.listajogos = response.data.map((item: any) => ({
             id: item.id,
-            NomeJogo: item.NomeJogo || '',
-            Descricao: item.Descricao || '',
-            Duracao: item.Duracao || '',
-            Dificuldade: item.Dificuldade || '',
-            Preco: item.Preco || 0
+            NomeJogo: item.nome || '',
+            Descricao: item.descricao || '',
+            Duracao: item.duracao || '',
+            Dificuldade: item.dificuldade || '',
+            Preco: item.preco || 0
           }))
         }
       } catch (error) {
         console.error('Erro ao buscar jogos: ', error)
+      }
+    },
+    traduzirDificuldade(valor: string | number) {
+      const dificuldade = Number(valor)
+      switch (dificuldade) {
+        case 0:
+          return 'Fácil'
+        case 1:
+          return 'Média'
+        case 2:
+          return 'Difícil'
+        default:
+          return valor
       }
     }
   },

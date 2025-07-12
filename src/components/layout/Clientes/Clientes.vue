@@ -113,6 +113,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Clientes',
@@ -125,6 +126,7 @@ export default defineComponent({
         sexo: string
         dataNascimento: string
         email: string
+        nivelExperiencia: number
       }>,
       searchTerm: '',
       selectedSexo: '',
@@ -134,57 +136,73 @@ export default defineComponent({
 
   computed: {
     jogadoresFiltradosOrdenados() {
-      let resultado = this.listaclientes
-      const termo = this.searchTerm.toLowerCase().trim()
+            let resultado = this.listaclientes
+            const termo = this.searchTerm.toLowerCase().trim()
 
-      if (termo) {
-        resultado = resultado.filter(j =>
-          j.nome.toLowerCase().includes(termo) || j.cpf.includes(termo)
-        )
-      }
+            if (termo) {
+              resultado = resultado.filter(j =>
+                j.nome.toLowerCase().includes(termo) || j.cpf.includes(termo))
+            }
 
-      if (this.selectedSexo) {
-        resultado = resultado.filter(j =>
-          j.sexo.toLowerCase().trim() === this.selectedSexo.toLowerCase().trim()
-        )
-      }
+            if (this.selectedSexo) {
+              resultado = resultado.filter(j =>
+                j.sexo.toLowerCase().trim() === this.selectedSexo.toLowerCase().trim()
+              )
+            }
 
-      if (this.ordemAlfabetica === 'asc') {
-        resultado = resultado.slice().sort((a, b) => a.nome.localeCompare(b.nome))
-      } else if (this.ordemAlfabetica === 'desc') {
-        resultado = resultado.slice().sort((a, b) => b.nome.localeCompare(a.nome))
-      }
+            if (this.ordemAlfabetica === 'asc') {
+              resultado = resultado.slice().sort((a, b) => a.nome.localeCompare(b.nome))
+            } else if (this.ordemAlfabetica === 'desc') {
+              resultado = resultado.slice().sort((a, b) => b.nome.localeCompare(a.nome))
+            }
 
-      return resultado
-    }
+            return resultado
+          }
   },
 
   methods: {
     async buscarClientes() {
       try {
-        const response = await axios.get('http://localhost:3000/clientes')
+        const response = await api.get('/api/Cliente')
         if (response.status === 200) {
           this.listaclientes = response.data.map((item: any) => ({
             id: item.id,
-            nome: item.Nome || item.nome || '',
-            cpf: item.CPF || item.cpf || '',
-            sexo: item.Sexo || item.sexo || '',
-            dataNascimento: item.Data || item.dataNascimento || '',
-            email: item.Email || item.email || ''
+            nome: item.pessoa?.nome || '',
+            cpf: item.pessoa?.cpf || '',
+            sexo: item.pessoa?.sexo || '',
+            dataNascimento: item.pessoa?.dataNascimento || '',
+            email: item.pessoa?.email || '',
+            nivelExperiencia: item.nivelExperiencia || 0
           }))
         }
       } catch (error) {
         console.error('Erro ao buscar clientes:', error)
       }
     },
+    
     formatarData(dataISO: string): string {
-      if (!dataISO) return ''
-      const [ano, mes, dia] = dataISO.split('-')
-      return `${dia}/${mes}/${ano}`
-    },
+    if (!dataISO) return '';
+    
+    try {
+      const [dataParte] = dataISO.split('T');
+    
+      const [ano, mes, dia] = dataParte.split('-');
+      
+
+      if (ano && mes && dia) {
+        return `${dia.padStart(2, '0')}/${mes.padStart(2, '0')}/${ano}`;
+      }
+    } catch (e) {
+      console.error('Erro ao formatar data:', e);
+    }
+    
+    return dataISO;
+  },
+    
     ordenarNome() {
       this.ordemAlfabetica = this.ordemAlfabetica === 'asc' ? 'desc' : 'asc'
     },
+    
     getSortIcon() {
       if (this.ordemAlfabetica === 'asc') return 'fa-sort-up text-primary'
       if (this.ordemAlfabetica === 'desc') return 'fa-sort-down text-primary'

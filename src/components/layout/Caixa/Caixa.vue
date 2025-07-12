@@ -55,56 +55,61 @@
 
             <div class="table-responsive">
               <table class="table table-hover text-white enhanced-table">
-                <thead class="table-dark">
-                  <tr>
-                    <th>ID</th>
-                    <th>Abertura</th>
-                    <th>Fechamento</th>
-                    <th>Valor Inicial</th>
-                    <th>Valor Final</th>
-                    <th>Total Transações</th>
-                    <th>Status</th>
-                    <th>Funcionário</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(caixa, index) in caixasFiltrados" :key="index" class="enhanced-row">
-                    <td>{{ caixa.Id }}</td>
-                    <td>{{ formatDateTime(caixa.DataHoraAbertura) }}</td>
-                    <td>{{ caixa.DataHoraFechamento ? formatDateTime(caixa.DataHoraFechamento) : '-' }}</td>
-                    <td>{{ caixa.ValorInicial.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</td>
-                    <td>{{ caixa.ValorFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</td>
-                    <td>{{ caixa.TotalTransacoes.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) }}</td>
-                    <td>
-                      <span :class="{
-                        'badge bg-success': caixa.Status === 'Aberto',
-                        'badge bg-danger': caixa.Status === 'Fechado'
-                      }">
-                        {{ caixa.Status }}
-                      </span>
-                    </td>
-                    <td>{{ getFuncionarioNome(caixa.funcionario_id) }}</td>
-                    <td>
-                      <router-link 
-                        :to="`/caixa/detalhe/${caixa.Id}`" 
-                        class="btn btn-sm btn-outline-light enhanced-btn-sm"
-                      >
-                        <i class="fa fa-eye me-1"></i>Visualizar
-                      </router-link>
-                    </td>
-                  </tr>
-                  <tr v-if="caixasFiltrados.length === 0">
-                    <td colspan="9" class="text-center text-white py-5">
-                      <div class="empty-state">
-                        <i class="fa fa-cash-register fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">Nenhum caixa encontrado</h5>
-                        <p class="text-muted">Tente ajustar os filtros ou abra um novo caixa.</p>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                  <thead class="table-dark">
+                    <tr>
+                      <th>ID</th>
+                      <th>Nome</th>
+                      <th>Abertura</th>
+                      <th>Fechamento</th>
+                      <th>Valor Inicial</th>
+                      <th>Valor Final</th>
+                      <th>Total Transações</th>
+                      <th>Status</th>
+                      <th>Funcionário</th>
+                      <th>Unidade</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(caixa, index) in caixasFiltrados" :key="index" class="enhanced-row">
+                      <td>{{ caixa.id }}</td>
+                      <td>{{ caixa.nome }}</td>
+                      <td>{{ formatDateTime(caixa.dataHoraAbertura) }}</td>
+                      <td>{{ caixa.dataHoraFechamento ? formatDateTime(caixa.dataHoraFechamento) : '-' }}</td>
+                      <td>{{ formatCurrency(caixa.valorInicial) }}</td>
+                      <td>{{ formatCurrency(caixa.valorFinal) }}</td>
+                      <td>{{ formatCurrency(caixa.totalTransacoes) }}</td>
+                      <td>
+                        <span :class="{
+                          'badge bg-success': caixa.status === 'Aberto',
+                          'badge bg-danger': caixa.status === 'Fechado',
+                          'badge bg-warning': caixa.status !== 'Aberto' && caixa.status !== 'Fechado'
+                        }">
+                          {{ caixa.status }}
+                        </span>
+                      </td>
+                      <td>{{ caixa.funcionario.pessoa.nome }}</td>
+                      <td>{{ caixa.unidade.nome }}</td>
+                      <td>
+                        <router-link 
+                          :to="`/caixa/detalhe/${caixa.id}`" 
+                          class="btn btn-sm btn-outline-light enhanced-btn-sm"
+                        >
+                          <i class="fa fa-eye me-1"></i>Visualizar
+                        </router-link>
+                      </td>
+                    </tr>
+                    <tr v-if="caixasFiltrados.length === 0">
+                      <td colspan="11" class="text-center text-white py-5">
+                        <div class="empty-state">
+                          <i class="fa fa-cash-register fa-3x text-muted mb-3"></i>
+                          <h5 class="text-muted">Nenhum caixa encontrado</h5>
+                          <p class="text-muted">Tente ajustar os filtros ou abra um novo caixa.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
             </div>
           </div>
         </div>
@@ -120,26 +125,32 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
-import axios from 'axios'
+import { api } from '@/common/http'
 
 export default defineComponent({
   name: 'Caixas',
   data() {
     return {
       listaCaixas: [] as Array<{
-        Id: string
-        DataHoraAbertura: string
-        DataHoraFechamento: string | null
-        ValorInicial: number
-        ValorFinal: number
-        TotalTransacoes: number
-        Status: string
-        Observacoes: string
-        funcionario_id: string
-      }>,
-      listaFuncionarios: [] as Array<{
         id: string
         nome: string
+        dataHoraAbertura: string
+        dataHoraFechamento: string | null
+        valorInicial: number
+        valorFinal: number
+        totalTransacoes: number
+        status: string
+        observacoes: string
+        unidade: {
+          id: string
+          nome: string
+        }
+        funcionario: {
+          id: string
+          pessoa: {
+            nome: string
+          }
+        }
       }>,
       searchTerm: '',
       selectedStatus: '',
@@ -155,25 +166,20 @@ export default defineComponent({
       if (termo) {
         resultado = resultado.filter(
           (caixa) =>
-            caixa.Id.toLowerCase().includes(termo) ||
-            this.getFuncionarioNome(caixa.funcionario_id).toLowerCase().includes(termo)
-        )
+            caixa.id.toLowerCase().includes(termo) ||
+            caixa.funcionario.pessoa.nome.toLowerCase().includes(termo) ||
+            caixa.nome.toLowerCase().includes(termo))
       }
 
       if (this.selectedStatus) {
-        resultado = resultado.filter((caixa) => caixa.Status === this.selectedStatus)
+        resultado = resultado.filter((caixa) => 
+          caixa.status.toLowerCase() === this.selectedStatus.toLowerCase())
       }
 
       if (this.filtroHoje) {
-        const hoje = new Date()
-        resultado = resultado.filter((caixa) => {
-          const dataAbertura = new Date(caixa.DataHoraAbertura)
-          return (
-            dataAbertura.getDate() === hoje.getDate() &&
-            dataAbertura.getMonth() === hoje.getMonth() &&
-            dataAbertura.getFullYear() === hoje.getFullYear()
-          )
-        })
+        const hoje = new Date().toISOString().split('T')[0]
+        resultado = resultado.filter((caixa) => 
+          caixa.dataHoraAbertura && caixa.dataHoraAbertura.startsWith(hoje))
       }
 
       return resultado
@@ -182,47 +188,58 @@ export default defineComponent({
   methods: {
     async buscarCaixas() {
       try {
-        const [caixasResponse, funcionariosResponse] = await Promise.all([
-          axios.get('http://localhost:3000/caixas'),
-          axios.get('http://localhost:3000/funcionarios')
-        ])
+        const response = await api.get('/api/Caixa', {
+          headers: {
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': '69420'
+          }
+        })
 
-        if (caixasResponse.status === 200) {
-          this.listaCaixas = caixasResponse.data.map((item: any) => {
-            const statusStr = (item.status || '').toString().trim().toLowerCase()
-            const isAberto =
-              statusStr === 'aberto' &&
-              (!item.data_fechamento || item.data_fechamento === null || item.data_fechamento === '')
-
-            return {
-              Id: item.id,
-              DataHoraAbertura: item.data_abertura,
-              DataHoraFechamento: item.data_fechamento,
-              ValorInicial: item.valor_abertura || 0,
-              ValorFinal: item.valor_fechamento || 0,
-              TotalTransacoes: item.total_transacoes || 0,
-              Status: isAberto ? 'Aberto' : 'Fechado',
-              Observacoes: item.observacao,
-              funcionario_id: item.funcionario_id
-            }
-          })
-        }
-
-        if (funcionariosResponse.status === 200) {
-          this.listaFuncionarios = funcionariosResponse.data
+        if (response.status === 200) {
+          this.listaCaixas = response.data.map((item: any) => ({
+            id: item.id,
+            nome: item.nome || 'Caixa sem nome',
+            dataHoraAbertura: item.dataHoraAbertura,
+            dataHoraFechamento: item.dataHoraFechamento,
+            valorInicial: item.valorInicial || 0,
+            valorFinal: item.valorFinal || 0,
+            totalTransacoes: item.totalTransacoes || 0,
+            status: this.determinarStatusCaixa(item),
+            observacoes: item.observacoes || '',
+            unidade: item.unidade || { id: '', nome: 'N/A' },
+            funcionario: item.funcionario || { id: '', pessoa: { nome: 'N/A' } }
+          }))
         }
       } catch (error) {
-        console.error('Erro ao buscar dados:', error)
+        console.error('Erro ao buscar caixas:', error)
       }
     },
-    getFuncionarioNome(funcionarioId: string): string {
-      const funcionario = this.listaFuncionarios.find((f) => f.id === funcionarioId)
-      return funcionario ? funcionario.nome : 'Desconhecido'
+
+    determinarStatusCaixa(caixa: any): string {
+      if (!caixa.dataHoraFechamento || caixa.dataHoraFechamento === null) {
+        return 'Aberto'
+      }
+      return caixa.status || 'Fechado'
     },
+
     formatDateTime(dateTimeString: string): string {
       if (!dateTimeString) return '-'
       const date = new Date(dateTimeString)
-      return date.toLocaleString('pt-BR')
+      return date.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    },
+
+    formatCurrency(value: number): string {
+      return value.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2
+      })
     }
   },
   components: {

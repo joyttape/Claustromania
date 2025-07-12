@@ -49,9 +49,9 @@
                         <label for="sexo" class="form-label">Sexo</label>
                         <select class="form-select" id="sexo" v-model="cliente.sexo">
                           <option selected disabled value="">Selecione</option>
-                          <option value="masculino">Masculino</option>
-                          <option value="feminino">Feminino</option>
-                          <option value="outro">Outro</option>
+                          <option value="Masculino">Masculino</option>
+                          <option value="Feminino">Feminino</option>
+                          <option value="Outro">Outro</option>
                         </select>
                       </div>
                       <div class="col-md-4">
@@ -75,13 +75,13 @@
                     <div class="row mb-3">
                       <div class="col-md-12">
                         <label for="nivel" class="form-label">Nível de Experiência</label>
-                        <select class="form-select" id="nivel" v-model="cliente.nivel">
-                          <option selected disabled value="">Selecione</option>
-                          <option value="Novato">Novato</option>
-                          <option value="Intermediario">Intermediário</option>
-                          <option value="Experiente">Experiente</option>
-                          <option value="Profissional">Profissional</option>
-                        </select>
+                        <select class="form-select" id="nivel" v-model.number="cliente.nivelExperiencia">
+                            <option disabled value="">Selecione</option>
+                            <option :value="0">Novato</option>
+                            <option :value="1">Intermediário</option>
+                            <option :value="2">Experiente</option>
+                            <option :value="3">Profissional</option>
+                          </select>
                       </div>
                     </div>
 
@@ -180,162 +180,176 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { api } from '@/common/http'
 
 const route = useRoute()
 const router = useRouter()
 const clienteId = route.params.id as string
 
+
 const cliente = reactive({
+  id: '',
+  nivelExperiencia: null as number | null,
   nome: '',
   cpf: '',
   dataNascimento: '',
   sexo: '',
   email: '',
   telefone: '',
-  nivel: '',
   logradouro: '',
   numero: '',
   complemento: '',
   bairro: '',
   cidade: '',
   estado: '',
-  cep: '',
+  cep: ''
 })
 
-const fotoPreview = ref<string | null>(null)
-
-function aplicarMascaraCPF(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
+const aplicarMascaraCPF = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   
-  if (value.length <= 11) {
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  if (value.length > 11) value = value.substring(0, 11)
+  
+  if (value.length > 9) {
+    value = value.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+  } else if (value.length > 6) {
+    value = value.replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3')
+  } else if (value.length > 3) {
+    value = value.replace(/(\d{3})(\d{1,3})/, '$1.$2')
   }
   
-  cliente.cpf = value;
+  cliente.cpf = value
 }
 
-function aplicarMascaraTelefone(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
+const aplicarMascaraTelefone = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   
-  if (value.length <= 11) {
-    if (value.length <= 10) {
-      value = value.replace(/(\d{2})(\d)/, '($1) $2');
-      value = value.replace(/(\d{4})(\d)/, '$1-$2');
-    } else {
-      value = value.replace(/(\d{2})(\d)/, '($1) $2');
-      value = value.replace(/(\d{5})(\d)/, '$1-$2');
-    }
+  if (value.length > 11) value = value.substring(0, 11)
+  
+  if (value.length > 10) {
+    value = value.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3')
+  } else if (value.length > 6) {
+    value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
+  } else if (value.length > 2) {
+    value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2')
+  } else if (value.length > 0) {
+    value = value.replace(/(\d{0,2})/, '($1')
   }
   
-  cliente.telefone = value;
+  cliente.telefone = value
 }
 
-function aplicarMascaraCEP(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
+const aplicarMascaraCEP = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   
-  if (value.length <= 8) {
-    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+  if (value.length > 8) value = value.substring(0, 8)
+  
+  if (value.length > 5) {
+    value = value.replace(/(\d{5})(\d{1,3})/, '$1-$2')
   }
   
-  cliente.cep = value;
-}
-
-function formatarCPF(cpf: string): string {
-  if (!cpf) return '';
-  const apenasNumeros = cpf.replace(/\D/g, '');
-  if (apenasNumeros.length === 11) {
-    return apenasNumeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-  }
-  return cpf;
-}
-
-function formatarTelefone(telefone: string): string {
-  if (!telefone) return '';
-  const apenasNumeros = telefone.replace(/\D/g, '');
-  
-  if (apenasNumeros.length === 10) {
-    return apenasNumeros.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-  } else if (apenasNumeros.length === 11) {
-    return apenasNumeros.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  }
-  return telefone;
-}
-
-function formatarCEP(cep: string): string {
-  if (!cep) return '';
-  const apenasNumeros = cep.replace(/\D/g, '');
-  if (apenasNumeros.length === 8) {
-    return apenasNumeros.replace(/(\d{5})(\d{3})/, '$1-$2');
-  }
-  return cep;
-}
-
-function removerMascaras(dados: any) {
-  return {
-    ...dados,
-    cpf: dados.cpf ? dados.cpf.replace(/\D/g, '') : '',
-    telefone: dados.telefone ? dados.telefone.replace(/\D/g, '') : '',
-    cep: dados.cep ? dados.cep.replace(/\D/g, '') : ''
-  };
+  cliente.cep = value
 }
 
 const carregarCliente = async () => {
   try {
-    const response = await axios.get(`http://localhost:3000/clientes/${clienteId}`)
+    const response = await api.get(`/api/Cliente/${clienteId}`)
     const dados = response.data
 
-    Object.assign(cliente, {
-      nome: dados.nome || dados.Nome || '',
-      cpf: formatarCPF(dados.cpf || dados.CPF || ''),
-      dataNascimento: dados.dataNascimento || dados.Data || '',
-      sexo: dados.sexo || dados.Sexo || '',
-      email: dados.email || dados.Email || '',
-      telefone: formatarTelefone(dados.telefone || dados.Telefone || ''),
-      nivel: dados.nivel || dados.Nivel || '',
-      logradouro: dados.logradouro || dados.Logradouro || '',
-      numero: dados.numero || dados.Numero || '',
-      complemento: dados.complemento || dados.Complemento || '',
-      bairro: dados.bairro || dados.Bairro || '',
-      cidade: dados.cidade || dados.Cidade || '',
-      estado: dados.estado || dados.Estado || '',
-      cep: formatarCEP(dados.cep || dados.CEP || '')
-    })
+    cliente.id = dados.id
+    cliente.nivelExperiencia = dados.nivelExperiencia
+    cliente.nome = dados.pessoa?.nome || ''
+    cliente.cpf = dados.pessoa?.cpf || ''
+    cliente.dataNascimento = dados.pessoa?.dataNascimento?.substring(0, 10) || ''
+    cliente.sexo = dados.pessoa?.sexo || ''
+    cliente.email = dados.pessoa?.email || ''
+    cliente.telefone = dados.telefone || ''
+    cliente.logradouro = dados.pessoa?.endereco?.logradouro || ''
+    cliente.numero = dados.pessoa?.endereco?.numero || ''
+    cliente.complemento = dados.pessoa?.endereco?.complemento || ''
+    cliente.bairro = dados.pessoa?.endereco?.bairro || ''
+    cliente.cidade = dados.pessoa?.endereco?.cidade || ''
+    cliente.estado = dados.pessoa?.endereco?.estado || ''
+    cliente.cep = dados.pessoa?.endereco?.cep || ''
+
   } catch (error) {
     console.error('Erro ao carregar cliente:', error)
+    Swal.fire({
+      icon: 'error',
+      title: 'Erro ao carregar cliente',
+      text: 'Tente novamente mais tarde.',
+    })
   }
 }
 
 const salvarAlteracoes = async () => {
   try {
-    const dadosParaSalvar = removerMascaras(cliente);
+    // 1. Primeiro verifique se a pessoa existe ou crie uma nova
+    const pessoaData = {
+      nome: cliente.nome,
+      cpf: cliente.cpf.replace(/\D/g, ''),
+      dataNascimento: cliente.dataNascimento,
+      sexo: cliente.sexo,
+      email: cliente.email,
+      senha: 'senhaPadrao123', // Ou gere uma senha segura
+      endereco: {
+        logradouro: cliente.logradouro,
+        cep: cliente.cep.replace(/\D/g, ''),
+        cidade: cliente.cidade,
+        numero: cliente.numero,
+        estado: cliente.estado,
+        bairro: cliente.bairro,
+        complemento: cliente.complemento
+      }
+    };
+
+    if (clienteId) {
+      await api.put(`/api/Pessoa/${clienteId}`, pessoaData);
+    } else {
+      const pessoaResponse = await api.post('/api/Pessoa', pessoaData);
+      clienteId = pessoaResponse.data.id;
+    }
+
+    const clienteData = {
+      id: clienteId,
+      nivelExperiencia: cliente.nivelExperiencia || 0,
+      fk_pessoa: clienteId
+    };
+
+    await api.put(`/api/Cliente/${clienteId}`, clienteData);
     
-    await axios.put(`http://localhost:3000/clientes/${clienteId}`, dadosParaSalvar)
     await Swal.fire({
       icon: 'success',
-      title: 'Salvo com sucesso!',
+      title: 'Cliente salvo com sucesso!',
       confirmButtonColor: '#3085d6',
       confirmButtonText: 'OK'
-    })
-    router.push('/clientes')
+    });
+
+    router.push('/clientes');
   } catch (error) {
-    console.error('Erro ao salvar cliente:', error)
+    console.error('Erro ao salvar cliente:', error);
+    
+    let mensagemErro = 'Erro ao salvar cliente';
+    if (error.response?.data) {
+      mensagemErro += `: ${JSON.stringify(error.response.data)}`;
+    } else if (error.message) {
+      mensagemErro += `: ${error.message}`;
+    }
+
     Swal.fire({
       icon: 'error',
-      title: 'Erro ao salvar!',
-      text: 'Tente novamente mais tarde.',
-    })
+      title: 'Erro!',
+      text: mensagemErro,
+    });
   }
-}
+};
 
 const excluirCliente = async () => {
   const resultado = await Swal.fire({
@@ -351,10 +365,10 @@ const excluirCliente = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/clientes/${clienteId}`)
+      await api.delete(`/api/Cliente/${clienteId}`)
       await Swal.fire({
         icon: 'success',
-        title: 'Excluído com sucesso!',
+        title: 'Cliente excluído com sucesso!',
         confirmButtonColor: '#3085d6',
         confirmButtonText: 'OK'
       })
@@ -378,4 +392,3 @@ onMounted(() => {
   document.body.appendChild(script)
 })
 </script>
-
