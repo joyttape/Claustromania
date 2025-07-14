@@ -308,6 +308,7 @@ const cliente = reactive({
   cidade: '',
   estado: '',
   cep: '',
+  status: null,
   senha: null
 });
 
@@ -411,26 +412,30 @@ function limparFormulario() {
 async function cadastrarCliente() {
   try {
     const dadosEnvio = {
-      nivelExperiencia: cliente.nivel,
-      pessoa: {
-        nome: cliente.nome,
-        cpf: cliente.cpf.replace(/\D/g, ''),
-        dataNascimento: cliente.dataNascimento,
-        sexo: cliente.sexo,
-        email: cliente.email,
-        senha: cliente.senha || "SenhaPadrao123",
-        endereco: {
-          logradouro: cliente.logradouro,
-          numero: cliente.numero,
-          complemento: cliente.complemento,
-          bairro: cliente.bairro,
-          cidade: cliente.cidade,
-          estado: cliente.estado,
-          cep: cliente.cep.replace(/\D/g, '')
-        }
-      }
-    };
+  nivelExperiencia: cliente.nivel,
+  pessoa: {
+    nome: cliente.nome,
+    cpf: cliente.cpf.replace(/\D/g, ''),
+    dataNascimento: cliente.dataNascimento,
+    telefone: cliente.telefone.replace(/\D/g, ''),
+    sexo: cliente.sexo,
+    email: cliente.email,
+    senha: cliente.senha || cliente.cpf.replace(/\D/g, ''),
+    status: cliente.status || 'Ativo',
+    endereco: {
+      logradouro: cliente.logradouro,
+      numero: cliente.numero,
+      complemento: cliente.complemento,
+      bairro: cliente.bairro,
+      cidade: cliente.cidade,
+      estado: cliente.estado,
+      cep: cliente.cep.replace(/\D/g, '')
+    }
+  }
+};
 
+
+    console.log('Dados enviados:', dadosEnvio)
     await api.post('/api/Cliente', dadosEnvio);
 
     await Swal.fire({

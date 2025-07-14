@@ -132,7 +132,7 @@
                   >
                     <th class="fw-bold text-white">{{ reserva.id }}</th>
                     <td>{{ reserva.cliente }}</td>
-                    <td>{{ formatDateTime(reserva.dataReserva) }}</td>
+                    <td>{{ formatDateTime(reserva.dataReserva, reserva.horaReserva) }}</td>
                     <td>
                       <span
                         class="badge"
@@ -142,24 +142,33 @@
                         {{ getStatusText(reserva.status) }}
                       </span>
                     </td>
-                    <td>{{ reserva.sala?.numero || '-' }}</td>
+                    <td>{{ reserva.sala?.nome || '-' }}</td>
                     <td>
-                      <div class="d-flex gap-2">
-                        <router-link 
-                          v-if="reserva.status === 'reservado'"
-                          :to="`/reservas/transacao/${reserva.id}`" 
-                          class="btn btn-sm btn-success enhanced-btn-sm"
-                        >
-                          <i class="fa fa-credit-card me-1"></i>Pagar
-                        </router-link>
-                        <router-link 
-                          :to="`/reservas/detalhe/${reserva.id}`" 
-                          class="btn btn-sm btn-outline-light enhanced-btn-sm"
-                        >
-                          <i class="fa fa-eye me-1"></i>Visualizar
-                        </router-link>
-                      </div>
-                    </td>
+            <div class="d-flex gap-2">
+              <router-link 
+                v-if="reserva.status.toLowerCase() === 'reservado'"
+                :to="`/reservas/transacao/${reserva.id}`" 
+                class="btn btn-sm btn-success enhanced-btn-sm"
+              >
+                <i class="fa fa-credit-card me-1"></i>Comprovante
+              </router-link>
+
+              <router-link
+                v-if="['confirmado', 'concluido'].includes(reserva.status.toLowerCase())"
+                :to="`/reservas/transacaofeita/${reserva.id}`"
+                class="btn btn-sm btn-success enhanced-btn-sm"
+              >
+                <i class="fa fa-credit-card me-1"></i>Comprovante
+              </router-link>
+
+              <router-link 
+                :to="`/reservas/detalhe/${reserva.id}`" 
+                class="btn btn-sm btn-outline-light enhanced-btn-sm"
+              >
+                <i class="fa fa-eye me-1"></i>Visualizar
+              </router-link>
+            </div>
+          </td>
                   </tr>
                   <tr v-if="reservasFiltradas.length === 0">
                     <td colspan="6" class="text-center text-white py-5">
@@ -188,7 +197,6 @@ import { defineComponent } from 'vue'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
-import axios from 'axios'
 import { api } from '@/common/http'
 
 export default defineComponent({
@@ -199,12 +207,14 @@ export default defineComponent({
         id: string
         cliente: string
         dataReserva: string
+        horaReserva: string
         status: string
         valorTotal: number
-        salaId: string | null
+        fkSalaJogo: string | null
       }>,
       clientes: [] as Array<{ id: string; pessoa: { nome: string } }>,
-      salas: [] as Array<{ id: string; numero: string }>,
+      salas: [] as Array<{ id: string; nome: string }>,
+      salaJogos: [] as Array<{ id: string; fkSala: string; fkJogo: string }>,
       searchTerm: '',
       selectedStatus: '',
       filtroHoje: false,
@@ -214,10 +224,15 @@ export default defineComponent({
 
   computed: {
     reservasFiltradas() {
-      let resultado = this.listareservas.map(reserva => ({
-        ...reserva,
-        sala: this.salas.find(s => s.id === reserva.salaId) || null
-      }))
+      let resultado = this.listareservas.map(reserva => {
+        const salaJogo = this.salaJogos.find(sj => sj.id === reserva.fkSalaJogo)
+        const sala = salaJogo ? this.salas.find(s => s.id === salaJogo.fkSala) : null
+        
+        return {
+          ...reserva,
+          sala: sala || null
+        }
+      })
 
       const termo = this.searchTerm.toLowerCase().trim()
 
@@ -233,9 +248,14 @@ export default defineComponent({
       }
 
       if (this.filtroHoje) {
-        const hoje = new Date().toISOString().split('T')[0]
+        const hoje = new Date()
+        const ano = hoje.getFullYear()
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+        const dia = String(hoje.getDate()).padStart(2, '0')
+        const hojeLocal = `${ano}-${mes}-${dia}`
+
         resultado = resultado.filter((reserva) => 
-          reserva.dataReserva && reserva.dataReserva.startsWith(hoje))
+          reserva.dataReserva && reserva.dataReserva.split('T')[0] === hojeLocal)
       }
 
       if (this.ordemAlfabetica === 'asc') {
@@ -250,11 +270,18 @@ export default defineComponent({
     totalReservas() {
       return this.listareservas.length
     },
+
     reservasHoje() {
-      const hoje = new Date().toISOString().split('T')[0]
+      const hoje = new Date()
+      const ano = hoje.getFullYear()
+      const mes = String(hoje.getMonth() + 1).padStart(2, '0')
+      const dia = String(hoje.getDate()).padStart(2, '0')
+      const hojeLocal = `${ano}-${mes}-${dia}`
+
       return this.listareservas.filter(reserva => 
-        reserva.dataReserva && reserva.dataReserva.startsWith(hoje)).length
+        reserva.dataReserva && reserva.dataReserva.split('T')[0] === hojeLocal).length
     },
+
     reservasConfirmadas() {
       return this.listareservas.filter(reserva => reserva.status === 'confirmado').length
     }
@@ -263,7 +290,7 @@ export default defineComponent({
   methods: {
     async buscarReservas() {
       try {
-        const [resReservas, resClientes, resSalas] = await Promise.all([
+        const [resReservas, resClientes, resSalas, resSalaJogos] = await Promise.all([
           api.get('/api/Reserva', {
             headers: {
               'Content-Type': 'application/json',
@@ -281,26 +308,34 @@ export default defineComponent({
               'Content-Type': 'application/json',
               'ngrok-skip-browser-warning': '69420'
             }
+          }),
+          api.get('/api/SalaJogo', {
+            headers: {
+              'Content-Type': 'application/json',
+              'ngrok-skip-browser-warning': '69420'
+            }
           })
         ])
 
         this.clientes = resClientes.data
         this.salas = resSalas.data.map((sala: any) => ({
           id: sala.id,
-          numero: sala.numero || 'N/A' // Ajuste conforme o campo real da sua API
+          nome: sala.nome || 'N/A'
         }))
+        this.salaJogos = resSalaJogos.data
 
         if (resReservas.status === 200) {
           this.listareservas = resReservas.data.map((item: any) => {
-            const cliente = this.clientes.find(c => c.id === item.cliente.id)
-            
+            const cliente = this.clientes.find(c => c.id === item.fkCliente)
+
             return {
               id: item.id,
               cliente: cliente?.pessoa.nome || 'Cliente desconhecido',
               dataReserva: item.dataReserva,
-              status: this.determinarStatus(item), // Método novo para determinar status
+              horaReserva: item.horaReserva,
+              status: item.status || 'reservado',
               valorTotal: item.valorTotal,
-              salaId: item.fkSalaJogo
+              fkSalaJogo: item.fkSalaJogo
             }
           })
         }
@@ -310,43 +345,47 @@ export default defineComponent({
       }
     },
 
-    determinarStatus(reserva: any): string {
-      // Implemente sua lógica para determinar o status aqui
-      // Por exemplo, baseado em dataReserva, valorTotal, etc.
-      return 'reservado' // Valor padrão - ajuste conforme sua lógica
-    },
-
-    formatDateTime(dateTimeString: string): string {
-      if (!dateTimeString) return '-'
-      const date = new Date(dateTimeString)
-      return date.toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
+    formatDateTime(dataReserva: string, horaReserva: string): string {
+      if (!dataReserva || !horaReserva) return '-'
+      
+      try {
+        const data = dataReserva.split('T')[0]
+        const hora = horaReserva.substring(0, 5)
+        const dateTime = new Date(`${data}T${hora}:00`)
+        
+        return dateTime.toLocaleString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      } catch (error) {
+        return '-'
+      }
     },
 
     getStatusClass(status: string) {
-      const classes = {
-        'reservado': 'bg-warning text-dark',
-        'confirmado': 'bg-success',
-        'cancelado': 'bg-danger',
-        'concluido': 'bg-primary' // Mudei para primary para diferenciar de confirmado
-      }
-      return classes[status as keyof typeof classes] || 'bg-secondary'
-    },
+  const classes = {
+    'reservado': 'bg-warning text-dark',   
+    'confirmado': 'bg-success text-white', 
+    'cancelado': 'bg-danger text-white',  
+    'concluido': 'bg-success text-white'  
+  }
+  return classes[status.toLowerCase() as keyof typeof classes] || 'bg-secondary text-white'
+  },
+
 
     getStatusIcon(status: string) {
-      const icons = {
-        'reservado': 'fa fa-clock',
-        'confirmado': 'fa fa-check-circle',
-        'cancelado': 'fa fa-times-circle',
-        'concluido': 'fa fa-flag-checkered'
-      }
-      return icons[status as keyof typeof icons] || 'fa fa-question-circle'
-    },
+    const icons = {
+      'reservado': 'fa fa-clock',           
+      'confirmado': 'fa fa-check-circle', 
+      'cancelado': 'fa fa-times-circle', 
+      'concluido': 'fa fa-flag-checkered' 
+    }
+    return icons[status.toLowerCase() as keyof typeof icons] || 'fa fa-question-circle'
+  },
+
 
     getStatusText(status: string) {
       const texts = {
@@ -375,6 +414,7 @@ export default defineComponent({
   }
 })
 </script>
+
 
 <style scoped>
 .enhanced-btn {

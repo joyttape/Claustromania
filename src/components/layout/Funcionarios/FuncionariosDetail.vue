@@ -321,7 +321,7 @@
                       <button
                         type="button"
                         class="btn btn-danger"
-                        @click="cancelarAlteracoes"
+                        @click="excluirdados"
                       >
                         Excluir
                       </button>
@@ -343,7 +343,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 
 import useVuelidate from '@vuelidate/core'
@@ -352,13 +351,12 @@ import {
   minLength,
   email,
   helpers,
-  numeric,
-  between,
 } from '@vuelidate/validators'
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { api } from '@/common/http'
 
 const route = useRoute()
 const router = useRouter()
@@ -376,7 +374,7 @@ const funcionario = reactive({
   salarioFormatado: '',
   dataContratacao: '',
   turno: '',
-  status: null as boolean | null,
+  status: true,
 
   logradouro: '',
   numero: '',
@@ -558,35 +556,37 @@ function removerMascaras(dados: any) {
 const carregarFuncionario = async () => {
   loading.value = true
   try {
-    const response = await axios.get(`http://localhost:3000/funcionarios/${funcionarioId}`)
+    const response = await api.get(`/api/Funcionario/${funcionarioId}`)
     const dados = response.data
 
-    funcionario.nome = dados.nome || ''
-    funcionario.cpf = formatarCPF(dados.cpf || '')
-    funcionario.dataNascimento = dados.dataNascimento || ''
-    funcionario.sexo = dados.sexo || ''
-    funcionario.email = dados.email || ''
-    funcionario.telefone = formatarTelefone(dados.telefone || '')
+    funcionario.nome = dados.pessoa?.nome || ''
+    funcionario.cpf = formatarCPF(dados.pessoa?.cpf || '')
+    funcionario.dataNascimento = dados.pessoa?.dataNascimento?.substring(0, 10) || ''
+    funcionario.sexo = dados.pessoa?.sexo || ''
+    funcionario.email = dados.pessoa?.email || ''
+    funcionario.telefone = formatarTelefone(dados.pessoa?.telefone || '')
     funcionario.cargo = dados.cargo || ''
     funcionario.salario = dados.salario || 0
     funcionario.salarioFormatado = formatarSalario(dados.salario || 0)
-    funcionario.dataContratacao = dados.dataContratacao || ''
+    funcionario.dataContratacao = dados.dataContratacao?.substring(0, 10) || ''
     funcionario.turno = dados.turno || ''
-    funcionario.status = typeof dados.status === 'boolean' ? dados.status : null
+    funcionario.status = Boolean(dados.status);
 
-    funcionario.logradouro = dados.logradouro || ''
-    funcionario.numero = dados.numero || ''
-    funcionario.complemento = dados.complemento || ''
-    funcionario.bairro = dados.bairro || ''
-    funcionario.cidade = dados.cidade || ''
-    funcionario.estado = dados.estado || ''
-    funcionario.cep = formatarCEP(dados.cep || '')
+    const endereco = dados.pessoa?.endereco || {}
+    funcionario.logradouro = endereco.logradouro || ''
+    funcionario.numero = endereco.numero || ''
+    funcionario.complemento = endereco.complemento || ''
+    funcionario.bairro = endereco.bairro || ''
+    funcionario.cidade = endereco.cidade || ''
+    funcionario.estado = endereco.estado || ''
+    funcionario.cep = formatarCEP(endereco.cep || '')
+
   } catch (error) {
     console.error('Erro ao carregar funcionário:', error)
     Swal.fire({
       icon: 'error',
-      title: 'Erro ao carregar funcionário',
-      text: 'Tente novamente mais tarde.',
+      title: 'Erro ao carregar',
+      text: 'Não foi possível carregar os dados do funcionário'
     })
   } finally {
     loading.value = false
@@ -594,38 +594,89 @@ const carregarFuncionario = async () => {
 }
 
 const salvarAlteracoes = async () => {
-  $v.value.$touch()
-  if ($v.value.$invalid) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Formulário inválido',
-      text: 'Por favor, corrija os erros antes de salvar.',
-    })
-    return
-  }
-
   try {
-    const dadosParaSalvar = removerMascaras(funcionario);
-    
-    await axios.put(`http://localhost:3000/funcionarios/${funcionarioId}`, dadosParaSalvar)
+    $v.value.$touch();
+    if ($v.value.$invalid) {
+      await Swal.fire({
+        icon: 'error',
+        title: 'Formulário inválido',
+        text: 'Corrija os campos destacados antes de salvar'
+      });
+      return;
+    }
+
+    const payload = {
+      id: funcionarioId, 
+      cargo: funcionario.cargo,
+      salario: Number(funcionario.salario),
+      dataContratacao: funcionario.dataContratacao,
+      turno: funcionario.turno,
+      status: funcionario.status,
+      senha: "", 
+      pessoa: {
+        nome: funcionario.nome,
+        cpf: funcionario.cpf.replace(/\D/g, ''),
+        dataNascimento: funcionario.dataNascimento,
+        sexo: funcionario.sexo,
+        email: funcionario.email,
+        telefone: funcionario.telefone.replace(/\D/g, ''),
+        endereco: {
+          logradouro: funcionario.logradouro,
+          numero: funcionario.numero,
+          complemento: funcionario.complemento || null,
+          bairro: funcionario.bairro,
+          cidade: funcionario.cidade,
+          estado: funcionario.estado,
+          cep: funcionario.cep.replace(/\D/g, '')
+        }
+      }
+    };
+
+     console.log('Payload com status:', {
+      ...payload,
+      status: payload.status 
+    });
+
+    const response = await api.put(`/api/Funcionario/${funcionarioId}`, payload);
+
+    if (response.data?.status !== undefined) {
+      console.log('Status retornado:', response.data.status);
+      funcionario.status = Boolean(response.data.status);
+    }
+
     await Swal.fire({
       icon: 'success',
-      title: 'Salvo com sucesso!',
-      confirmButtonColor: '#3085d6',
-      confirmButtonText: 'OK',
-    })
-    router.push('/funcionarios')
-  } catch (error) {
-    console.error('Erro ao salvar funcionário:', error)
-    Swal.fire({
-      icon: 'error',
-      title: 'Erro ao salvar!',
-      text: 'Tente novamente mais tarde.',
-    })
-  }
-}
+      title: 'Atualizado!',
+      text: `Funcionário ${funcionario.nome} salvo com sucesso`,
+      timer: 2000
+    });
+    
+    router.push('/funcionarios');
 
-const cancelarAlteracoes = async () => {
+  } catch (error) {
+    console.error('Erro completo:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers
+    });
+
+    let errorMsg = 'Erro ao salvar alterações';
+    if (error.response?.data?.errors) {
+      errorMsg = Object.entries(error.response.data.errors)
+        .map(([field, errors]) => `• ${field}: ${Array.isArray(errors) ? errors.join(', ') : errors}`)
+        .join('\n');
+    }
+
+    await Swal.fire({
+      icon: 'error',
+      title: 'Erro na atualização',
+      html: `<pre style="text-align: left; font-size: 14px">${errorMsg}</pre>`,
+      width: '600px'
+    });
+  }
+};
+
+const excluirdados = async () => {
   const resultado = await Swal.fire({
     title: 'Tem certeza?',
     text: 'Esta ação não pode ser desfeita.',
@@ -639,7 +690,7 @@ const cancelarAlteracoes = async () => {
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/funcionarios/${funcionarioId}`)
+      await api.delete(`/api/Funcionario/${funcionarioId}`)
       await Swal.fire({
         icon: 'success',
         title: 'Excluído com sucesso!',

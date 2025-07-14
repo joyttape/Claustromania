@@ -1,6 +1,7 @@
 <template>
   <div>
     <div
+      v-if="loading.reserva || loading.caixas"
       id="spinner"
       class="show bg-dark position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center"
     >
@@ -23,34 +24,54 @@
               <div class="row mb-3">
                 <div class="col-md-6">
                   <label>Cliente</label>
-                  <input type="text" class="form-control" :value="reserva.cliente_nome" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    :value="reserva.cliente_nome || 'Carregando...'" 
+                    disabled 
+                  />
                 </div>
                 <div class="col-md-6">
                   <label>Forma de Pagamento</label>
-                  <input type="text" class="form-control" :value="reserva.forma_pagamento" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    :value="reserva.forma_pagamento || 'Não informado'" 
+                    disabled 
+                  />
                 </div>
               </div>
 
               <div class="row mb-3">
                 <div class="col-md-4">
                   <label>Valor Total</label>
-                  <input type="text" class="form-control" :value="formatarMoeda(reserva.valor_total)" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    :value="formatarMoeda(reserva.valor_total)" 
+                    disabled 
+                  />
                 </div>
 
                 <div class="col-md-4">
                   <label>Caixa Utilizado</label>
-                  <select
-                    v-model="transacao.caixa_id"
-                    class="form-select"
-                    :class="{ 'is-invalid': !validacao.caixa_id }"
-                    required
-                  >
-                    <option disabled value="">Selecione o caixa</option>
-                    <option v-for="caixa in caixasAbertos" :key="caixa.id" :value="caixa.id">
-                      ID: {{ caixa.id }} - Funcionário: {{ getNomeFuncionario(caixa.funcionario_id) }}
-                    </option>
-                  </select>
-                  <div class="invalid-feedback">Campo obrigatório</div>
+                  <template v-if="caixasAbertos.length > 0">
+                    <select
+                      v-model="transacao.FkCaixa"
+                      class="form-select"
+                      :class="{ 'is-invalid': !validacao.caixa_id }"
+                      required
+                    >
+                      <option disabled value="">Selecione o caixa</option>
+                      <option v-for="caixa in caixasAbertos" :key="caixa.id" :value="caixa.id">
+                        {{ caixa.nomeFormatado }}
+                      </option>
+                    </select>
+                  </template>
+                  <template v-else>
+                    <div class="alert alert-warning py-2 mb-0">Nenhum caixa aberto disponível</div>
+                  </template>
+                  <div v-if="!validacao.caixa_id" class="invalid-feedback">Campo obrigatório</div>
                 </div>
 
                 <div class="col-md-4">
@@ -61,8 +82,9 @@
                     class="form-control"
                     :class="{ 'is-invalid': !validacao.pagador }"
                     required
+                    placeholder="Nome do pagador"
                   />
-                  <div class="invalid-feedback">Campo obrigatório</div>
+                  <div v-if="!validacao.pagador" class="invalid-feedback">Campo obrigatório</div>
                 </div>
               </div>
 
@@ -76,15 +98,22 @@
                     :class="{ 'is-invalid': !validacao.valor_recebido }"
                     required
                     :min="reserva.valor_total"
+                    step="0.01"
                     @input="validarValorRecebido"
                   />
                   <div v-if="!validacao.valor_recebido" class="invalid-feedback">
                     O valor recebido não pode ser menor que o valor total da reserva.
                   </div>
                 </div>
+
                 <div class="col-md-4">
                   <label>Troco</label>
-                  <input type="text" class="form-control" :value="formatarMoeda(troco)" disabled />
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    :value="formatarMoeda(troco)" 
+                    disabled 
+                  />
                 </div>
               </div>
 
@@ -98,34 +127,51 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
 
 import NavHeaderBar from '@/components/layout/NavHeaderBar.vue'
 import NavSideBar from '@/components/layout/NavSideBar.vue'
 import FooterBar from '@/components/layout/FooterBar.vue'
+import { api } from '@/common/http'
 
 const route = useRoute()
 const router = useRouter()
-const reservaId = route.params.id
+const reservaId = route.params.id as string
 
 const reserva = reactive({
   cliente_nome: '',
   valor_total: 0,
-  forma_pagamento: ''
+  forma_pagamento: '',
+  fkCliente: '',
+  fkPessoa: '',
+  dataReserva: '',
+  horaReserva: '',
+  numeroJogadores: 0,
+  observacoes: '',
+  fkSalaJogo: ''
 })
 
 const transacao = reactive({
-  caixa_id: '',
+  FkCaixa: '',
   pagador: '',
   valor_recebido: 0
 })
 
-const caixasAbertos = ref([])
-const funcionarios = ref([])
+interface Caixa {
+  id: string
+  nomeFormatado: string
+}
+
+const caixasAbertos = ref<Caixa[]>([])
+const loading = ref({
+  reserva: true,
+  caixas: true,
+  funcionarios: true
+})
 
 const validacao = reactive({
   caixa_id: true,
@@ -134,69 +180,119 @@ const validacao = reactive({
 })
 
 const troco = computed(() => {
-  if (reserva.forma_pagamento !== 'dinheiro') return 0
+  if (reserva.forma_pagamento.toLowerCase() !== 'dinheiro') return 0
   const recebido = transacao.valor_recebido || 0
   const total = reserva.valor_total || 0
   return recebido > total ? recebido - total : 0
 })
 
-const formatarMoeda = (valor: number) =>
-  valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const formatarMoeda = (valor: number) => {
+  if (!valor) return 'R$ 0,00'
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
+const carregarNomeCliente = async (clienteId: string) => {
+  if (!clienteId) return 'Cliente não informado'
+  try {
+    const res = await api.get(`/api/Cliente/${clienteId}`)
+
+    reserva.fkPessoa = res.data.fkPessoa || res.data.pessoaId || ''
+
+    return res.data.nome ||
+           res.data.pessoa?.nome ||
+           res.data.clienteNome ||
+           res.data.nomeCompleto ||
+           `Cliente (ID: ${clienteId.slice(0, 8)}...)`
+  } catch (error) {
+    console.error(`Erro ao carregar cliente ${clienteId}:`, error)
+    return `Cliente (ID: ${clienteId.slice(0, 8)}...)`
+  }
+}
+
+const carregarNomeFuncionario = async (funcionarioId: string) => {
+  if (!funcionarioId) return 'Operador não definido'
+  try {
+    const res = await api.get(`/api/Funcionario/${funcionarioId}`)
+    return res.data.nome ||
+           res.data.pessoa?.nome ||
+           res.data.funcionarioNome ||
+           res.data.nomeCompleto ||
+           `Operador (ID: ${funcionarioId.slice(0, 8)}...)`
+  } catch (error) {
+    console.error(`Erro ao carregar funcionário ${funcionarioId}:`, error)
+    return `Operador (ID: ${funcionarioId.slice(0, 8)}...)`
+  }
+}
 
 const carregarReserva = async () => {
   try {
-    const res = await axios.get(`http://localhost:3000/reservas/${reservaId}`)
+    loading.value.reserva = true
+    const res = await api.get(`/api/Reserva/${reservaId}`)
     const r = res.data
-    reserva.cliente_nome = r.cliente_nome
-    reserva.valor_total = r.valor_total
-    reserva.forma_pagamento = r.forma_pagamento
+
+    reserva.cliente_nome = await carregarNomeCliente(r.fkCliente)
+    reserva.valor_total = r.valorTotal || 0
+    reserva.forma_pagamento = r.formaPagamento || ''
+    reserva.fkCliente = r.fkCliente || ''
+    reserva.dataReserva = r.dataReserva || ''
+    reserva.horaReserva = r.horaReserva || ''
+    reserva.numeroJogadores = r.numeroJogadores || 0
+    reserva.observacoes = r.observacoes || ''
+    reserva.fkSalaJogo = r.fkSalaJogo || ''
   } catch (error) {
     console.error('Erro ao carregar reserva:', error)
     Swal.fire('Erro', 'Falha ao carregar os dados da reserva.', 'error')
     router.push('/reservas')
+  } finally {
+    loading.value.reserva = false
   }
 }
 
-const getNomeFuncionario = (id: string) => {
-  const func = funcionarios.value.find((f: any) => f.id === id)
-  return func ? func.nome : `ID: ${id}`
-}
-
-const carregarFuncionarios = async () => {
-  try {
-    const res = await axios.get('http://localhost:3000/funcionarios')
-    funcionarios.value = res.data
-  } catch (error) {
-    console.error('Erro ao carregar funcionários:', error)
-    Swal.fire('Erro', 'Falha ao carregar a lista de funcionários.', 'error')
-  }
+const processarCaixas = async (caixas: any[]) => {
+  return await Promise.all(
+    caixas.map(async (caixa) => {
+      let nomeOperador = 'Operador não definido'
+      const funcionarioId = caixa.funcionarioId || caixa.fkFuncionario || caixa.responsavelId || caixa.usuarioId
+      if (funcionarioId) {
+        nomeOperador = await carregarNomeFuncionario(funcionarioId)
+      }
+      return {
+        id: caixa.id,
+        nomeFormatado: `ID: ${caixa.id} - ${nomeOperador}`
+      }
+    })
+  )
 }
 
 const carregarCaixasAbertos = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/caixas')
-    caixasAbertos.value = res.data.filter((c: any) => c.status === 'aberto')
+    loading.value.caixas = true
+    const res = await api.get('/api/Caixa/resumido')
+    const caixasFiltrados = res.data.filter((c: any) =>
+      c.status?.toLowerCase() === 'aberto' || c.estaAberto === true
+    )
+    caixasAbertos.value = await processarCaixas(caixasFiltrados)
   } catch (error) {
     console.error('Erro ao carregar caixas abertos:', error)
     Swal.fire('Erro', 'Falha ao carregar a lista de caixas abertos.', 'error')
+  } finally {
+    loading.value.caixas = false
   }
 }
 
 const validarCampos = () => {
-  validacao.caixa_id = transacao.caixa_id !== ''
+  validacao.caixa_id = transacao.FkCaixa !== ''
   validacao.pagador = transacao.pagador.trim() !== ''
-
-  if (reserva.forma_pagamento === 'dinheiro') {
+  if (reserva.forma_pagamento.toLowerCase() === 'dinheiro') {
     validacao.valor_recebido = transacao.valor_recebido >= reserva.valor_total
   } else {
     validacao.valor_recebido = true
   }
-
   return validacao.caixa_id && validacao.pagador && validacao.valor_recebido
 }
 
 const validarValorRecebido = () => {
-  if (reserva.forma_pagamento === 'dinheiro') {
+  if (reserva.forma_pagamento.toLowerCase() === 'dinheiro') {
     validacao.valor_recebido = transacao.valor_recebido >= reserva.valor_total
   }
 }
@@ -208,36 +304,76 @@ const registrarTransacao = async () => {
   }
 
   try {
-    await axios.post('http://localhost:3000/transacoes', {
-      reserva_id: reservaId,
-      cliente_nome: reserva.cliente_nome,
-      forma_pagamento: reserva.forma_pagamento,
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reservaId)) {
+      throw new Error('ID da reserva inválido')
+    }
+    if (!transacao.FkCaixa || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(transacao.FkCaixa)) {
+      throw new Error('Selecione um caixa válido')
+    }
+
+    const payloadReserva = {
+      id: reservaId,
+      dataReserva: reserva.dataReserva,
+      horaReserva: reserva.horaReserva,
+      numeroJogadores: reserva.numeroJogadores,
+      valorTotal: reserva.valor_total,
+      status: 'CONFIRMADO',
+      observacoes: reserva.observacoes,
+      formaPagamento: reserva.forma_pagamento,
+      fkCliente: reserva.fkCliente,
+      fkSalaJogo: reserva.fkSalaJogo
+    }
+
+    const payloadTransacao = {
       valor: reserva.valor_total,
-      caixa_id: transacao.caixa_id,
+      data: new Date().toISOString(),
+      tipo: 'RESERVA',
+      formaPagamento: reserva.forma_pagamento,
       pagador: transacao.pagador,
-      valor_recebido: reserva.forma_pagamento === 'dinheiro' ? transacao.valor_recebido : null,
-      troco: reserva.forma_pagamento === 'dinheiro' ? troco.value : 0,
-      data: new Date().toISOString()
-    })
+      valorRecebido: reserva.forma_pagamento.toLowerCase() === 'dinheiro'
+        ? transacao.valor_recebido
+        : reserva.valor_total,
+      troco: troco.value,
+      FkCaixa: transacao.FkCaixa,
+      FkPessoa: reserva.fkPessoa || null,
+      FkReserva: reservaId
+    }
 
-    await axios.patch(`http://localhost:3000/reservas/${reservaId}`, { status: 'confirmado' })
+    console.log('Payload da reserva:', JSON.stringify(payloadReserva, null, 2))
+    console.log('Payload da transação:', JSON.stringify(payloadTransacao, null, 2))
 
-    Swal.fire('Sucesso!', 'Transação registrada e reserva confirmada.', 'success').then(() => {
-      router.push('/reservas')
-    })
+    const responseTransacao = await api.post('/api/Transacao', payloadTransacao)
+    console.log('Transação criada:', responseTransacao.data)
+
+    const responseReserva = await api.put(`/api/Reserva/${reservaId}`, payloadReserva)
+    console.log('Reserva atualizada:', responseReserva.data)
+
+    Swal.fire('Sucesso!', 'Operação concluída com sucesso', 'success')
+      .then(() => router.push('/reservas'))
+
   } catch (error) {
-    console.error('Erro ao registrar transação:', error)
-    Swal.fire('Erro', 'Falha ao registrar a transação ou atualizar a reserva.', 'error')
+    console.error('Erro completo:', error)
+
+    let errorMessage = 'Falha na operação'
+    if (error.response?.data) {
+      errorMessage = typeof error.response.data === 'string'
+        ? error.response.data
+        : JSON.stringify(error.response.data, null, 2)
+    } else if (error.message) {
+      errorMessage = error.message
+    }
+
+    Swal.fire('Erro', errorMessage, 'error')
   }
 }
 
 onMounted(async () => {
+  await Promise.all([carregarReserva(), carregarCaixasAbertos()])
   document.getElementById('spinner')?.classList.remove('show')
-  await carregarReserva()
-  await carregarCaixasAbertos()
-  await carregarFuncionarios()
 })
 </script>
+
+
 
 <style scoped>
 ::v-deep input.form-control:disabled {

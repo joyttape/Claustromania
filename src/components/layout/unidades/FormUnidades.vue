@@ -369,6 +369,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { Toast } from '@/components/common/toast'
+import { api } from '@/common/http'
 
 const unidade = reactive({
   nome: '',
@@ -390,8 +391,6 @@ const unidade = reactive({
   gerente_nome: '',
 })
 
-const fotoPreview = ref<string | null>(null)
-
 const listaGerentes = ref<{ id: number; nome: string }[]>([])
 const gerentesFiltrados = ref<{ id: number; nome: string }[]>([])
 const gerentePesquisa = ref('')
@@ -399,173 +398,130 @@ const mostrarSugestoesGerente = ref(false)
 
 const cnpjValido = (value: string) => {
   if (!value) return true;
-  
   const cnpj = value.replace(/\D/g, '');
-  
-  if (cnpj.length !== 14) return false;
-  
-  if (/^(\d)\1{13}$/.test(cnpj)) return false;
-  
-  let tamanho = cnpj.length - 2;
-  let numeros = cnpj.substring(0, tamanho);
-  let digitos = cnpj.substring(tamanho);
-  let soma = 0;
-  let pos = tamanho - 7;
-  
-  for (let i = tamanho; i >= 1; i--) {
-    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-    if (pos < 2) pos = 9;
+  if (cnpj.length !== 14 || /^(\d)\1{13}$/.test(cnpj)) return false;
+
+  const validarDigito = (base: string, posInicial: number) => {
+    let soma = 0, pos = posInicial;
+    for (let i = 0; i < base.length; i++) {
+      soma += parseInt(base.charAt(i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    const resto = soma % 11;
+    return resto < 2 ? 0 : 11 - resto;
   }
-  
-  let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-  if (resultado !== parseInt(digitos.charAt(0))) return false;
-  
-  tamanho = tamanho + 1;
-  numeros = cnpj.substring(0, tamanho);
-  soma = 0;
-  pos = tamanho - 7;
-  
-  for (let i = tamanho; i >= 1; i--) {
-    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-    if (pos < 2) pos = 9;
-  }
-  
-  resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-  if (resultado !== parseInt(digitos.charAt(1))) return false;
-  
-  return true;
+
+  const base = cnpj.slice(0, 12);
+  const dig1 = validarDigito(base, 5);
+  const dig2 = validarDigito(base + dig1, 6);
+  return `${dig1}${dig2}` === cnpj.slice(-2);
 };
 
 const telefoneValido = (value: string) => {
   if (!value) return true;
-  
-  const telefone = value.replace(/\D/g, '');
-  
-  return telefone.length === 10 || telefone.length === 11;
+  const tel = value.replace(/\D/g, '');
+  return tel.length === 10 || tel.length === 11;
 };
 
 const cepValido = (value: string) => {
   if (!value) return true;
-  
-  const cep = value.replace(/\D/g, '');
-  
-  return cep.length === 8;
+  return /^\d{5}-?\d{3}$/.test(value);
 };
 
 const rules = {
-  nome: {
-    required,
-    minLength: minLength(3),
-  },
-  cnpj: {
-    required,
-    cnpjValido,
-  },
-  telefone: {
-    required,
-    telefoneValido,
-  },
+  nome: { required, minLength: minLength(3) },
+  cnpj: { required, cnpjValido },
+  telefone: { required, telefoneValido },
   logradouro: { required },
   numero: { required },
   bairro: { required },
   cidade: { required },
   estado: { required },
-  cep: {
-    required,
-    cepValido,
-  },
-  capacidade: {
-    numeric,
-  },
-  diasFuncionamento: {
-    required,
-    minLength: minLength(3),
-  },
+  cep: { required, cepValido },
+  capacidade: { numeric },
+  diasFuncionamento: { required, minLength: minLength(3) },
   horarioAbertura: { required },
   horarioFechamento: {
     required,
-    horarioValido: (value: string) => {
-      if (!unidade.horarioAbertura || !value) return true
-      return unidade.horarioAbertura < value
-    },
+    horarioValido: (value: string) =>
+      !unidade.horarioAbertura || !value || unidade.horarioAbertura < value,
   },
   gerente_id: { required },
 }
 
 const v$ = useVuelidate(rules, unidade)
-
 const router = useRouter()
 
 function aplicarMascaraCNPJ(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
-  
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   if (value.length <= 14) {
-    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
-    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
-    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    value = value.replace(/^(\d{2})(\d)/, '$1.$2')
+    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2')
+    value = value.replace(/(\d{4})(\d)/, '$1-$2')
   }
-  
-  unidade.cnpj = value;
+  unidade.cnpj = value
 }
 
 function aplicarMascaraTelefone(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
-  
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   if (value.length <= 11) {
     if (value.length <= 10) {
-      value = value.replace(/(\d{2})(\d)/, '($1) $2');
-      value = value.replace(/(\d{4})(\d)/, '$1-$2');
+      value = value.replace(/(\d{2})(\d)/, '($1) $2')
+      value = value.replace(/(\d{4})(\d)/, '$1-$2')
     } else {
-      value = value.replace(/(\d{2})(\d)/, '($1) $2');
-      value = value.replace(/(\d{5})(\d)/, '$1-$2');
+      value = value.replace(/(\d{2})(\d)/, '($1) $2')
+      value = value.replace(/(\d{5})(\d)/, '$1-$2')
     }
   }
-  
-  unidade.telefone = value;
+  unidade.telefone = value
 }
 
 function aplicarMascaraCEP(event: Event) {
-  const input = event.target as HTMLInputElement;
-  let value = input.value.replace(/\D/g, '');
-  
+  const input = event.target as HTMLInputElement
+  let value = input.value.replace(/\D/g, '')
   if (value.length <= 8) {
-    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    value = value.replace(/(\d{5})(\d)/, '$1-$2')
   }
-  
-  unidade.cep = value;
+  unidade.cep = value
 }
 
 function limparFormulario() {
-  unidade.nome = ''
-  unidade.cnpj = ''
-  unidade.telefone = ''
-  unidade.status = false
-  unidade.capacidade = ''
-  unidade.diasFuncionamento = ''
-  unidade.horarioAbertura = ''
-  unidade.horarioFechamento = ''
-  unidade.logradouro = ''
-  unidade.numero = ''
-  unidade.complemento = ''
-  unidade.bairro = ''
-  unidade.cidade = ''
-  unidade.estado = ''
-  unidade.cep = ''
-  unidade.gerente_id = null
-  unidade.gerente_nome = ''
-  fotoPreview.value = null
+  Object.assign(unidade, {
+    nome: '',
+    cnpj: '',
+    telefone: '',
+    status: false,
+    capacidade: '',
+    diasFuncionamento: '',
+    horarioAbertura: '',
+    horarioFechamento: '',
+    logradouro: '',
+    numero: '',
+    complemento: '',
+    bairro: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    gerente_id: null,
+    gerente_nome: '',
+  })
   gerentePesquisa.value = ''
   gerentesFiltrados.value = []
   mostrarSugestoesGerente.value = false
   v$.value.$reset()
 }
 
-async function cadastrarUnidade() {
-  const isValid = await v$.value.$validate()
+function formatarHorario(horario: string) {
+  if (!horario) return null;
+  return horario.length === 5 ? horario + ":00" : horario;
+}
 
+async function cadastrarUnidade() {
+  console.log('DADOS BRUTOS', unidade)
+  const isValid = await v$.value.$validate()
   if (!isValid) {
     Toast.fire({
       icon: 'error',
@@ -574,34 +530,33 @@ async function cadastrarUnidade() {
     return
   }
 
-  const cnpjLimpo = unidade.cnpj.replace(/\D/g, '')
-  const telefoneLimpo = unidade.telefone.replace(/\D/g, '')
-  const cepLimpo = unidade.cep.replace(/\D/g, '')
-
   const dadosEnvio = {
-    nome: unidade.nome,
-    cnpj: cnpjLimpo,
-    telefone: telefoneLimpo,
-    status: unidade.status ? 1 : 0,
-    capacidade: unidade.capacidade ? Number(unidade.capacidade) : null,
-    diasFuncionamento: unidade.diasFuncionamento,
-    horarioAbertura: unidade.horarioAbertura,
-    horarioFechamento: unidade.horarioFechamento,
+  nome: unidade.nome,
+  capacidade: unidade.capacidade ? Number(unidade.capacidade) : 0,
+  horarioAbertura: formatarHorario(unidade.horarioAbertura),
+  horarioFechamento: formatarHorario(unidade.horarioFechamento),
+  telefone: unidade.telefone.replace(/\D/g, ''),
+  ativa: Boolean(unidade.status),  
+  fkFuncionario: unidade.gerente_id, 
+  cnpj: unidade.cnpj.replace(/\D/g, ''),
+  diaFunci : unidade.diasFuncionamento,
+  endereco: {
     logradouro: unidade.logradouro,
-    numero: unidade.numero,
-    complemento: unidade.complemento,
-    bairro: unidade.bairro,
+    cep: unidade.cep.replace(/\D/g, ''),
     cidade: unidade.cidade,
+    numero: unidade.numero,
     estado: unidade.estado,
-    cep: cepLimpo,
-    gerente_id: unidade.gerente_id,
+    bairro: unidade.bairro,
+    complemento: unidade.complemento || ''
   }
+};
+
+
 
   try {
-    Toast.fire({
-      icon: 'success',
-      title: 'Unidade cadastrada com sucesso!',
-    })
+    console.log('DADOS FORMATADOS', dadosEnvio)
+    await api.post('/api/Unidade', dadosEnvio)
+    Toast.fire({ icon: 'success', title: 'Unidade cadastrada com sucesso!' })
     limparFormulario()
     router.push('/unidades')
   } catch (error) {
@@ -615,12 +570,18 @@ async function cadastrarUnidade() {
 
 const carregarGerentes = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/funcionarios?cargo=Gerente')
-    listaGerentes.value = res.data
+    const res = await api.get('/api/Funcionario')
+    const gerentes = res.data.filter((f: any) => f.cargo?.toLowerCase() === 'gerente')
+
+    listaGerentes.value = gerentes.map((g: any) => ({
+      id: g.id,
+      nome: g.pessoa?.nome || '(Sem nome)'
+    }))
   } catch (error) {
     console.error('Erro ao carregar gerentes:', error)
   }
 }
+
 
 const pesquisarGerente = () => {
   if (gerentePesquisa.value.length < 2) {
@@ -645,6 +606,7 @@ onMounted(() => {
   carregarGerentes()
 })
 </script>
+
 
 <style>
 .list-group.position-absolute {

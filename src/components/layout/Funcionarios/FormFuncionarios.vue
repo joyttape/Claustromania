@@ -350,6 +350,7 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { Toast } from '@/components/common/toast'
+import { api } from '@/common/http'
 
 const funcionario = reactive({
   nome: '',
@@ -363,7 +364,7 @@ const funcionario = reactive({
   salarioFormatado: '',
   dataContratacao: '',
   turno: '',
-  status: null as boolean | null,
+  status: true,
 
   logradouro: '',
   numero: '',
@@ -373,7 +374,6 @@ const funcionario = reactive({
   estado: '',
   cep: '',
 })
-
 
 const cpfValido = (value: string) => {
   if (!value) return true;
@@ -504,7 +504,7 @@ function limparFormulario() {
   funcionario.salarioFormatado = ''
   funcionario.dataContratacao = ''
   funcionario.turno = ''
-  funcionario.status = null
+  funcionario.status = true
 
   funcionario.logradouro = ''
   funcionario.numero = ''
@@ -513,7 +513,6 @@ function limparFormulario() {
   funcionario.cidade = ''
   funcionario.estado = ''
   funcionario.cep = ''
-  fotoPreview.value = null
   v$.value.$reset()
 }
 
@@ -528,39 +527,43 @@ async function cadastrarFuncionario() {
     return
   }
 
+  const senhaPadrao = "Trocar@123";
+
   const dadosEnvio = {
-    id: Math.random().toString(36).substring(2, 8),
-    nome: funcionario.nome,
-    cpf: funcionario.cpf.replace(/\D/g, ''),
-    dataNascimento: funcionario.dataNascimento,
-    sexo: funcionario.sexo,
-    email: funcionario.email,
-    telefone: funcionario.telefone.replace(/\D/g, ''),
     cargo: funcionario.cargo,
     salario: funcionario.salario,
     dataContratacao: funcionario.dataContratacao,
     turno: funcionario.turno,
-    status: funcionario.status,
-
-    logradouro: funcionario.logradouro,
-    numero: funcionario.numero,
-    complemento: funcionario.complemento,
-    bairro: funcionario.bairro,
-    cidade: funcionario.cidade,
-    estado: funcionario.estado,
-    cep: funcionario.cep.replace(/\D/g, ''),
-    senha: null
+    status: funcionario.status, 
+    senha: senhaPadrao, 
+    pessoa: {
+      nome: funcionario.nome,
+      cpf: funcionario.cpf.replace(/\D/g, ''),
+      dataNascimento: funcionario.dataNascimento,
+      sexo: funcionario.sexo,
+      telefone: funcionario.telefone.replace(/\D/g, ''),
+      email: funcionario.email,
+      endereco: {
+        logradouro: funcionario.logradouro,
+        cep: funcionario.cep.replace(/\D/g, ''),
+        cidade: funcionario.cidade,
+        numero: funcionario.numero,
+        estado: funcionario.estado,
+        bairro: funcionario.bairro,
+        complemento: funcionario.complemento
+      }
+    }
   }
 
   try {
-    const response = await axios.post('http://localhost:3000/funcionarios', dadosEnvio, {
-      headers: { 'Content-Type': 'application/json' },
-    })
+    console.log('Dados enviados:', dadosEnvio)
+    const response = await api.post('/api/Funcionario', dadosEnvio)
 
     if (response.status === 201) {
       Toast.fire({
         icon: 'success',
         title: `Funcionário ${funcionario.nome} cadastrado com sucesso!`,
+        html: `Senha temporária: <strong>${senhaPadrao}</strong><br>O funcionário deverá trocá-la no primeiro login.`
       })
       limparFormulario()
       router.push('/funcionarios')
@@ -569,7 +572,8 @@ async function cadastrarFuncionario() {
     console.error('Erro ao cadastrar funcionário:', error)
     Toast.fire({
       icon: 'error',
-      title: 'Erro ao cadastrar funcionário. Veja o console para mais detalhes.',
+      title: 'Erro ao cadastrar funcionário',
+      text: error.response?.data?.message || 'Verifique os dados e tente novamente.'
     })
   }
 }

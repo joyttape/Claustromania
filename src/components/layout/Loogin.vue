@@ -50,12 +50,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
+import { api } from '@/common/http'
 
 const email = ref('')
 const senha = ref('')
-const lembrar = ref(false)
 
 const emailError = ref('')
 const senhaError = ref('')
@@ -83,10 +82,10 @@ const handleLogin = async () => {
   if (!valid) return
 
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await api.get('/api/Funcionario')
     const funcionarios = response.data
 
-    const funcionario = funcionarios.find((f: any) => f.email === email.value)
+    const funcionario = funcionarios.find((f: any) => f.pessoa?.email === email.value)
 
     if (!funcionario) {
       await Swal.fire({
@@ -133,11 +132,12 @@ const handleLogin = async () => {
       timer: 1500,
       timerProgressBar: true,
     })
-    router.push('/reservas')
 
     localStorage.setItem('cargoFuncionario', funcionario.cargo)
     localStorage.setItem('funcionarioId', funcionario.id)
-    localStorage.setItem('funcionarioNome', funcionario.nome)
+    localStorage.setItem('funcionarioNome', funcionario.pessoa?.nome)
+
+    router.push('/reservas')
 
   } catch (error) {
     console.error('Erro ao verificar login:', error)

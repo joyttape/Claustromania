@@ -76,9 +76,9 @@
                       <td>{{ caixa.nome }}</td>
                       <td>{{ formatDateTime(caixa.dataHoraAbertura) }}</td>
                       <td>{{ caixa.dataHoraFechamento ? formatDateTime(caixa.dataHoraFechamento) : '-' }}</td>
-                      <td>{{ formatCurrency(caixa.valorInicial) }}</td>
-                      <td>{{ formatCurrency(caixa.valorFinal) }}</td>
-                      <td>{{ formatCurrency(caixa.totalTransacoes) }}</td>
+                      <td>{{ formatCurrency(caixa.valorInicial ?? 0) }}</td>
+                      <td>{{ formatCurrency(caixa.valorFinal ?? 0) }}</td>
+                      <td>{{ formatCurrency(caixa.totalTransacoes ?? 0) }}</td>
                       <td>
                         <span :class="{
                           'badge bg-success': caixa.status === 'Aberto',
@@ -88,8 +88,8 @@
                           {{ caixa.status }}
                         </span>
                       </td>
-                      <td>{{ caixa.funcionario.pessoa.nome }}</td>
-                      <td>{{ caixa.unidade.nome }}</td>
+                      <td>{{ caixa.funcionario?.pessoa.nome }}</td>
+                      <td>{{ caixa.unidade?.nome }}</td>
                       <td>
                         <router-link 
                           :to="`/caixa/detalhe/${caixa.id}`" 
@@ -127,60 +127,76 @@ import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { api } from '@/common/http'
 
+enum StatusCaixa {
+  Aberto = 'Aberto',
+  Fechado = 'Fechado'
+}
+
+interface CaixaResponse {
+  id: string
+  nome?: string
+  dataHoraAbertura: string
+  dataHoraFechamento?: string | null
+  valorInicial?: number
+  valorFinal?: number
+  totalTransacoes?: number
+  status?: string
+  observacoes?: string
+  unidade?: {
+    id: string
+    nome: string
+  }
+  funcionario?: {
+    id: string
+    pessoa: {
+      nome: string
+    }
+  }
+}
+
 export default defineComponent({
   name: 'Caixas',
   data() {
     return {
-      listaCaixas: [] as Array<{
-        id: string
-        nome: string
-        dataHoraAbertura: string
-        dataHoraFechamento: string | null
-        valorInicial: number
-        valorFinal: number
-        totalTransacoes: number
-        status: string
-        observacoes: string
-        unidade: {
-          id: string
-          nome: string
-        }
-        funcionario: {
-          id: string
-          pessoa: {
-            nome: string
-          }
-        }
-      }>,
+      carregando: true,
+      listaCaixas: [] as CaixaResponse[],
       searchTerm: '',
       selectedStatus: '',
       filtroHoje: false
     }
   },
   computed: {
-    caixasFiltrados() {
-      let resultado = this.listaCaixas
+    caixasFiltrados(): CaixaResponse[] {
+      let resultado = [...this.listaCaixas]
 
       const termo = this.searchTerm.toLowerCase().trim()
-
       if (termo) {
         resultado = resultado.filter(
           (caixa) =>
             caixa.id.toLowerCase().includes(termo) ||
-            caixa.funcionario.pessoa.nome.toLowerCase().includes(termo) ||
-            caixa.nome.toLowerCase().includes(termo))
+            caixa.nome?.toLowerCase().includes(termo) ||
+            caixa.funcionario?.pessoa?.nome.toLowerCase().includes(termo)
+        )
       }
 
       if (this.selectedStatus) {
-        resultado = resultado.filter((caixa) => 
-          caixa.status.toLowerCase() === this.selectedStatus.toLowerCase())
+        resultado = resultado.filter(
+          (caixa) => caixa.status?.toLowerCase() === this.selectedStatus.toLowerCase()
+        )
       }
 
       if (this.filtroHoje) {
         const hoje = new Date().toISOString().split('T')[0]
-        resultado = resultado.filter((caixa) => 
-          caixa.dataHoraAbertura && caixa.dataHoraAbertura.startsWith(hoje))
+        resultado = resultado.filter((caixa) => {
+          const data = new Date(caixa.dataHoraAbertura).toISOString().split('T')[0]
+          return data === hoje
+        })
       }
+
+      resultado.sort(
+        (a, b) =>
+          new Date(b.dataHoraAbertura).getTime() - new Date(a.dataHoraAbertura).getTime()
+      )
 
       return resultado
     }
@@ -188,7 +204,7 @@ export default defineComponent({
   methods: {
     async buscarCaixas() {
       try {
-        const response = await api.get('/api/Caixa', {
+        const response = await api.get<CaixaResponse[]>('/api/Caixa', {
           headers: {
             'Content-Type': 'application/json',
             'ngrok-skip-browser-warning': '69420'
@@ -196,11 +212,11 @@ export default defineComponent({
         })
 
         if (response.status === 200) {
-          this.listaCaixas = response.data.map((item: any) => ({
+          this.listaCaixas = response.data.map((item) => ({
             id: item.id,
             nome: item.nome || 'Caixa sem nome',
             dataHoraAbertura: item.dataHoraAbertura,
-            dataHoraFechamento: item.dataHoraFechamento,
+            dataHoraFechamento: item.dataHoraFechamento || null,
             valorInicial: item.valorInicial || 0,
             valorFinal: item.valorFinal || 0,
             totalTransacoes: item.totalTransacoes || 0,
@@ -212,14 +228,14 @@ export default defineComponent({
         }
       } catch (error) {
         console.error('Erro ao buscar caixas:', error)
+      } finally {
+        this.carregando = false
       }
     },
 
-    determinarStatusCaixa(caixa: any): string {
-      if (!caixa.dataHoraFechamento || caixa.dataHoraFechamento === null) {
-        return 'Aberto'
-      }
-      return caixa.status || 'Fechado'
+    determinarStatusCaixa(caixa: CaixaResponse): string {
+      if (!caixa.dataHoraFechamento) return StatusCaixa.Aberto
+      return caixa.status || StatusCaixa.Fechado
     },
 
     formatDateTime(dateTimeString: string): string {

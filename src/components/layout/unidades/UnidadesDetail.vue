@@ -81,7 +81,6 @@
                       </div>
                     </div>
 
-                    <!-- Campo Gerente com autocomplete -->
                     <div class="row mb-3">
                       <div class="col-md-6 position-relative">
                         <label for="gerente" class="form-label">Gerente</label>
@@ -91,7 +90,7 @@
                             class="form-control"
                             v-model="gerentePesquisa"
                             @input="pesquisarGerente"
-                            @focus="mostrarSugestoesGerente = gerentesFiltrados.length > 0"
+                            @focus="onFocusGerente"
                             @blur="onBlurGerente"
                             :class="{ 'is-invalid': v$.gerente_id.$error }"
                             autocomplete="off"
@@ -120,8 +119,8 @@
                       <div class="col-md-4">
                         <label class="form-label">Status</label>
                         <div class="form-check mt-2">
-                          <input class="form-check-input" type="checkbox" id="status" v-model="unidade.status" />
-                          <label class="form-check-label" for="status">Unidade ativa</label>
+                          <input class="form-check-input" type="checkbox" id="status" v-model="unidade.ativa" />
+                          <label class="form-check-label" for="ativa">Unidade ativa</label>
                         </div>
                       </div>
 
@@ -326,22 +325,23 @@ import Swal from 'sweetalert2'
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
+import { api } from '@/common/http'
 
 const route = useRoute()
 const router = useRouter()
 const unidadeId = route.params.id as string
 
-const listaGerentes = ref<Array<{ id: number; nome: string }>>([])
-const gerentesFiltrados = ref<Array<{ id: number; nome: string }>>([])
+const listaGerentes = ref<Array<{ id: string; nome: string }>>([])
+const gerentesFiltrados = ref<Array<{ id: string; nome: string }>>([])
 const gerentePesquisa = ref('')
-const mostrarSugestoesGerente = ref(false)
 
+const mostrarSugestoesGerente = ref(false)
 
 const unidade = reactive({
   nome: '',
   cnpj: '',
   telefone: '',
-  status: false,
+  ativa: false,
   capacidade: '',
   diasFuncionamento: '',
   horarioAbertura: '',
@@ -353,84 +353,61 @@ const unidade = reactive({
   cidade: '',
   estado: '',
   cep: '',
-  gerente_id: null as number | null,
+  gerente_id: null as string | null,
   gerente_nome: ''
 })
 
-const fotoPreview = ref<string | null>(null)
-
 const cnpjValido = (value: string) => {
-  if (!value) return true;
-  
-  const cnpj = value.replace(/\D/g, '');
-  
-  if (cnpj.length !== 14) return false;
-  
-  if (/^(\d)\1{13}$/.test(cnpj)) return false;
-  
-  let tamanho = cnpj.length - 2;
-  let numeros = cnpj.substring(0, tamanho);
-  let digitos = cnpj.substring(tamanho);
-  let soma = 0;
-  let pos = tamanho - 7;
-  
+  if (!value) return true
+  const cnpj = value.replace(/\D/g, '')
+  if (cnpj.length !== 14) return false
+  if (/^(\d)\1{13}$/.test(cnpj)) return false
+
+  let tamanho = cnpj.length - 2
+  let numeros = cnpj.substring(0, tamanho)
+  let digitos = cnpj.substring(tamanho)
+  let soma = 0
+  let pos = tamanho - 7
+
   for (let i = tamanho; i >= 1; i--) {
-    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-    if (pos < 2) pos = 9;
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--
+    if (pos < 2) pos = 9
   }
-  
-  let resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-  if (resultado !== parseInt(digitos.charAt(0))) return false;
-  
-  tamanho = tamanho + 1;
-  numeros = cnpj.substring(0, tamanho);
-  soma = 0;
-  pos = tamanho - 7;
-  
+  let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  if (resultado !== parseInt(digitos.charAt(0))) return false
+
+  tamanho = tamanho + 1
+  numeros = cnpj.substring(0, tamanho)
+  soma = 0
+  pos = tamanho - 7
+
   for (let i = tamanho; i >= 1; i--) {
-    soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
-    if (pos < 2) pos = 9;
+    soma += parseInt(numeros.charAt(tamanho - i)) * pos--
+    if (pos < 2) pos = 9
   }
-  
-  resultado = soma % 11 < 2 ? 0 : 11 - soma % 11;
-  if (resultado !== parseInt(digitos.charAt(1))) return false;
-  
-  return true;
-};
+  resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11)
+  if (resultado !== parseInt(digitos.charAt(1))) return false
+
+  return true
+}
 
 const telefoneValido = (value: string) => {
-  if (!value) return true;
-  
-  const telefone = value.replace(/\D/g, '');
-  
-  return telefone.length === 10 || telefone.length === 11;
-};
+  if (!value) return true
+  const telefone = value.replace(/\D/g, '')
+  return telefone.length === 10 || telefone.length === 11
+}
 
 const cepValido = (value: string) => {
-  if (!value) return true;
-  
-  const cep = value.replace(/\D/g, '');
-  
-  return cep.length === 8;
-};
+  if (!value) return true
+  const cep = value.replace(/\D/g, '')
+  return cep.length === 8
+}
 
 const rules = {
-  nome: {
-    required,
-    minLength: minLength(3)
-  },
-  cnpj: {
-    required,
-    cnpjValido
-  },
-  telefone: {
-    required,
-    telefoneValido
-  },
-  diasFuncionamento: {
-    required,
-    minLength: minLength(3)
-  },
+  nome: { required, minLength: minLength(3) },
+  cnpj: { required, cnpjValido },
+  telefone: { required, telefoneValido },
+  diasFuncionamento: { required, minLength: minLength(3) },
   horarioAbertura: { required },
   horarioFechamento: {
     required,
@@ -444,35 +421,21 @@ const rules = {
   bairro: { required },
   cidade: { required },
   estado: { required },
-  cep: {
-    required,
-    cepValido
-  },
-  capacidade: {
-    numeric
-  },
-  gerente_id: {
-    required
-  }
+  cep: { required, cepValido },
+  capacidade: { numeric },
+  gerente_id: { required }
 }
-const onBlurGerente = (event: FocusEvent) => {
-  const relatedTarget = event.relatedTarget as HTMLElement | null
-  if (
-    relatedTarget &&
-    relatedTarget.classList.contains('list-group-item')
-  ) {
-    return
-  }
-  mostrarSugestoesGerente.value = false
-}
-
 
 const v$ = useVuelidate(rules, unidade)
 
 const carregarGerentes = async () => {
   try {
-    const res = await axios.get('http://localhost:3000/funcionarios?cargo=Gerente')
-    listaGerentes.value = res.data
+    const res = await api.get('/api/Funcionario')
+    const gerentes = res.data.filter((f: any) => f.cargo?.toLowerCase() === 'gerente')
+    listaGerentes.value = gerentes.map((g: any) => ({
+      id: g.id,
+      nome: g.pessoa?.nome || '(Sem nome)'
+    }))
   } catch (error) {
     console.error('Erro ao carregar gerentes:', error)
   }
@@ -481,115 +444,123 @@ const carregarGerentes = async () => {
 const pesquisarGerente = () => {
   if (gerentePesquisa.value.length < 2) {
     gerentesFiltrados.value = []
-    mostrarSugestoesGerente.value = false
     return
   }
   const texto = gerentePesquisa.value.toLowerCase()
-  gerentesFiltrados.value = listaGerentes.value.filter((g) =>
-    g.nome.toLowerCase().includes(texto)
-  )
-  mostrarSugestoesGerente.value = gerentesFiltrados.value.length > 0
+  gerentesFiltrados.value = listaGerentes.value.filter(g => g.nome.toLowerCase().includes(texto))
 }
 
-const selecionarGerente = (gerente: { id: number; nome: string }) => {
+const selecionarGerente = (gerente: { id: string; nome: string }) => {
+  if (!gerente) return
+  
   unidade.gerente_id = gerente.id
   unidade.gerente_nome = gerente.nome
   gerentePesquisa.value = gerente.nome
   mostrarSugestoesGerente.value = false
 }
 
+const onBlurGerente = (event: FocusEvent) => {
+  const relatedTarget = event.relatedTarget as HTMLElement | null
+  if (relatedTarget && relatedTarget.classList.contains('list-group-item')) return
+  mostrarSugestoesGerente.value = false
+}
+
 const formatarCNPJ = (value: string) => {
-  if (!value) return '';
-  let v = value.replace(/\D/g, '');
-  if (v.length === 0) return '';
-  
-  v = v.replace(/^(\d{2})(\d)/, '$1.$2');
-  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
-  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
-  v = v.replace(/(\d{4})(\d)/, '$1-$2');
-  return v;
-};
+  if (!value) return ''
+  let v = value.replace(/\D/g, '')
+  if (v.length === 0) return ''
+  v = v.replace(/^(\d{2})(\d)/, '$1.$2')
+  v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
+  v = v.replace(/\.(\d{3})(\d)/, '.$1/$2')
+  v = v.replace(/(\d{4})(\d)/, '$1-$2')
+  return v
+}
 
 const formatarTelefone = (value: string) => {
-  if (!value) return '';
-  let v = value.replace(/\D/g, '');
-  if (v.length === 0) return '';
-  
+  if (!value) return ''
+  let v = value.replace(/\D/g, '')
+  if (v.length === 0) return ''
   if (v.length > 10) {
-    v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+    v = v.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3')
   } else {
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3')
   }
-  return v;
-};
+  return v
+}
 
 const formatarCEP = (value: string) => {
-  if (!value) return '';
-  let v = value.replace(/\D/g, '');
-  if (v.length === 0) return '';
-  
+  if (!value) return ''
+  let v = value.replace(/\D/g, '')
+  if (v.length === 0) return ''
   if (v.length >= 5) {
-    v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+    v = v.replace(/^(\d{5})(\d)/, '$1-$2')
   }
-  return v;
-};
+  return v
+}
 
 const aplicarMascaraCNPJ = () => {
-  unidade.cnpj = formatarCNPJ(unidade.cnpj);
-};
+  unidade.cnpj = formatarCNPJ(unidade.cnpj)
+}
 
 const aplicarMascaraTelefone = () => {
-  unidade.telefone = formatarTelefone(unidade.telefone);
-};
+  unidade.telefone = formatarTelefone(unidade.telefone)
+}
 
 const aplicarMascaraCEP = () => {
-  unidade.cep = formatarCEP(unidade.cep);
-};
+  unidade.cep = formatarCEP(unidade.cep)
+}
+
+const formatarHorario = (horario: string) => {
+  if (!horario) return null
+  return horario.length === 5 ? horario + ':00' : horario
+}
 
 const carregarUnidade = async () => {
   try {
-    const response = await axios.get(`http://localhost:3000/unidades/${unidadeId}`)
+    // Garante que os gerentes foram carregados primeiro
+    if (listaGerentes.value.length === 0) {
+      await carregarGerentes()
+    }
+
+    const response = await api.get(`/api/Unidade/${unidadeId}`)
     const dados = response.data
 
     const obterCEP = (dados: any) => {
-      const cepRaw = dados.cep || dados.endereco?.cep || '';
-      
-      if (!cepRaw) return '';
-      
-      const cepLimpo = String(cepRaw).replace(/\D/g, '');
-      
-      if (cepLimpo.length !== 8) return '';
-      
-      return formatarCEP(cepLimpo);
-    };
+      const cepRaw = dados.cep || dados.endereco?.cep || ''
+      if (!cepRaw) return ''
+      const cepLimpo = String(cepRaw).replace(/\D/g, '')
+      if (cepLimpo.length !== 8) return ''
+      return formatarCEP(cepLimpo)
+    }
 
     Object.assign(unidade, {
       nome: dados.nome || '',
-      cnpj: formatarCNPJ(dados.cnpj || '') || '', 
-      telefone: formatarTelefone(dados.telefone || '') || '', 
-      status: dados.status || false,
+      cnpj: formatarCNPJ(dados.cnpj || ''),
+      telefone: formatarTelefone(dados.telefone || ''),
+      ativa: dados.ativa || false,
       capacidade: dados.capacidade || '',
-      diasFuncionamento: dados.diasFuncionamento || '',
-      horarioAbertura: dados.horarioAbertura || '',
-      horarioFechamento: dados.horarioFechamento || '',
-      logradouro: dados.logradouro || dados.endereco?.logradouro || '',
-      numero: dados.numero || dados.endereco?.numero || '',
-      complemento: dados.complemento || dados.endereco?.complemento || '',
-      bairro: dados.bairro || dados.endereco?.bairro || '',
-      cidade: dados.cidade || dados.endereco?.cidade || '',
-      estado: dados.estado || dados.endereco?.estado || '',
+      diasFuncionamento: dados.diaFunci || '',
+      horarioAbertura: dados.horarioAbertura ? dados.horarioAbertura.slice(0, 5) : '',
+      horarioFechamento: dados.horarioFechamento ? dados.horarioFechamento.slice(0, 5) : '',
+      logradouro: dados.endereco?.logradouro || '',
+      numero: dados.endereco?.numero || '',
+      complemento: dados.endereco?.complemento || '',
+      bairro: dados.endereco?.bairro || '',
+      cidade: dados.endereco?.cidade || '',
+      estado: dados.endereco?.estado || '',
       cep: obterCEP(dados),
-      gerente_id: dados.gerente_id || null,
-      gerente_nome: '',
+      gerente_id: dados.funcionario?.id || null,
+      gerente_nome: dados.funcionario?.pessoa?.nome || ''
     })
 
     if (unidade.gerente_id) {
-      try {
-        const gerenteRes = await axios.get(`http://localhost:3000/funcionarios/${unidade.gerente_id}`)
-        unidade.gerente_nome = gerenteRes.data.nome
-        gerentePesquisa.value = gerenteRes.data.nome
-      } catch (error) {
-        console.error('Erro ao carregar gerente:', error)
+      const gerenteIdStr = String(unidade.gerente_id)
+      const gerente = listaGerentes.value.find(g => String(g.id) === gerenteIdStr)
+      
+      if (gerente) {
+        gerentePesquisa.value = gerente.nome
+      } else if (unidade.gerente_nome) {
+        gerentePesquisa.value = unidade.gerente_nome
       }
     }
 
@@ -605,7 +576,6 @@ const carregarUnidade = async () => {
 
 const salvarAlteracoes = async () => {
   const isValid = await v$.value.$validate()
-
   if (!isValid) {
     Swal.fire({
       icon: 'error',
@@ -614,33 +584,32 @@ const salvarAlteracoes = async () => {
     return
   }
 
-  const cnpjLimpo = unidade.cnpj.replace(/\D/g, '')
-  const telefoneLimpo = unidade.telefone.replace(/\D/g, '')
-  const cepLimpo = unidade.cep.replace(/\D/g, '')
-
   const dadosEnvio = {
     nome: unidade.nome,
-    cnpj: cnpjLimpo,
-    telefone: telefoneLimpo,
-    status: unidade.status,
-    capacidade: unidade.capacidade || 0,
-    diasFuncionamento: unidade.diasFuncionamento,
-    horarioAbertura: unidade.horarioAbertura,
-    horarioFechamento: unidade.horarioFechamento,
+    capacidade: Number(unidade.capacidade) || 0,
+    horarioAbertura: unidade.horarioAbertura ? unidade.horarioAbertura + ':00' : '00:00:00',
+    horarioFechamento: unidade.horarioFechamento ? unidade.horarioFechamento + ':00' : '00:00:00',
+    telefone: unidade.telefone.replace(/\D/g, ''),
+    cnpj: unidade.cnpj.replace(/\D/g, ''),
+    diaFunci: unidade.diasFuncionamento,
+    ativa: unidade.ativa,
+    fkFuncionario: unidade.gerente_id,
     endereco: {
+      id: unidadeId, 
       logradouro: unidade.logradouro,
-      numero: unidade.numero,
-      complemento: unidade.complemento || '',
-      bairro: unidade.bairro,
+      cep: unidade.cep.replace(/\D/g, ''),
       cidade: unidade.cidade,
+      numero: unidade.numero,
       estado: unidade.estado,
-      cep: cepLimpo
-    },
-    gerente_id: unidade.gerente_id,
+      bairro: unidade.bairro,
+      complemento: unidade.complemento || ''
+    }
   }
 
   try {
-    await axios.put(`http://localhost:3000/unidades/${unidadeId}`, dadosEnvio)
+    console.log('Dados sendo enviados:', JSON.stringify(dadosEnvio, null, 2))
+    const response = await api.put(`/api/Unidade/${unidadeId}`, dadosEnvio)
+    
     await Swal.fire({
       icon: 'success',
       title: 'Salvo com sucesso!',
@@ -649,58 +618,82 @@ const salvarAlteracoes = async () => {
     })
     router.push('/unidades')
   } catch (error) {
-    console.error('Erro ao salvar unidade:', error)
+    console.error('Erro completo:', {
+      error: error,
+      request: error.config?.data,
+      response: error.response?.data
+    })
+    
+    let errorMessage = 'Erro ao salvar. Tente novamente.'
+    if (error.response?.data) {
+      errorMessage = error.response.data.title || JSON.stringify(error.response.data.errors)
+    }
+
     Swal.fire({
       icon: 'error',
-      title: 'Erro ao salvar!',
-      text: 'Tente novamente mais tarde.'
+      title: 'Erro!',
+      html: `<div>${errorMessage}</div>`,
+      footer: 'Verifique o console para detalhes'
     })
   }
 }
 
 const excluirUnidade = async () => {
   const resultado = await Swal.fire({
-    title: 'Tem certeza?',
-    text: 'Esta ação não pode ser desfeita.',
+    title: 'Excluir Unidade?',
+    text: 'Tem certeza que deseja excluir esta unidade?',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#aaa',
     confirmButtonText: 'Sim, excluir',
     cancelButtonText: 'Cancelar'
   })
 
   if (resultado.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3000/unidades/${unidadeId}`)
-      await Swal.fire({
-        icon: 'success',
-        title: 'Excluído com sucesso!',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'OK'
-      })
+      await api.delete(`/api/Unidade/${unidadeId}`)
+      await Swal.fire('Excluído!', 'Unidade excluída com sucesso.', 'success')
       router.push('/unidades')
     } catch (error) {
       console.error('Erro ao excluir unidade:', error)
       Swal.fire({
         icon: 'error',
-        title: 'Erro ao excluir!',
-        text: 'Tente novamente mais tarde.'
+        title: 'Erro ao excluir',
+        text: 'Não foi possível excluir. Tente novamente mais tarde.'
       })
     }
   }
 }
 
-onMounted(() => {
-  carregarGerentes()
-  carregarUnidade()
+onMounted(async () => {
+  try {
+    await carregarUnidade()
+    
+    console.log('Unidade carregada:', {
+      ...unidade,
+      gerente_id: unidade.gerente_id,
+      gerente_nome: unidade.gerente_nome
+    })
+    console.log('Lista de gerentes:', listaGerentes.value)
 
-  const script = document.createElement('script')
-  script.src = '/src/components/js/maincode.js'
-  script.async = true
-  document.body.appendChild(script)
+    const script = document.createElement('script')
+    script.src = '/src/components/js/maincode.js'
+    script.async = true
+    document.body.appendChild(script)
+
+    const spinner = document.getElementById('spinner')
+    if (spinner) spinner.classList.remove('show')
+  } catch (error) {
+    console.error('Erro ao inicializar:', error)
+  }
 })
+
+const onFocusGerente = () => {
+  mostrarSugestoesGerente.value = true
+  pesquisarGerente()
+}
+
 </script>
+
 
 <style>
 .list-group.position-absolute {

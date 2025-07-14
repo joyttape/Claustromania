@@ -24,6 +24,7 @@ import JogosDetail from '@/components/layout/Jogos/JogosDetail.vue'
 import Caixa from '@/components/layout/Caixa/Caixa.vue'
 import FormCaixa from '@/components/layout/Caixa/FormCaixa.vue'
 import CaixaDetail from '@/components/layout/Caixa/CaixaDetail.vue'
+import TransacaoFeita from '@/components/layout/Reservas/TransacaoFeita.vue'
 
 import { Form } from 'react-router-dom'
 
@@ -159,7 +160,12 @@ const router = createRouter({
       path: '/caixa/detalhe/:id',
       name: 'CaixaDetalhe',
       component: CaixaDetail
-    }
+    },
+    {
+      path: '/reservas/transacaofeita/:id',
+      name: "TransacaoFeita",
+      component: TransacaoFeita
+    },
   ]
 })
 

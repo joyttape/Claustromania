@@ -63,8 +63,8 @@
 <script lang="ts" setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
 import Swal from 'sweetalert2'
+import { api } from '@/common/http'
 
 const router = useRouter()
 const route = useRoute()
@@ -72,7 +72,6 @@ const route = useRoute()
 const username = ref('')
 const email = ref('')
 const senha = ref('')
-const lembrar = ref(false)
 
 const senhaError = ref('')
 
@@ -86,12 +85,12 @@ onMounted(() => {
 
 const buscarFuncionario = async (emailProcurado: string) => {
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
+    const response = await api.get('/api/Funcionario')
     const funcionarios = response.data
-    const funcionario = funcionarios.find((f: any) => f.email === emailProcurado)
+    const funcionario = funcionarios.find((f: any) => f.pessoa?.email === emailProcurado)
 
     if (funcionario) {
-      username.value = funcionario.nome || ''
+      username.value = funcionario.pessoa?.nome || ''
     } else {
       Swal.fire({
         icon: 'error',
@@ -119,8 +118,8 @@ const handleSignUp = async () => {
   }
 
   try {
-    const response = await axios.get('http://localhost:3000/funcionarios')
-    const funcionario = response.data.find((f: any) => f.email === email.value)
+    const response = await api.get('/api/Funcionario')
+    const funcionario = response.data.find((f: any) => f.pessoa?.email === email.value)
 
     if (!funcionario) {
       Swal.fire({
@@ -131,9 +130,12 @@ const handleSignUp = async () => {
       return
     }
 
-    await axios.patch(`http://localhost:3000/funcionarios/${funcionario.id}`, {
-      senha: senha.value,
-    })
+    const funcionarioAtualizado = {
+      ...funcionario,
+      senha: senha.value
+    }
+
+    await api.put(`/api/Funcionario/${funcionario.id}`, funcionarioAtualizado)
 
     Swal.fire({
       icon: 'success',
@@ -144,7 +146,6 @@ const handleSignUp = async () => {
       router.push('/')
     })
   } catch (error) {
-    console.error('Erro ao salvar senha:', error)
     Swal.fire({
       icon: 'error',
       title: 'Erro ao salvar',
@@ -152,6 +153,7 @@ const handleSignUp = async () => {
     })
   }
 }
+
 </script>
 
 <style scoped>

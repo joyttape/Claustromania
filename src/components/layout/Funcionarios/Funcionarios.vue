@@ -211,7 +211,7 @@ export default defineComponent({
             salario: item.salario || 0,
             dataContratacao: item.dataContratacao || '',
             turno: item.turno || '',
-            status: true 
+            status: Boolean(item.status)
           }))
         }
       } catch (error) {
