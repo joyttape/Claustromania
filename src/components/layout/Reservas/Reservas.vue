@@ -150,7 +150,7 @@
                 :to="`/reservas/transacao/${reserva.id}`" 
                 class="btn btn-sm btn-success enhanced-btn-sm"
               >
-                <i class="fa fa-credit-card me-1"></i>Comprovante
+                <i class="fa fa-credit-card me-1"></i>Pagamento
               </router-link>
 
               <router-link

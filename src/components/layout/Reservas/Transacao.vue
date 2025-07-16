@@ -88,7 +88,7 @@
                 </div>
               </div>
 
-              <div v-if="reserva.forma_pagamento === 'dinheiro'" class="row mb-3">
+              <div v-if="reserva.forma_pagamento === 'Dinheiro'" class="row mb-3">
                 <div class="col-md-4">
                   <label>Valor Recebido</label>
                   <input
@@ -99,7 +99,6 @@
                     required
                     :min="reserva.valor_total"
                     step="0.01"
-                    @input="validarValorRecebido"
                   />
                   <div v-if="!validacao.valor_recebido" class="invalid-feedback">
                     O valor recebido não pode ser menor que o valor total da reserva.
@@ -152,7 +151,8 @@ const reserva = reactive({
   horaReserva: '',
   numeroJogadores: 0,
   observacoes: '',
-  fkSalaJogo: ''
+  fkSalaJogo: '',
+  fkUnidade: ''
 })
 
 const transacao = reactive({
@@ -179,6 +179,9 @@ const validacao = reactive({
   valor_recebido: true
 })
 
+const listaSalaJogo = ref<any[]>([])
+const listaSalas = ref<any[]>([])
+
 const troco = computed(() => {
   if (reserva.forma_pagamento.toLowerCase() !== 'dinheiro') return 0
   const recebido = transacao.valor_recebido || 0
@@ -195,17 +198,11 @@ const carregarNomeCliente = async (clienteId: string) => {
   if (!clienteId) return 'Cliente não informado'
   try {
     const res = await api.get(`/api/Cliente/${clienteId}`)
-
     reserva.fkPessoa = res.data.fkPessoa || res.data.pessoaId || ''
-
-    return res.data.nome ||
-           res.data.pessoa?.nome ||
-           res.data.clienteNome ||
-           res.data.nomeCompleto ||
-           `Cliente (ID: ${clienteId.slice(0, 8)}...)`
+    return res.data.nome || res.data.pessoa?.nome || res.data.clienteNome || res.data.nomeCompleto
   } catch (error) {
-    console.error(`Erro ao carregar cliente ${clienteId}:`, error)
-    return `Cliente (ID: ${clienteId.slice(0, 8)}...)`
+    console.error('Erro ao carregar cliente:', error)
+    return 'Erro ao carregar'
   }
 }
 
@@ -213,15 +210,20 @@ const carregarNomeFuncionario = async (funcionarioId: string) => {
   if (!funcionarioId) return 'Operador não definido'
   try {
     const res = await api.get(`/api/Funcionario/${funcionarioId}`)
-    return res.data.nome ||
-           res.data.pessoa?.nome ||
-           res.data.funcionarioNome ||
-           res.data.nomeCompleto ||
-           `Operador (ID: ${funcionarioId.slice(0, 8)}...)`
+    return res.data.nome || res.data.pessoa?.nome || res.data.funcionarioNome || res.data.nomeCompleto
   } catch (error) {
-    console.error(`Erro ao carregar funcionário ${funcionarioId}:`, error)
-    return `Operador (ID: ${funcionarioId.slice(0, 8)}...)`
+    return 'Erro ao carregar operador'
   }
+}
+
+const carregarSalaJogo = async () => {
+  const res = await api.get('/api/SalaJogo')
+  listaSalaJogo.value = res.data
+}
+
+const carregarSalas = async () => {
+  const res = await api.get('/api/Sala')
+  listaSalas.value = res.data
 }
 
 const carregarReserva = async () => {
@@ -239,6 +241,16 @@ const carregarReserva = async () => {
     reserva.numeroJogadores = r.numeroJogadores || 0
     reserva.observacoes = r.observacoes || ''
     reserva.fkSalaJogo = r.fkSalaJogo || ''
+
+    await Promise.all([carregarSalaJogo(), carregarSalas()])
+    const salaJogo = listaSalaJogo.value.find(sj => sj.id === reserva.fkSalaJogo)
+    if (salaJogo) {
+      const sala = listaSalas.value.find(s => s.id === salaJogo.fkSala)
+      if (sala) {
+        reserva.fkUnidade = sala.fkUnidade
+      }
+    }
+
   } catch (error) {
     console.error('Erro ao carregar reserva:', error)
     Swal.fire('Erro', 'Falha ao carregar os dados da reserva.', 'error')
@@ -253,9 +265,7 @@ const processarCaixas = async (caixas: any[]) => {
     caixas.map(async (caixa) => {
       let nomeOperador = 'Operador não definido'
       const funcionarioId = caixa.funcionarioId || caixa.fkFuncionario || caixa.responsavelId || caixa.usuarioId
-      if (funcionarioId) {
-        nomeOperador = await carregarNomeFuncionario(funcionarioId)
-      }
+      if (funcionarioId) nomeOperador = await carregarNomeFuncionario(funcionarioId)
       return {
         id: caixa.id,
         nomeFormatado: `ID: ${caixa.id} - ${nomeOperador}`
@@ -269,9 +279,11 @@ const carregarCaixasAbertos = async () => {
     loading.value.caixas = true
     const res = await api.get('/api/Caixa/resumido')
     const caixasFiltrados = res.data.filter((c: any) =>
-      c.status?.toLowerCase() === 'aberto' || c.estaAberto === true
+      (c.status?.toLowerCase() === 'aberto' || c.estaAberto === true) &&
+      c.fkUnidade === reserva.fkUnidade
     )
     caixasAbertos.value = await processarCaixas(caixasFiltrados)
+    console.log('Caixas abertos:', caixasFiltrados)  // <-- Veja o totalTransacoes aqui
   } catch (error) {
     console.error('Erro ao carregar caixas abertos:', error)
     Swal.fire('Erro', 'Falha ao carregar a lista de caixas abertos.', 'error')
@@ -283,18 +295,10 @@ const carregarCaixasAbertos = async () => {
 const validarCampos = () => {
   validacao.caixa_id = transacao.FkCaixa !== ''
   validacao.pagador = transacao.pagador.trim() !== ''
-  if (reserva.forma_pagamento.toLowerCase() === 'dinheiro') {
-    validacao.valor_recebido = transacao.valor_recebido >= reserva.valor_total
-  } else {
-    validacao.valor_recebido = true
-  }
+  validacao.valor_recebido =
+    reserva.forma_pagamento.toLowerCase() !== 'dinheiro' ||
+    transacao.valor_recebido >= reserva.valor_total
   return validacao.caixa_id && validacao.pagador && validacao.valor_recebido
-}
-
-const validarValorRecebido = () => {
-  if (reserva.forma_pagamento.toLowerCase() === 'dinheiro') {
-    validacao.valor_recebido = transacao.valor_recebido >= reserva.valor_total
-  }
 }
 
 const registrarTransacao = async () => {
@@ -304,26 +308,6 @@ const registrarTransacao = async () => {
   }
 
   try {
-    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reservaId)) {
-      throw new Error('ID da reserva inválido')
-    }
-    if (!transacao.FkCaixa || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(transacao.FkCaixa)) {
-      throw new Error('Selecione um caixa válido')
-    }
-
-    const payloadReserva = {
-      id: reservaId,
-      dataReserva: reserva.dataReserva,
-      horaReserva: reserva.horaReserva,
-      numeroJogadores: reserva.numeroJogadores,
-      valorTotal: reserva.valor_total,
-      status: 'CONFIRMADO',
-      observacoes: reserva.observacoes,
-      formaPagamento: reserva.forma_pagamento,
-      fkCliente: reserva.fkCliente,
-      fkSalaJogo: reserva.fkSalaJogo
-    }
-
     const payloadTransacao = {
       valor: reserva.valor_total,
       data: new Date().toISOString(),
@@ -339,39 +323,38 @@ const registrarTransacao = async () => {
       FkReserva: reservaId
     }
 
-    console.log('Payload da reserva:', JSON.stringify(payloadReserva, null, 2))
-    console.log('Payload da transação:', JSON.stringify(payloadTransacao, null, 2))
+    const payloadReserva = {
+      id: reservaId,
+      dataReserva: reserva.dataReserva,
+      horaReserva: reserva.horaReserva,
+      numeroJogadores: reserva.numeroJogadores,
+      valorTotal: reserva.valor_total,
+      status: 'CONFIRMADO',
+      observacoes: reserva.observacoes,
+      formaPagamento: reserva.forma_pagamento,
+      fkCliente: reserva.fkCliente,
+      fkSalaJogo: reserva.fkSalaJogo
+    }
 
-    const responseTransacao = await api.post('/api/Transacao', payloadTransacao)
-    console.log('Transação criada:', responseTransacao.data)
-
-    const responseReserva = await api.put(`/api/Reserva/${reservaId}`, payloadReserva)
-    console.log('Reserva atualizada:', responseReserva.data)
+    await api.post('/api/Transacao', payloadTransacao)
+    await api.put(`/api/Reserva/${reservaId}`, payloadReserva)
 
     Swal.fire('Sucesso!', 'Operação concluída com sucesso', 'success')
       .then(() => router.push('/reservas'))
 
   } catch (error) {
-    console.error('Erro completo:', error)
-
-    let errorMessage = 'Falha na operação'
-    if (error.response?.data) {
-      errorMessage = typeof error.response.data === 'string'
-        ? error.response.data
-        : JSON.stringify(error.response.data, null, 2)
-    } else if (error.message) {
-      errorMessage = error.message
-    }
-
+    let errorMessage = error?.response?.data || error.message || 'Erro desconhecido'
     Swal.fire('Erro', errorMessage, 'error')
   }
 }
 
 onMounted(async () => {
-  await Promise.all([carregarReserva(), carregarCaixasAbertos()])
+  await carregarReserva()
+  await carregarCaixasAbertos()
   document.getElementById('spinner')?.classList.remove('show')
 })
 </script>
+
 
 
 
