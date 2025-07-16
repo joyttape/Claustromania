@@ -15,7 +15,6 @@
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <!-- Cards de Estatísticas com Canvas -->
           <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
               <div class="card stats-card bg-primary">
@@ -74,7 +73,6 @@
             </div>
           </div>
 
-          <!-- Gráficos de Análise -->
           <div class="row mb-4">
             <div class="col-xl-8 col-lg-7">
               <div class="card bg-secondary">
@@ -115,7 +113,6 @@
               </router-link>
             </div>
 
-            <!-- Indicadores Visuais de Filtros -->
             <div class="filter-indicators mb-3" v-if="searchTerm || selectedDificuldade !== '' || ordemAlfabetica">
               <div class="d-flex flex-wrap gap-2">
                 <span v-if="searchTerm" class="badge bg-info">
@@ -371,7 +368,6 @@ export default defineComponent({
             Preco: item.preco || 0
           }))
 
-          // Desenhar gráficos após carregar os dados
           this.$nextTick(() => {
             this.drawAllCharts()
           })
@@ -434,13 +430,11 @@ export default defineComponent({
     },
 
     drawStatsIcons() {
-      // Ícone para Total de Jogos
       const totalCanvas = this.$refs.totalCanvas as HTMLCanvasElement
       if (totalCanvas) {
         const ctx = totalCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar um gamepad
         ctx.fillRect(15, 25, 30, 15)
         ctx.fillRect(10, 30, 10, 5)
         ctx.fillRect(40, 30, 10, 5)
@@ -452,13 +446,11 @@ export default defineComponent({
         ctx.fill()
       }
 
-      // Ícone para Jogos Fáceis
       const faceisCanvas = this.$refs.faceisCanvas as HTMLCanvasElement
       if (faceisCanvas) {
         const ctx = faceisCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar uma estrela
         ctx.beginPath()
         ctx.moveTo(30, 10)
         ctx.lineTo(35, 20)
@@ -474,26 +466,22 @@ export default defineComponent({
         ctx.fill()
       }
 
-      // Ícone para Preço Médio
       const precoCanvas = this.$refs.precoCanvas as HTMLCanvasElement
       if (precoCanvas) {
         const ctx = precoCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar símbolo de dinheiro
         ctx.font = '24px Arial'
         ctx.textAlign = 'center'
         ctx.fillText('$', 30, 37)
       }
 
-      // Ícone para Duração Média
       const duracaoCanvas = this.$refs.duracaoCanvas as HTMLCanvasElement
       if (duracaoCanvas) {
         const ctx = duracaoCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
         ctx.lineWidth = 3
-        // Desenhar relógio
         ctx.beginPath()
         ctx.arc(30, 30, 18, 0, 2 * Math.PI)
         ctx.stroke()
@@ -762,10 +750,11 @@ export default defineComponent({
 }
 
 .description-text {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  max-width: 250px;
+  word-wrap: break-word;
+  white-space: normal;
+  line-height: 1.4;
+  display: block;
 }
 
 .duration-container {
@@ -967,7 +956,7 @@ export default defineComponent({
   }
 
   .description-text {
-    max-width: 150px;
+    max-width: 200px;
   }
 }
 </style>

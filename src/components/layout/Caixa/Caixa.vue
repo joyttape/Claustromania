@@ -15,7 +15,6 @@
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <!-- Cards de Estatísticas com Canvas -->
           <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
               <div class="card stats-card bg-primary">
@@ -74,7 +73,6 @@
             </div>
           </div>
 
-          <!-- Gráficos de Análise -->
           <div class="row mb-4">
             <div class="col-xl-8 col-lg-7">
               <div class="card bg-secondary">
@@ -115,7 +113,6 @@
               </router-link>
             </div>
 
-            <!-- Indicadores Visuais de Filtros -->
             <div class="filter-indicators mb-3" v-if="searchTerm || selectedStatus || filtroHoje">
               <div class="d-flex flex-wrap gap-2">
                 <span v-if="searchTerm" class="badge bg-info">
@@ -442,7 +439,6 @@ export default defineComponent({
             funcionario: item.funcionario || { id: '', pessoa: { nome: 'N/A' } }
           }))
 
-          // Desenhar gráficos após carregar os dados
           this.$nextTick(() => {
             this.drawAllCharts()
           })
@@ -509,13 +505,11 @@ export default defineComponent({
     },
 
     drawStatsIcons() {
-      // Ícone para Total de Caixas
       const totalCanvas = this.$refs.totalCanvas as HTMLCanvasElement
       if (totalCanvas) {
         const ctx = totalCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar caixa registradora
         ctx.fillRect(15, 25, 30, 20)
         ctx.fillRect(20, 20, 20, 5)
         ctx.fillRect(25, 30, 10, 10)
@@ -523,13 +517,11 @@ export default defineComponent({
         ctx.fillRect(38, 32, 4, 6)
       }
 
-      // Ícone para Caixas Abertos
       const abertosCanvas = this.$refs.abertosCanvas as HTMLCanvasElement
       if (abertosCanvas) {
         const ctx = abertosCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar cadeado aberto
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
         ctx.lineWidth = 3
         ctx.beginPath()
@@ -542,17 +534,14 @@ export default defineComponent({
         ctx.fill()
       }
 
-      // Ícone para Total Transações
       const transacoesCanvas = this.$refs.transacoesCanvas as HTMLCanvasElement
       if (transacoesCanvas) {
         const ctx = transacoesCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-        // Desenhar símbolo de dinheiro
         ctx.font = '24px Arial'
         ctx.textAlign = 'center'
         ctx.fillText('$', 30, 37)
-        // Adicionar setas de movimento
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
         ctx.lineWidth = 2
         ctx.beginPath()
@@ -564,14 +553,12 @@ export default defineComponent({
         ctx.stroke()
       }
 
-      // Ícone para Média
       const mediaCanvas = this.$refs.mediaCanvas as HTMLCanvasElement
       if (mediaCanvas) {
         const ctx = mediaCanvas.getContext('2d')!
         ctx.clearRect(0, 0, 60, 60)
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'
         ctx.lineWidth = 3
-        // Desenhar gráfico de linha
         ctx.beginPath()
         ctx.moveTo(10, 45)
         ctx.lineTo(20, 35)
@@ -579,7 +566,6 @@ export default defineComponent({
         ctx.lineTo(40, 30)
         ctx.lineTo(50, 20)
         ctx.stroke()
-        // Adicionar pontos
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
         ;[{x: 10, y: 45}, {x: 20, y: 35}, {x: 30, y: 25}, {x: 40, y: 30}, {x: 50, y: 20}].forEach(point => {
           ctx.beginPath()
@@ -607,7 +593,6 @@ export default defineComponent({
       const abertosAngle = (abertos / total) * 2 * Math.PI
       const fechadosAngle = (fechados / total) * 2 * Math.PI
 
-      // Desenhar fatia dos abertos
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, 0, abertosAngle)
@@ -615,7 +600,6 @@ export default defineComponent({
       ctx.fillStyle = '#28a745'
       ctx.fill()
 
-      // Desenhar fatia dos fechados
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, abertosAngle, abertosAngle + fechadosAngle)
@@ -623,7 +607,6 @@ export default defineComponent({
       ctx.fillStyle = '#dc3545'
       ctx.fill()
 
-      // Legenda
       ctx.fillStyle = '#ffffff'
       ctx.font = '14px Arial'
       ctx.fillText(`Abertos: ${abertos}`, centerX + 100, centerY - 10)
@@ -652,22 +635,18 @@ export default defineComponent({
         const yInicial = canvas.height - heightInicial - 20
         const yFinal = canvas.height - heightFinal - 20
 
-        // Barra valor inicial
         ctx.fillStyle = '#17a2b8'
         ctx.fillRect(x, yInicial, barWidth / 2 - 2, heightInicial)
 
-        // Barra valor final
         ctx.fillStyle = '#28a745'
         ctx.fillRect(x + barWidth / 2 + 2, yFinal, barWidth / 2 - 2, heightFinal)
 
-        // Labels
         ctx.fillStyle = '#ffffff'
         ctx.font = '10px Arial'
         ctx.textAlign = 'center'
         ctx.fillText(`C${index + 1}`, x + barWidth / 2, canvas.height - 5)
       })
 
-      // Legenda
       ctx.fillStyle = '#17a2b8'
       ctx.fillRect(20, 10, 10, 10)
       ctx.fillStyle = '#ffffff'
@@ -710,13 +689,11 @@ export default defineComponent({
           const ctx = canvas.getContext('2d')!
           ctx.clearRect(0, 0, 30, 30)
           
-          // Círculo de fundo baseado no status
           ctx.beginPath()
           ctx.arc(15, 15, 12, 0, 2 * Math.PI)
           ctx.fillStyle = caixa.status === 'Aberto' ? '#28a745' : '#dc3545'
           ctx.fill()
           
-          // Ícone do caixa
           ctx.fillStyle = '#ffffff'
           ctx.font = '12px Arial'
           ctx.textAlign = 'center'
@@ -732,7 +709,6 @@ export default defineComponent({
         ctx.clearRect(0, 0, 100, 100)
         ctx.strokeStyle = '#6c757d'
         ctx.lineWidth = 3
-        // Desenhar caixa registradora vazia
         ctx.strokeRect(25, 40, 50, 35)
         ctx.strokeRect(35, 30, 30, 10)
         ctx.strokeRect(45, 50, 10, 15)

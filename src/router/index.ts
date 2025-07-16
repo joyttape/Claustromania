@@ -26,8 +26,6 @@ import FormCaixa from '@/components/layout/Caixa/FormCaixa.vue'
 import CaixaDetail from '@/components/layout/Caixa/CaixaDetail.vue'
 import TransacaoFeita from '@/components/layout/Reservas/TransacaoFeita.vue'
 
-import { Form } from 'react-router-dom'
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

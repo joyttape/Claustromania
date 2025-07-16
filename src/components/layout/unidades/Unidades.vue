@@ -12,7 +12,6 @@
       <NavSideBarVue />
       <div class="content flex-grow-1">
         <div class="container-fluid pt-4 px-4">
-          <!-- Cards de Estatísticas com Canvas -->
           <div class="row mb-4">
             <div class="col-xl-3 col-md-6 mb-4">
               <div class="card stats-card bg-primary">
@@ -71,7 +70,6 @@
             </div>
           </div>
 
-          <!-- Gráfico de Status das Unidades -->
           <div class="row mb-4">
             <div class="col-xl-8 col-lg-7">
               <div class="card bg-secondary">
@@ -112,7 +110,6 @@
               </router-link>
             </div>
 
-            <!-- Indicadores Visuais de Filtros -->
             <div class="filter-indicators mb-3" v-if="searchTerm || selectedStatus || ordemAlfabetica">
               <div class="d-flex flex-wrap gap-2">
                 <span v-if="searchTerm" class="badge bg-info">
@@ -379,7 +376,6 @@ export default defineComponent({
     },
 
     drawStatsIcons() {
-      // Ícone para Total de Unidades
       const totalCanvas = this.$refs.totalCanvas as HTMLCanvasElement
       if (totalCanvas) {
         const ctx = totalCanvas.getContext('2d')!
@@ -391,7 +387,6 @@ export default defineComponent({
         ctx.fillRect(25, 25, 10, 15)
       }
 
-      // Ícone para Unidades Ativas
       const ativasCanvas = this.$refs.ativasCanvas as HTMLCanvasElement
       if (ativasCanvas) {
         const ctx = ativasCanvas.getContext('2d')!
@@ -406,7 +401,6 @@ export default defineComponent({
         ctx.fillText('✓', 30, 37)
       }
 
-      // Ícone para Capacidade Total
       const capacidadeCanvas = this.$refs.capacidadeCanvas as HTMLCanvasElement
       if (capacidadeCanvas) {
         const ctx = capacidadeCanvas.getContext('2d')!
@@ -419,7 +413,6 @@ export default defineComponent({
         }
       }
 
-      // Ícone para Média de Capacidade
       const mediaCanvas = this.$refs.mediaCanvas as HTMLCanvasElement
       if (mediaCanvas) {
         const ctx = mediaCanvas.getContext('2d')!
@@ -454,7 +447,6 @@ export default defineComponent({
       const ativasAngle = (ativas / total) * 2 * Math.PI
       const inativasAngle = (inativas / total) * 2 * Math.PI
 
-      // Desenhar fatia das ativas
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, 0, ativasAngle)
@@ -462,7 +454,6 @@ export default defineComponent({
       ctx.fillStyle = '#28a745'
       ctx.fill()
 
-      // Desenhar fatia das inativas
       ctx.beginPath()
       ctx.moveTo(centerX, centerY)
       ctx.arc(centerX, centerY, radius, ativasAngle, ativasAngle + inativasAngle)
@@ -470,7 +461,6 @@ export default defineComponent({
       ctx.fillStyle = '#dc3545'
       ctx.fill()
 
-      // Legenda
       ctx.fillStyle = '#ffffff'
       ctx.font = '14px Arial'
       ctx.fillText(`Ativas: ${ativas}`, centerX + 100, centerY - 20)
@@ -493,11 +483,9 @@ export default defineComponent({
         const height = (unidade.Capacidade / this.maxCapacidade) * maxHeight
         const y = canvas.height - height - 20
 
-        // Barra
         ctx.fillStyle = '#17a2b8'
         ctx.fillRect(x, y, barWidth, height)
 
-        // Valor
         ctx.fillStyle = '#ffffff'
         ctx.font = '12px Arial'
         ctx.textAlign = 'center'
@@ -533,13 +521,11 @@ export default defineComponent({
           const ctx = canvas.getContext('2d')!
           ctx.clearRect(0, 0, 30, 30)
           
-          // Círculo de fundo
           ctx.beginPath()
           ctx.arc(15, 15, 12, 0, 2 * Math.PI)
           ctx.fillStyle = unidade.Status ? '#28a745' : '#6c757d'
           ctx.fill()
           
-          // Número da unidade
           ctx.fillStyle = '#ffffff'
           ctx.font = '10px Arial'
           ctx.textAlign = 'center'

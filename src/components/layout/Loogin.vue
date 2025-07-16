@@ -81,7 +81,6 @@
                   </div>
                 </button>
 
-                <!-- Links -->
                 <div class="form-links">
                   <a href="#" class="forgot-link" @click.prevent="handleForgotPassword">Esqueceu a senha?</a>
                 </div>
