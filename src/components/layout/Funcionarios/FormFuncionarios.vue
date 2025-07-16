@@ -527,7 +527,7 @@ async function cadastrarFuncionario() {
     return
   }
 
-  const senhaPadrao = "Trocar@123";
+  const senhaPadrao = "";
 
   const dadosEnvio = {
     cargo: funcionario.cargo,
@@ -563,7 +563,7 @@ async function cadastrarFuncionario() {
       Toast.fire({
         icon: 'success',
         title: `Funcionário ${funcionario.nome} cadastrado com sucesso!`,
-        html: `Senha temporária: <strong>${senhaPadrao}</strong><br>O funcionário deverá trocá-la no primeiro login.`
+        html: `Senha temporária: <strong>Trocar@123</strong><br>O funcionário deverá trocá-la no primeiro login.`
       })
       limparFormulario()
       router.push('/funcionarios')
