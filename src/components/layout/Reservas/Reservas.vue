@@ -198,6 +198,9 @@ import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
 import FooterBarVue from '@/components/layout/FooterBar.vue'
 import { api } from '@/common/http'
+import moment from "moment"
+import "owl.carousel/dist/assets/owl.carousel.css"
+import "owl.carousel"
 
 export default defineComponent({
   name: 'Reservas',
@@ -405,13 +408,29 @@ export default defineComponent({
   },
 
   mounted() {
-    const script = document.createElement('script')
-    script.src = '/src/components/js/maincode.js'
-    script.async = true
-    document.body.appendChild(script)
+  const libs = [
+    '/js/easing.min.js',
+    '/js/waypoints.min.js',
+    '/js/owl.carousel.min.js',
+    '/js/moment.min.js',
+    '/js/moment-timezone.min.js',
+    '/js/tempusdominus-bootstrap-4.min.js',
+    '/js/maincode.js'
+  ]
 
+  libs.reduce((prev, src) => {
+    return prev.then(() => new Promise<void>((resolve) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.async = true
+      script.onload = () => resolve()
+      document.body.appendChild(script)
+    }))
+  }, Promise.resolve())
+  .then(() => {
     this.buscarReservas()
-  }
+  })
+}
 })
 </script>
 
