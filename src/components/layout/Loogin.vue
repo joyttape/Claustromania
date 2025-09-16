@@ -3,7 +3,6 @@
     <div class="black-background"></div>
     
     <div class="background-image">
-      <img src="../imgs/sua-imagem.png" alt="" class="bg-png" />
     </div>
 
     <div class="container-fluid position-relative d-flex p-0">
