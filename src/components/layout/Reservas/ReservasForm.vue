@@ -284,6 +284,9 @@ import { useRouter } from 'vue-router'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minValue, maxLength, helpers } from '@vuelidate/validators'
 import Swal from 'sweetalert2'
+import moment from "moment"
+import "owl.carousel/dist/assets/owl.carousel.css"
+import "owl.carousel"
 
 import NavHeaderBarVue from '@/components/layout/NavHeaderBar.vue'
 import NavSideBarVue from '@/components/layout/NavSideBar.vue'
@@ -646,16 +649,33 @@ const cadastrarReserva = async () => {
   }
 }
 
+onMounted(() => {
+  const libs = [
+    '/js/easing.min.js',
+    '/js/waypoints.min.js',
+    '/js/owl.carousel.min.js',
+    '/js/moment.min.js',
+    '/js/moment-timezone.min.js',
+    '/js/tempusdominus-bootstrap-4.min.js',
+    '/js/maincode.js'
+  ]
 
-onMounted(async () => {
-  await Promise.all([
-    carregarSalas(), 
-    carregarUnidades(),
-    carregarSalaJogo(),  
-    carregarJogos(),  
-    carregarClientes() 
-  ])
-  document.getElementById('spinner')?.classList.remove('show')
+  libs.reduce((prev, src) => {
+    return prev.then(() => new Promise<void>((resolve) => {
+      const script = document.createElement('script')
+      script.src = src
+      script.async = true
+      script.onload = () => resolve()
+      document.body.appendChild(script)
+    }))
+  }, Promise.resolve())
+  .then(() => {
+     carregarSalas()
+     carregarUnidades()
+     carregarSalaJogo()
+     carregarJogos()
+     carregarClientes()
+  })
 })
 </script>
 
