@@ -564,7 +564,7 @@ export default defineComponent({
 .enhanced-btn:focus,
 .enhanced-btn-sm:focus {
   outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline-offset: 2.2px;
 }
 </style>
 
